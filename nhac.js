@@ -182,33 +182,12 @@ function pgNhac(){
       </div>
     </div>
 
-    <!-- Mobile search overlay -->
-    <div class="zmp-mobile-search" id="zmobile-search">
-      <div class="zmp-mobile-search-box">
-        <button class="zmp-mobile-back" onclick="zCloseMobileSearch()">←</button>
-        <input class="zmp-mobile-search-inp" id="zs-inp-mobile" type="text"
-          placeholder="Tìm bài hát, nghệ sĩ..."
-          autocomplete="off"
-          onkeydown="if(event.key==='Enter') zSearchMobile()"/>
-        <button class="zmp-search-btn" onclick="zSearchMobile()">Tìm</button>
-      </div>
-      <div class="zmp-mobile-tags">
-        ${['🇻🇳 Nhạc Việt','🎤 V-Pop','🎧 Rap Việt','🎶 Bolero','🌙 Lo-Fi','⚡ EDM'].map(t=>
-          `<button class="zmp-tag" onclick="zQuickMobile('${t.replace(/['"]/g,'')}')">${t}</button>`
-        ).join('')}
-      </div>
-      <div id="zmobile-tracklist" class="zmp-mobile-tracklist">
-        <div class="zmp-list-empty">
-          <div style="font-size:32px;opacity:.4">🎵</div>
-          <div>Tìm bài hát để bắt đầu</div>
-        </div>
-      </div>
-    </div>
+    <!-- Mobile: back-to-search button (shown when player is active) -->
+    <button class="zmp-back-btn" id="zmp-back-btn" onclick="zMobileBackToSearch()" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
 
-    <!-- FAB search (mobile) -->
-    <button class="zmp-fab" onclick="zOpenMobileSearch()" title="Tìm nhạc"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
-
-  </div>`;
+  </div>`</div>`;
 
   setupNavScroll();
 
@@ -256,45 +235,24 @@ window.zSearch = async function(){
   }
 };
 
-window.zSearchMobile = async function(){
-  const q = document.getElementById('zs-inp-mobile')?.value?.trim();
-  if(!q) return;
-  const tl = document.getElementById('zmobile-tracklist');
-  if(!tl) return;
-  tl.innerHTML = `<div class="zmp-list-loading"><div class="zmp-spin"></div><div>Đang tìm "${q}"…</div></div>`;
-  try{
-    const tracks = await zcSearch(q);
-    ZMP.results = tracks;
-    ZMP.queue = [...tracks];
-    if(!tracks.length){
-      tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">😔</div><div>Không tìm thấy kết quả</div></div>`;
-      return;
-    }
-    zRenderList(tracks, 'zmobile-tracklist');
-    zRenderList(tracks);  // render vào trang chính để sau khi đóng overlay vẫn thấy
-    zRenderQueue();
-    zCloseMobileSearch();
-  }catch(e){
-    tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">⚠️</div><div style="color:#f87171">Lỗi kết nối</div><button class="zmp-search-btn" style="margin-top:12px" onclick="zSearchMobile()">Thử lại</button></div>`;
-  }
+// Mobile: switch between search view and player view
+window.zMobileShowPlayer = function(){
+  const left = document.getElementById('zmp')?.querySelector('.zmp-left');
+  const center = document.getElementById('zmp-center');
+  const backBtn = document.getElementById('zmp-back-btn');
+  if(window.innerWidth > 750) return;
+  if(left) left.style.display = 'none';
+  if(center) center.style.display = 'flex';
+  if(backBtn) backBtn.style.display = 'flex';
 };
-
-window.zOpenMobileSearch = function(){
-  document.getElementById('zmobile-search')?.classList.add('show');
-  setTimeout(()=>document.getElementById('zs-inp-mobile')?.focus(), 100);
-};
-window.zCloseMobileSearch = function(){
-  document.getElementById('zmobile-search')?.classList.remove('show');
-  // Sau khi đóng overlay, scroll lên tracklist chính để thấy kết quả
-  const tl = document.getElementById('ztracklist');
-  if(tl && ZMP.results.length) {
-    setTimeout(() => tl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-  }
-};
-window.zQuickMobile = function(q){
-  const inp = document.getElementById('zs-inp-mobile');
-  if(inp) inp.value = q.replace(/^\S+\s/,'');
-  zSearchMobile();
+window.zMobileBackToSearch = function(){
+  const left = document.getElementById('zmp')?.querySelector('.zmp-left');
+  const center = document.getElementById('zmp-center');
+  const backBtn = document.getElementById('zmp-back-btn');
+  if(window.innerWidth > 750) return;
+  if(left) left.style.display = '';
+  if(center) center.style.display = 'none';
+  if(backBtn) backBtn.style.display = 'none';
 };
 
 window.zSwitchListTab = function(tab){
@@ -389,6 +347,8 @@ function zShowPlayer(track, load){
   // Mini player persistent - dùng class active + body padding
   if(bottom){ bottom.classList.add('active'); bottom.style.display = ''; }
   document.body.classList.add('has-player');
+  // Mobile: switch to player view
+  window.zMobileShowPlayer && window.zMobileShowPlayer();
 
   // BG blur from art
   const bg = document.getElementById('zbg');

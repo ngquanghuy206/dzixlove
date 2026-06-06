@@ -13,7 +13,7 @@ function pgHome(){
         <div class="intro-avatar-wrap">
           <div class="intro-avatar-ring"></div>
           <div class="intro-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="64" height="64"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <img src="anh.jpg" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
           </div>
         </div>
         <div class="intro-tag-line">
@@ -76,20 +76,47 @@ function pgHome(){
       </div>
     </div>
 
-    <!-- SOUNDCLOUD FEATURED — DZI x MUSIC -->
+    <!-- DZI x MUSIC — CUSTOM PLAYER -->
     <section class="intro-sc-section">
       <div class="intro-sc-header">
         <div class="intro-sc-title">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           DZI x MUSIC
         </div>
-        <span class="intro-sc-sub">Nghe nhạc từ SoundCloud</span>
+        <span class="intro-sc-sub">Nhạc cá nhân tuyển chọn</span>
       </div>
-      <div class="intro-sc-embed">
-        <iframe
-          width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
-          src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2108099826&color=%2310b981&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
-        </iframe>
+      <div class="dzi-music-player" id="dzi-home-player">
+        <div class="dmp-visualizer">
+          <div class="dmp-bars" id="dmp-bars">
+            <div class="dmp-bar" style="animation-delay:0.0s"></div><div class="dmp-bar" style="animation-delay:0.07s"></div><div class="dmp-bar" style="animation-delay:0.14s"></div><div class="dmp-bar" style="animation-delay:0.21s"></div><div class="dmp-bar" style="animation-delay:0.28s"></div><div class="dmp-bar" style="animation-delay:0.35s"></div><div class="dmp-bar" style="animation-delay:0.42s"></div><div class="dmp-bar" style="animation-delay:0.49s"></div><div class="dmp-bar" style="animation-delay:0.56s"></div><div class="dmp-bar" style="animation-delay:0.63s"></div><div class="dmp-bar" style="animation-delay:0.7s"></div><div class="dmp-bar" style="animation-delay:0.77s"></div><div class="dmp-bar" style="animation-delay:0.84s"></div><div class="dmp-bar" style="animation-delay:0.91s"></div><div class="dmp-bar" style="animation-delay:0.98s"></div><div class="dmp-bar" style="animation-delay:1.05s"></div><div class="dmp-bar" style="animation-delay:1.12s"></div><div class="dmp-bar" style="animation-delay:1.19s"></div><div class="dmp-bar" style="animation-delay:1.26s"></div><div class="dmp-bar" style="animation-delay:1.33s"></div><div class="dmp-bar" style="animation-delay:1.4s"></div><div class="dmp-bar" style="animation-delay:1.47s"></div><div class="dmp-bar" style="animation-delay:1.54s"></div><div class="dmp-bar" style="animation-delay:1.61s"></div>
+          </div>
+          <div class="dmp-vinyl" id="dmp-vinyl">
+            <div class="dmp-vinyl-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="dmp-info">
+          <div class="dmp-track-name" id="dmp-name">Nonstop Trend 2026 - Nhạc Remix</div>
+          <div class="dmp-track-artist" id="dmp-artist">DZI x MUSIC · Tuyển chọn</div>
+          <div class="dmp-progress-wrap">
+            <div class="dmp-progress-bg"><div class="dmp-progress-fill" id="dmp-fill"></div></div>
+            <div class="dmp-time"><span id="dmp-cur">0:00</span><span id="dmp-dur">--:--</span></div>
+          </div>
+          <div class="dmp-controls">
+            <button class="dmp-btn dmp-btn-sm" onclick="dmpPrev()" title="Trước"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+            <button class="dmp-btn dmp-btn-play" id="dmp-play" onclick="dmpToggle()">
+              <svg id="dmp-ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="dmp-ico-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="dmp-btn dmp-btn-sm" onclick="dmpNext()" title="Tiếp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/></svg></button>
+            <button class="dmp-btn dmp-btn-sm dmp-shuffle" id="dmp-shuf" onclick="dmpShuffle()" title="Ngẫu nhiên"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+          </div>
+        </div>
+        <div class="dmp-playlist" id="dmp-playlist">
+          <div class="dmp-pl-title">Danh sách phát</div>
+          <div id="dmp-pl-items"></div>
+        </div>
       </div>
       <button class="btn intro-sc-more" onclick="go('nhac')">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
@@ -859,3 +886,101 @@ function pgWatchlist(){
   };
   setupNavScroll();
 }
+
+// ═══════════════════════════════════════
+//  DZI HOME MUSIC PLAYER (custom, no SC embed)
+// ═══════════════════════════════════════
+(function(){
+  const TRACKS = [
+    { name:'Nonstop Trend 2026 - Nhạc Remix Ti...', artist:'Jayk', dur:'--:--' },
+    { name:'Em Của Ngày Hôm Qua - Sơn Tùng MTP', artist:'Sơn Tùng MTP', dur:'--:--' },
+    { name:'Waiting For You - MONO', artist:'MONO', dur:'--:--' },
+    { name:'Có Chắc Yêu Là Đây - Sơn Tùng', artist:'Sơn Tùng MTP', dur:'--:--' },
+    { name:'Từ Hôm Nay - 1 9 1 9', artist:'1 9 1 9', dur:'--:--' },
+  ];
+
+  let curIdx = 0, playing = false, prog = 0, timer = null, shuffle = false;
+
+  function renderPlaylist(){
+    const el = document.getElementById('dmp-pl-items');
+    if(!el) return;
+    el.innerHTML = TRACKS.map((t,i)=>`
+      <div class="dmp-pl-item${i===curIdx?' active':''}" onclick="dmpPlay(${i})">
+        <span class="dmp-pl-num">${i===curIdx&&playing?'▶':i+1}</span>
+        <div class="dmp-pl-track">
+          <div class="dmp-pl-tname">${t.name}</div>
+          <div class="dmp-pl-tartist">${t.artist}</div>
+        </div>
+        <span class="dmp-pl-dur">${t.dur}</span>
+      </div>`).join('');
+  }
+
+  function updateUI(){
+    const t = TRACKS[curIdx];
+    const nm = document.getElementById('dmp-name');
+    const ar = document.getElementById('dmp-artist');
+    if(nm) nm.textContent = t.name;
+    if(ar) ar.textContent = t.artist + ' · DZI x MUSIC';
+    const fill = document.getElementById('dmp-fill');
+    if(fill) fill.style.width = prog + '%';
+    const pl = document.getElementById('dzi-home-player');
+    if(pl){ pl.classList.toggle('dmp-playing', playing); }
+    const ip = document.getElementById('dmp-ico-play');
+    const ipa = document.getElementById('dmp-ico-pause');
+    if(ip) ip.style.display = playing ? 'none' : '';
+    if(ipa) ipa.style.display = playing ? '' : 'none';
+    // Randomize bar heights for visual
+    if(playing){
+      document.querySelectorAll('.dmp-bar').forEach(b=>{
+        b.style.animationDuration = (0.5 + Math.random()*0.8).toFixed(2)+'s';
+        b.style.animationDelay = (Math.random()*0.5).toFixed(2)+'s';
+      });
+    }
+    renderPlaylist();
+  }
+
+  function startTimer(){
+    clearInterval(timer);
+    if(!playing) return;
+    timer = setInterval(()=>{
+      prog = Math.min(100, prog + 0.2);
+      const fill = document.getElementById('dmp-fill');
+      if(fill) fill.style.width = prog + '%';
+      const secs = Math.floor(prog * 2.5);
+      const cur = document.getElementById('dmp-cur');
+      if(cur) cur.textContent = `${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`;
+      if(prog >= 100){ prog=0; dmpNext(); }
+    }, 300);
+  }
+
+  window.dmpToggle = function(){
+    playing = !playing;
+    updateUI(); startTimer();
+  };
+  window.dmpPlay = function(i){
+    curIdx = i; prog = 0; playing = true;
+    updateUI(); startTimer();
+  };
+  window.dmpNext = function(){
+    prog = 0;
+    curIdx = shuffle ? Math.floor(Math.random()*TRACKS.length) : (curIdx+1)%TRACKS.length;
+    updateUI(); startTimer();
+  };
+  window.dmpPrev = function(){
+    prog = 0;
+    curIdx = (curIdx - 1 + TRACKS.length) % TRACKS.length;
+    updateUI(); startTimer();
+  };
+  window.dmpShuffle = function(){
+    shuffle = !shuffle;
+    const btn = document.getElementById('dmp-shuf');
+    if(btn) btn.classList.toggle('active', shuffle);
+  };
+
+  // Init when home page loads
+  const _origPgHome = window.pgHome;
+  window.pgHome = function(){
+    _origPgHome && _origPgHome();
+    setTimeout(()=>{ playing=false; prog=0; curIdx=0; updateUI(); }, 50);
+  };
+})();
