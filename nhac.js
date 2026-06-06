@@ -17,13 +17,18 @@ const ZMP = {
 };
 
 // ─── Server ─────────────────────────────────────────────
-const MUSIC_SERVER = 'http://prem-eu5.bot-hosting.cloud:20427';
+// Route qua Vercel API → tránh Mixed Content (http server → https web)
+function msUrl(path){
+  // /search?q=x → /api/music?_p=/search&q=x
+  const [p, qs] = path.split('?');
+  return '/api/music?' + (qs ? '_p='+encodeURIComponent(p)+'&'+qs : '_p='+encodeURIComponent(p));
+}
 let _serverOk = null;
 
 async function checkServer() {
   if (_serverOk !== null) return _serverOk;
   try {
-    const r = await fetch(`${MUSIC_SERVER}/ping`, { signal: AbortSignal.timeout(8000) });
+    const r = await fetchTimeout(msUrl('/ping'), 8000);
     _serverOk = r.ok;
   } catch { _serverOk = false; }
   setTimeout(() => { _serverOk = null; }, 60000);
@@ -31,20 +36,27 @@ async function checkServer() {
 }
 
 // ── Helpers ──────────────────────────────────────────────
+// AbortSignal.timeout không support iOS cũ → dùng AbortController
+function fetchTimeout(url, ms){
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(id));
+}
+
 function fmtT(s){ if(!s||isNaN(s))return'0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return`${m}:${sec.toString().padStart(2,'0')}`; }
 function fmtN(n){ if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return String(n); }
 
 // ── SoundCloud ───────────────────────────────────────────
 // Web gửi query → MUSIC_SERVER tìm → trả JSON về
 async function zcSearch(q){
-  const r = await fetch(`${MUSIC_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(25000) });
+  const r = await fetchTimeout(msUrl('/search?q=' + encodeURIComponent(q)), 25000);
   if(!r.ok) throw new Error('Server loi ' + r.status);
   const d = await r.json();
   return d.tracks || [];
 }
 
 async function zcStream(track){
-  const r = await fetch(`${MUSIC_SERVER}/stream?url=${encodeURIComponent(track.url)}`, { signal: AbortSignal.timeout(15000) });
+  const r = await fetchTimeout(msUrl('/stream?url=' + encodeURIComponent(track.url)), 15000);
   if(!r.ok) throw new Error('Stream loi ' + r.status);
   const d = await r.json();
   return d.url;
