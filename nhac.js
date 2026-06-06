@@ -16,7 +16,26 @@ const ZMP = {
   liked: new Set(JSON.parse(localStorage.getItem('zmp_liked')||'[]')),
 };
 
-const CORS = 'https://api.allorigins.win/raw?url=';
+// Multiple CORS proxies with fallback
+const CORS_PROXIES = [
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://cors-anywhere.herokuapp.com/${url}`,
+];
+
+async function corsGet(url, asJson=true) {
+  let lastErr;
+  for (const proxy of CORS_PROXIES) {
+    try {
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return asJson ? r.json() : r.text();
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('All CORS proxies failed');
+}
 
 // ── Helpers ──────────────────────────────────────────────
 function fmtT(s){ if(!s||isNaN(s))return'0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return`${m}:${sec.toString().padStart(2,'0')}`; }
@@ -26,10 +45,10 @@ function fmtN(n){ if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>
 async function zcGetId(){
   if(ZMP.clientId) return ZMP.clientId;
   try{
-    const html = await fetch(CORS+encodeURIComponent('https://soundcloud.com/')).then(r=>r.text());
+    const html = await corsGet('https://soundcloud.com/', false);
     const srcs = [...html.matchAll(/src="(https:\/\/a-v2\.sndcdn\.com\/assets\/[^"]+\.js)"/g)];
     if(!srcs.length) throw new Error('no script');
-    const js = await fetch(CORS+encodeURIComponent(srcs[srcs.length-1][1])).then(r=>r.text());
+    const js = await corsGet(srcs[srcs.length-1][1], false);
     const m = js.match(/client_id:"([^"]+)"/);
     if(m){ ZMP.clientId=m[1]; return m[1]; }
   }catch(e){}
@@ -40,7 +59,7 @@ async function zcGetId(){
 async function zcSearch(q){
   const cid = await zcGetId();
   const url = `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(q)}&client_id=${cid}&limit=20&offset=0`;
-  const d = await fetch(CORS+encodeURIComponent(url)).then(r=>r.json());
+  const d = await corsGet(url);
   return (d.collection||[]).map(t=>({
     id: t.id,
     title: t.title||'Unknown',
@@ -56,10 +75,10 @@ async function zcSearch(q){
 async function zcStream(track){
   const cid = await zcGetId();
   const resolve = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(track.url)}&client_id=${cid}`;
-  const d = await fetch(CORS+encodeURIComponent(resolve)).then(r=>r.json());
+  const d = await corsGet(resolve);
   const tc = d.media?.transcodings?.find(t=>t.format?.protocol==='progressive') || d.media?.transcodings?.[0];
   if(!tc) throw new Error('no stream');
-  const s = await fetch(CORS+encodeURIComponent(tc.url+'?client_id='+cid)).then(r=>r.json());
+  const s = await corsGet(tc.url+'?client_id='+cid);
   return s.url;
 }
 

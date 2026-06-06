@@ -441,24 +441,24 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
   border-color: var(--red);
   color: #fff;
 }
-.sbm-icon { font-size: 26px; line-height: 1; }
+.sbm-icon { font-size: 26px; line-height: 1; display: flex; align-items: center; justify-content: center; }
 .sbm-label { font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
 
 /* divider */
 .sb-divider {
   height: 1px;
   background: rgba(255,255,255,.06);
-  margin: 4px 16px;
+  margin: 6px 16px;
 }
 
 /* section title */
 .sb-section-title {
-  padding: 12px 18px 4px;
+  padding: 14px 18px 4px;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: var(--mu);
+  color: rgba(255,255,255,.35);
 }
 
 /* links */
@@ -984,15 +984,17 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 /* ── Sidebar icon links (like image 3) ── */
 .sb-icon-links { list-style: none; padding: 4px 10px; }
 .sb-icon-links li a {
-  display: flex; align-items: center; gap: 12px;
-  padding: 9px 10px; border-radius: 10px;
-  font-size: 14px; color: rgba(255,255,255,.8); cursor: pointer;
-  transition: background .18s; text-decoration: none;
+  display: flex; align-items: center; gap: 13px;
+  padding: 8px 10px; border-radius: 12px;
+  font-size: 14px; color: rgba(255,255,255,.82); cursor: pointer;
+  transition: background .18s, color .18s; text-decoration: none;
+  font-weight: 500;
 }
 .sb-icon-links li a:hover { background: rgba(255,255,255,.07); color: #fff; }
-.sb-icon-links li a.on { background: rgba(229,9,20,.1); color: #fff; }
+.sb-icon-links li a.on { background: rgba(255,255,255,.08); color: #fff; }
 .sbi {
-  width: 36px; height: 36px; border-radius: 10px;
+  width: 38px; height: 38px; border-radius: 11px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+  flex-shrink: 0; color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
 }
