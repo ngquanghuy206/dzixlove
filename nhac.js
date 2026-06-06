@@ -37,19 +37,15 @@ function fmtN(n){ if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>
 // ── SoundCloud ───────────────────────────────────────────
 // Web gửi query → MUSIC_SERVER tìm → trả JSON về
 async function zcSearch(q){
-  const online = await checkServer();
-  if(!online) throw new Error('SERVER_OFFLINE');
-  const r = await fetch(`${MUSIC_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(20000) });
-  if(!r.ok) throw new Error('Server lỗi ' + r.status);
+  const r = await fetch(`${MUSIC_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(25000) });
+  if(!r.ok) throw new Error('Server loi ' + r.status);
   const d = await r.json();
   return d.tracks || [];
 }
 
 async function zcStream(track){
-  const online = await checkServer();
-  if(!online) throw new Error('SERVER_OFFLINE');
   const r = await fetch(`${MUSIC_SERVER}/stream?url=${encodeURIComponent(track.url)}`, { signal: AbortSignal.timeout(15000) });
-  if(!r.ok) throw new Error('Stream lỗi ' + r.status);
+  if(!r.ok) throw new Error('Stream loi ' + r.status);
   const d = await r.json();
   return d.url;
 }
