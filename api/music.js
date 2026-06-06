@@ -1,20 +1,25 @@
 // Vercel API Route — proxy sang server.py để tránh Mixed Content
+// Web gọi: /api/music?_p=/search&q=buon+cua+anh
+// Route này forward sang: http://bot-hosting:20427/search?q=buon+cua+anh
+
 const TARGET = 'http://prem-eu5.bot-hosting.cloud:20427';
 
 export default async function handler(req, res) {
-  // Cho phép CORS từ web
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
   try {
-    // Ghép lại URL gốc: /api/music/search?q=... → /search?q=...
-    const path = req.url.replace(/^\/api\/music/, '') || '/';
-    const url  = TARGET + path;
+    // Lấy path từ _p param, phần còn lại là query string
+    const url = new URL(req.url, 'http://localhost');
+    const path = url.searchParams.get('_p') || '/';
+    url.searchParams.delete('_p');
+    const qs = url.searchParams.toString();
 
-    const response = await fetch(url, {
+    const target = TARGET + path + (qs ? '?' + qs : '');
+
+    const response = await fetch(target, {
       headers: { 'Accept': 'application/json' },
-      signal: AbortSignal.timeout(30000),
     });
 
     const data = await response.json();
