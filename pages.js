@@ -157,8 +157,144 @@ function pgHome(){
 // ═══════════════════════════════════════
 //  PHIM PAGE (catalog)
 // ═══════════════════════════════════════
+// ── Phim cache ───────────────────────────────────────────
+const PHIM_CACHE_KEY = 'dzi_phim_cache';
+const PHIM_CACHE_TTL = 10 * 60 * 1000; // 10 phút
+
+function phimCacheGet(){
+  try{
+    const raw = localStorage.getItem(PHIM_CACHE_KEY);
+    if(!raw) return null;
+    const c = JSON.parse(raw);
+    if(Date.now() - c.ts > PHIM_CACHE_TTL) return null;
+    return c.data;
+  }catch(e){ return null; }
+}
+function phimCacheSet(data){
+  try{ localStorage.setItem(PHIM_CACHE_KEY, JSON.stringify({ts:Date.now(), data})); }catch(e){}
+}
+
 async function pgPhim(){
   const app=document.getElementById('app');
+
+  // Helper render từ data
+  function renderPhimPage(data, isStale){
+    const {kkN,kkBo,kkLe,kkLT,jkS,jkT,ytV} = data;
+    const newItems  = (kkN&&kkN.items||[]).slice(0,24);
+    const boItems   = kkI(kkBo).slice(0,24);
+    const leItems   = kkI(kkLe).slice(0,24);
+    const ltItems   = kkI(kkLT).slice(0,24);
+    const aniSItems = (jkS&&jkS.data||[]).slice(0,24);
+    const aniTItems = (jkT&&jkT.data||[]).slice(0,24);
+    const featured  = [...newItems.slice(0,4), ...aniTItems.slice(0,3)];
+    const heroHTML  = featured.map((m,i)=>{
+      let bg,title,ori,year,ep,desc,srcBadge,bw,bi;
+      if(m.slug){
+        bg=fixImg(m.thumb_url)||fixImg(m.poster_url)||PH(1280,720);
+        title=m.name||''; ori=m.origin_name||''; year=m.year||''; ep=m.episode_current||''; desc=m.content||m.description||'';
+        srcBadge=`<span class="h-src" style="background:var(--green)">🇻🇳 ${kkTxt(m)}</span>`;
+        bw=`go('play-kk',{slug:'${m.slug}'})`; bi=`go('det-kk',{slug:'${m.slug}'})`;
+      }else{
+        const imgs=m.images||{};
+        bg=(imgs.jpg&&imgs.jpg.large_image_url)||(imgs.webp&&imgs.webp.large_image_url)||PH(1280,720);
+        title=m.title||''; ori=m.title_english||''; year=m.year||''; ep=''; desc=m.synopsis||'';
+        srcBadge=`<span class="h-src" style="background:var(--purple)">🎌 ANIME</span>`;
+        bw=`go('play-ani',{malId:${m.mal_id}})`; bi=`go('det-ani',{malId:${m.mal_id}})`;
+      }
+      return `<div class="hslide${i===0?' on':''}">
+      <div class="hbg" style="background-image:url('${esc(bg)}')"></div>
+      <div class="hgrad"></div>
+      <div class="hcont">
+        ${srcBadge}
+        <h1 class="h-title">${esc(title)}</h1>
+        <div class="h-meta">
+          ${year?`<span>${year}</span>`:''}
+          ${ep?`<span class="h-chip">${esc(ep)}</span>`:''}
+          ${ori&&ori!==title?`<span style="color:var(--mu)">${esc(ori)}</span>`:''}
+        </div>
+        <p class="h-desc">${esc(desc)}</p>
+        <div class="h-btns">
+          <button class="btn btn-red" onclick="${bw}">▶ Xem ngay</button>
+          <button class="btn btn-ghost" onclick="${bi}">ℹ Chi tiết</button>
+        </div>
+      </div>
+    </div>`;
+    }).join('');
+    const dotsHTML = featured.map((_,i)=>`<button class="hdot${i===0?' on':''}" onclick="setSlide(${i})"></button>`).join('');
+    const ytHTML = (ytV||[]).length
+      ? ytV.map(CardYT).join('')
+      : `<div style="color:var(--mu);font-size:13px;padding:18px">YouTube không load. <a onclick="go('cat',{cat:'yt'})" style="color:var(--yt);cursor:pointer">Tìm thủ công →</a></div>`;
+    const staleNote = isStale ? `<div id="phim-refresh-note" style="position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:rgba(255,255,255,.5);font-size:11px;padding:4px 12px;border-radius:20px;z-index:500;pointer-events:none">Đang cập nhật...</div>` : '';
+    return `${staleNote}<div class="hero" id="hero">${heroHTML}<div class="hdots">${dotsHTML}</div></div>
+    <section class="sec">
+      <div class="sec-head"><h2 class="sec-title">🆕 Phim Việt mới cập nhật</h2><a class="see-all" onclick="go('cat',{cat:'phim-moi'})">Tất cả →</a></div>
+      <div class="row">${newItems.map(CardKK).join('')}</div>
+    </section>
+    <section class="sec" style="background:linear-gradient(180deg,transparent,var(--s1) 20%,var(--s1) 80%,transparent)">
+      <div class="sec-head"><h2 class="sec-title">🔊 Lồng tiếng / Thuyết minh</h2><a class="see-all" onclick="go('lt')">Tất cả →</a></div>
+      <div class="row">${ltItems.length ? ltItems.map(CardKK).join('') : newItems.slice(4,16).map(CardKK).join('')}</div>
+    </section>
+    <section class="sec">
+      <div class="sec-head"><h2 class="sec-title">📺 Phim bộ Vietsub</h2><a class="see-all" onclick="go('cat',{cat:'phim-bo'})">Tất cả →</a></div>
+      <div class="row">${boItems.map(CardKK).join('')}</div>
+    </section>
+    <section class="sec" style="background:linear-gradient(180deg,transparent,var(--s1) 20%,var(--s1) 80%,transparent)">
+      <div class="sec-head"><h2 class="sec-title">🎬 Phim lẻ Vietsub</h2><a class="see-all" onclick="go('cat',{cat:'phim-le'})">Tất cả →</a></div>
+      <div class="row">${leItems.map(CardKK).join('')}</div>
+    </section>
+    <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(255,0,0,.1);color:var(--yt)">🔴 YOUTUBE</span><div class="div-line"></div></div>
+    <section class="sec">
+      <div class="sec-head"><h2 class="sec-title">🔴 Phim hot YouTube</h2><a class="see-all" onclick="go('cat',{cat:'yt'})">Tìm kiếm →</a></div>
+      <div class="row">${ytHTML}</div>
+    </section>
+    <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(168,85,247,.1);color:var(--purple)">🎌 ANIME</span><div class="div-line"></div></div>
+    <section class="sec">
+      <div class="sec-head"><h2 class="sec-title">📅 Anime đang chiếu</h2><a class="see-all" onclick="go('cat',{cat:'anime-now'})">Tất cả →</a></div>
+      <div class="row">${aniSItems.map(CardAnime).join('')}</div>
+    </section>
+    <section class="sec">
+      <div class="sec-head"><h2 class="sec-title">🏆 Top Anime mọi thời đại</h2><a class="see-all" onclick="go('cat',{cat:'anime'})">Tất cả →</a></div>
+      <div class="row">${aniTItems.map(CardAnime).join('')}</div>
+    </section>
+    ${renderFooter()}`;
+  }
+
+  function setupHeroCarousel(hp){
+    let idx=0;
+    const slides=hp.querySelectorAll('.hslide'), dots=hp.querySelectorAll('.hdot');
+    window.setSlide = i => {
+      slides[idx]?.classList.remove('on'); dots[idx]?.classList.remove('on');
+      idx=i; slides[idx]?.classList.add('on'); dots[idx]?.classList.add('on');
+    };
+    clearInterval(window._ht);
+    window._ht = setInterval(()=>setSlide((idx+1)%slides.length), 5800);
+  }
+
+  // ── Hiện cache ngay lập tức nếu có ──
+  const cached = phimCacheGet();
+  if(cached){
+    app.innerHTML = renderNav() + `<div class="page" id="hp">${renderPhimPage(cached, true)}</div>`;
+    setupNavScroll();
+    const hp=document.getElementById('hp'); if(hp) setupHeroCarousel(hp);
+    // Refresh ngầm sau 300ms
+    setTimeout(async()=>{
+      try{
+        let kkN2,kkBo2,kkLe2,kkLT2,jkS2,jkT2,ytV2=[];
+        [kkN2,kkBo2,kkLe2,jkS2,jkT2] = await Promise.all([kkNew(1),kkCat('phim-bo',1),kkCat('phim-le',1),jkSeason(),jkTop(1)]);
+        try{ kkLT2=await get(KK_LT_URL(1)); }catch(e){ kkLT2=null; }
+        try{ ytV2=await ytSearch('phim chiếu rạp 2024 hay nhất',1); }catch(e){}
+        const newData={kkN:kkN2,kkBo:kkBo2,kkLe:kkLe2,kkLT:kkLT2,jkS:jkS2,jkT:jkT2,ytV:ytV2};
+        phimCacheSet(newData);
+        // Nếu vẫn đang ở trang phim thì re-render
+        const hp3=document.getElementById('hp');
+        if(hp3){ hp3.innerHTML=renderPhimPage(newData,false); setupHeroCarousel(hp3); }
+        document.getElementById('phim-refresh-note')?.remove();
+      }catch(e){ document.getElementById('phim-refresh-note')?.remove(); }
+    }, 300);
+    return;
+  }
+
+  // ── Không có cache: hiện skeleton rồi fetch ──
   app.innerHTML = renderNav() + `<div class="page" id="hp">
     <div class="hero" style="display:flex;align-items:center;justify-content:center;background:var(--s1)">
       <div style="text-align:center"><div class="spin spin-lg" style="margin:0 auto 12px"></div><p style="font-size:13px;color:var(--mu)">Đang tải phim...</p></div>
@@ -197,91 +333,13 @@ async function pgPhim(){
   const aniSItems = (jkS&&jkS.data||[]).slice(0,24);
   const aniTItems = (jkT&&jkT.data||[]).slice(0,24);
 
-  // Hero slides: mix phim mới + anime top
-  const featured = [...newItems.slice(0,4), ...aniTItems.slice(0,3)];
-  const heroHTML = featured.map((m,i)=>{
-    let bg,title,ori,year,ep,desc,srcBadge,bw,bi;
-    if(m.slug){
-      bg=fixImg(m.thumb_url)||fixImg(m.poster_url)||PH(1280,720);
-      title=m.name||''; ori=m.origin_name||''; year=m.year||''; ep=m.episode_current||''; desc=m.content||m.description||'';
-      srcBadge=`<span class="h-src" style="background:var(--green)">🇻🇳 ${kkTxt(m)}</span>`;
-      bw=`go('play-kk',{slug:'${m.slug}'})`; bi=`go('det-kk',{slug:'${m.slug}'})`;
-    }else{
-      const imgs=m.images||{};
-      bg=(imgs.jpg&&imgs.jpg.large_image_url)||(imgs.webp&&imgs.webp.large_image_url)||PH(1280,720);
-      title=m.title||''; ori=m.title_english||''; year=m.year||''; ep=''; desc=m.synopsis||'';
-      srcBadge=`<span class="h-src" style="background:var(--purple)">🎌 ANIME</span>`;
-      bw=`go('play-ani',{malId:${m.mal_id}})`; bi=`go('det-ani',{malId:${m.mal_id}})`;
-    }
-    return `<div class="hslide${i===0?' on':''}">
-      <div class="hbg" style="background-image:url('${esc(bg)}')"></div>
-      <div class="hgrad"></div>
-      <div class="hcont">
-        ${srcBadge}
-        <h1 class="h-title">${esc(title)}</h1>
-        <div class="h-meta">
-          ${year?`<span>${year}</span>`:''}
-          ${ep?`<span class="h-chip">${esc(ep)}</span>`:''}
-          ${ori&&ori!==title?`<span style="color:var(--mu)">${esc(ori)}</span>`:''}
-        </div>
-        <p class="h-desc">${esc(desc)}</p>
-        <div class="h-btns">
-          <button class="btn btn-red" onclick="${bw}">▶ Xem ngay</button>
-          <button class="btn btn-ghost" onclick="${bi}">ℹ Chi tiết</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  const dotsHTML = featured.map((_,i)=>`<button class="hdot${i===0?' on':''}" onclick="setSlide(${i})"></button>`).join('');
+  // Lưu cache
+  const fetchedData = {kkN,kkBo,kkLe,kkLT,jkS,jkT,ytV};
+  phimCacheSet(fetchedData);
 
-  const ytHTML = ytV.length
-    ? ytV.map(CardYT).join('')
-    : `<div style="color:var(--mu);font-size:13px;padding:18px">YouTube không load. <a onclick="go('cat',{cat:'yt'})" style="color:var(--yt);cursor:pointer">Tìm thủ công →</a></div>`;
-
-  hp.innerHTML = `
-    <div class="hero" id="hero">${heroHTML}<div class="hdots">${dotsHTML}</div></div>
-    <section class="sec">
-      <div class="sec-head"><h2 class="sec-title">🆕 Phim Việt mới cập nhật</h2><a class="see-all" onclick="go('cat',{cat:'phim-moi'})">Tất cả →</a></div>
-      <div class="row">${newItems.map(CardKK).join('')}</div>
-    </section>
-    <section class="sec" style="background:linear-gradient(180deg,transparent,var(--s1) 20%,var(--s1) 80%,transparent)">
-      <div class="sec-head"><h2 class="sec-title">🔊 Lồng tiếng / Thuyết minh</h2><a class="see-all" onclick="go('lt')">Tất cả →</a></div>
-      <div class="row">${ltItems.length ? ltItems.map(CardKK).join('') : newItems.slice(4,16).map(CardKK).join('')}</div>
-    </section>
-    <section class="sec">
-      <div class="sec-head"><h2 class="sec-title">📺 Phim bộ Vietsub</h2><a class="see-all" onclick="go('cat',{cat:'phim-bo'})">Tất cả →</a></div>
-      <div class="row">${boItems.map(CardKK).join('')}</div>
-    </section>
-    <section class="sec" style="background:linear-gradient(180deg,transparent,var(--s1) 20%,var(--s1) 80%,transparent)">
-      <div class="sec-head"><h2 class="sec-title">🎬 Phim lẻ Vietsub</h2><a class="see-all" onclick="go('cat',{cat:'phim-le'})">Tất cả →</a></div>
-      <div class="row">${leItems.map(CardKK).join('')}</div>
-    </section>
-    <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(255,0,0,.1);color:var(--yt)">🔴 YOUTUBE</span><div class="div-line"></div></div>
-    <section class="sec">
-      <div class="sec-head"><h2 class="sec-title">🔴 Phim hot YouTube</h2><a class="see-all" onclick="go('cat',{cat:'yt'})">Tìm kiếm →</a></div>
-      <div class="row">${ytHTML}</div>
-    </section>
-    <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(168,85,247,.1);color:var(--purple)">🎌 ANIME</span><div class="div-line"></div></div>
-    <section class="sec">
-      <div class="sec-head"><h2 class="sec-title">📅 Anime đang chiếu</h2><a class="see-all" onclick="go('cat',{cat:'anime-now'})">Tất cả →</a></div>
-      <div class="row">${aniSItems.map(CardAnime).join('')}</div>
-    </section>
-    <section class="sec">
-      <div class="sec-head"><h2 class="sec-title">🏆 Top Anime mọi thời đại</h2><a class="see-all" onclick="go('cat',{cat:'anime'})">Tất cả →</a></div>
-      <div class="row">${aniTItems.map(CardAnime).join('')}</div>
-    </section>
-    ${renderFooter()}`;
-
-  // Hero carousel
-  let idx=0;
-  const slides=hp.querySelectorAll('.hslide'), dots=hp.querySelectorAll('.hdot');
-  window.setSlide = i => {
-    slides[idx]?.classList.remove('on'); dots[idx]?.classList.remove('on');
-    idx=i;
-    slides[idx]?.classList.add('on'); dots[idx]?.classList.add('on');
-  };
-  clearInterval(window._ht);
-  window._ht = setInterval(()=>setSlide((idx+1)%slides.length), 5800);
+  const hpFresh=document.getElementById('hp'); if(!hpFresh) return;
+  hpFresh.innerHTML = renderPhimPage(fetchedData, false);
+  setupHeroCarousel(hpFresh);
 }
 
 // ═══════════════════════════════════════
