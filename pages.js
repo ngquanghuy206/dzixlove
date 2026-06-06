@@ -13,7 +13,7 @@ function pgHome(){
         <div class="intro-avatar-wrap">
           <div class="intro-avatar-ring"></div>
           <div class="intro-avatar">
-            <img src="anh.jpg" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+            <img src="anh.JPG" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
           </div>
         </div>
         <div class="intro-tag-line">
