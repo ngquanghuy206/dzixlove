@@ -162,28 +162,50 @@ function renderNav(){
     <div class="sb-divider"></div>
 
     <!-- PHIM LINKS -->
-    <div class="sb-section-title">📽 Phim</div>
-    <ul class="sb-links">
-      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">🏠 Trang chủ</a></li>
-      <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'});closeSidebar()">🔥 Phim mới</a></li>
-      <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'});closeSidebar()">🎥 Phim lẻ</a></li>
-      <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'});closeSidebar()">📺 Phim bộ</a></li>
-      <li><a class="${p==='lt'?'on':''}" onclick="go('lt');closeSidebar()" style="color:var(--gold)">🔊 Lồng tiếng</a></li>
-      <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'});closeSidebar()">🎌 Anime</a></li>
-      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'});closeSidebar()" style="color:var(--yt)">🔴 YouTube</a></li>
+    <div class="sb-section-title">📽 PHIM</div>
+    <ul class="sb-icon-links">
+      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">🏠</span>Trang chủ
+      </a></li>
+      <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">🔥</span>Phim mới
+      </a></li>
+      <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e3a2f,#059669)">🎬</span>Phim lẻ
+      </a></li>
+      <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e2a3a,#0284c7)">📺</span>Phim bộ
+      </a></li>
+      <li><a class="${p==='lt'?'on':''}" onclick="go('lt');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#d97706)">🔊</span><span style="color:var(--gold)">Lồng tiếng</span>
+      </a></li>
+      <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#2d1a3d,#9333ea)">🎌</span>Anime
+      </a></li>
+      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d0000,#ef4444)">🔴</span><span style="color:var(--yt)">YouTube</span>
+      </a></li>
     </ul>
 
     <div class="sb-divider"></div>
 
-    <div class="sb-section-title">🎵 Nhạc</div>
-    <ul class="sb-links">
-      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()" style="color:var(--green)">🎵 Nghe nhạc</a></li>
+    <div class="sb-section-title">🎵 NHẠC</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#0f2a1a,#16a34a)">🎵</span><span style="color:${p==='nhac'?'var(--green)':''}">Nghe nhạc</span>
+      </a></li>
     </ul>
 
     <div class="sb-divider"></div>
 
-    <ul class="sb-links">
-      <li><a onclick="go('watchlist');closeSidebar()">❤️ Yêu thích</a></li>
+    <div class="sb-section-title">TÀI KHOẢN</div>
+    <ul class="sb-icon-links">
+      <li><a onclick="go('watchlist');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d0a0a,#dc2626)">❤️</span>Yêu thích
+      </a></li>
+      <li><a onclick="go('search',{q:''});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a1a3d,#4f46e5)">🔍</span>Tìm kiếm
+      </a></li>
     </ul>
   </div>`;
 }

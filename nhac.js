@@ -70,13 +70,15 @@ function pgNhac(){
   const app = document.getElementById('app');
   app.innerHTML = renderNav() + `
   <div class="music-page" id="zmp">
+    <div class="zmp-bg" id="zbg"></div>
+
     <div class="zmp-layout">
 
       <!-- ── LEFT: Search + Tracklist ── -->
       <div class="zmp-left">
         <div class="zmp-search">
           <div class="zmp-search-box">
-            <span class="zmp-search-icon">🔍</span>
+            <span style="font-size:14px;color:rgba(255,255,255,.3)">🔍</span>
             <input class="zmp-search-inp" id="zs-inp" type="text"
               placeholder="Tìm bài hát, nghệ sĩ..."
               autocomplete="off"
@@ -89,43 +91,55 @@ function pgNhac(){
             `<button class="zmp-tag" onclick="zQuick('${t.replace(/['"]/g,'')}')">${t}</button>`
           ).join('')}
         </div>
+        <div class="zmp-list-tabs">
+          <div class="zmp-list-tab on" id="ztab-all" onclick="zSwitchListTab('all')">Kết quả</div>
+          <div class="zmp-list-tab" id="ztab-liked" onclick="zSwitchListTab('liked')">❤️ Đã thích</div>
+        </div>
         <div id="ztracklist" class="zmp-tracklist">
           <div class="zmp-list-empty">
-            <div style="font-size:32px;margin-bottom:10px">🎵</div>
+            <div style="font-size:36px;opacity:.4">🎵</div>
             <div>Tìm bài hát để bắt đầu</div>
-            <div style="margin-top:6px;font-size:10px;color:#333">Powered by SoundCloud</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:4px">Powered by SoundCloud</div>
           </div>
         </div>
       </div>
 
       <!-- ── CENTER: Player ── -->
       <div class="zmp-center" id="zmp-center">
-        <div class="zmp-blur-bg" id="zbg"></div>
-        <div id="zmp-player-inner" class="zmp-center-inner" style="display:none">
-          <!-- Vinyl -->
-          <div class="zmp-vinyl-wrap" id="zvwrap">
-            <div class="zmp-vinyl" id="zvdisc">
-              <div class="zv-art" id="zv-art"></div>
-              <div class="zv-grooves"></div>
-              <div class="zv-gloss"></div>
-              <div class="zv-center"></div>
-            </div>
-            <div class="zmp-needle" id="zneedle">
-              <div class="needle-pivot"></div>
-              <div class="needle-arm"><div class="needle-head"></div></div>
+        <!-- Loading overlay -->
+        <div class="zmp-loading-ov" id="zload-ov" style="display:none">
+          <div class="zmp-load-ring"></div>
+          <div>Đang tải nhạc...</div>
+        </div>
+
+        <!-- Idle state -->
+        <div id="zmp-idle" class="zmp-idle">
+          <div class="zmp-idle-icon">🎵</div>
+          <div>Chọn bài hát để phát nhạc</div>
+          <div style="font-size:10px;opacity:.5;margin-top:4px">Tìm trên SoundCloud</div>
+        </div>
+
+        <!-- Player (hidden until track loads) -->
+        <div id="zmp-player-inner" style="display:none;flex-direction:column;align-items:center;width:100%">
+          <!-- Album art -->
+          <div class="zmp-art-wrap">
+            <div class="zmp-art-disc" id="zart-disc">
+              <img id="zart-img" src="" alt="">
             </div>
           </div>
-          <!-- Info -->
-          <div class="zmp-track-meta">
+
+          <!-- Song meta -->
+          <div class="zmp-song-meta">
             <div class="zmp-song-title" id="zsong-title">–</div>
             <div class="zmp-song-artist" id="zsong-artist">–</div>
-            <div class="zmp-song-stats">
-              <span class="zmp-stat" id="zstats"></span>
+            <div class="zmp-song-actions">
               <button class="zmp-like-btn" id="zlike-btn" onclick="zToggleLike()">🤍 Thích</button>
+              <span class="zmp-stat-badge" id="zstats"></span>
             </div>
           </div>
+
           <!-- Progress -->
-          <div class="zmp-prog-wrap">
+          <div class="zmp-prog">
             <div class="zmp-prog-bar" id="zpb" onclick="zSeek(event)">
               <div class="zmp-prog-fill" id="zpf" style="width:0%"></div>
             </div>
@@ -134,6 +148,7 @@ function pgNhac(){
               <span id="zpt-dur">0:00</span>
             </div>
           </div>
+
           <!-- Controls -->
           <div class="zmp-controls">
             <button class="zctl" id="zshuffle-btn" onclick="zToggleShuffle()" title="Shuffle">⇄</button>
@@ -142,32 +157,17 @@ function pgNhac(){
             <button class="zctl" onclick="zNext()" title="Tiếp">⏭</button>
             <button class="zctl" id="zloop-btn" onclick="zToggleLoop()" title="Lặp">🔁</button>
           </div>
+
           <!-- Volume -->
-          <div class="zmp-vol-wrap">
+          <div class="zmp-vol">
             <span class="zvol-icon" onclick="zMute()">🔊</span>
             <input type="range" class="zvol-sl" id="zvol" min="0" max="1" step="0.02"
               value="${ZMP.volume}" oninput="zSetVol(this.value)">
           </div>
         </div>
-        <!-- Idle -->
-        <div class="zmp-idle" id="zmp-idle">
-          <div class="zmp-idle-rings">
-            <div class="zmp-idle-ring zir1"></div>
-            <div class="zmp-idle-ring zir2"></div>
-            <div class="zmp-idle-ring zir3"></div>
-            <div class="zmp-idle-ring zir4"></div>
-            <div class="zmp-idle-icon">🎵</div>
-          </div>
-          <div class="zmp-idle-text">Chọn bài hát để phát nhạc<br><span style="font-size:10px;color:#333">Tìm trên SoundCloud</span></div>
-        </div>
-        <!-- Loading overlay -->
-        <div class="zmp-loading-overlay" id="zload-ov" style="display:none">
-          <div class="zmp-load-spin"></div>
-          <div>Đang tải nhạc...</div>
-        </div>
       </div>
 
-      <!-- ── RIGHT: Queue/Lyrics ── -->
+      <!-- ── RIGHT: Queue ── -->
       <div class="zmp-right">
         <div class="zmp-right-tabs">
           <div class="zrt on" id="ztab-queue" onclick="zSwitchTab('queue')">Danh sách</div>
@@ -176,14 +176,40 @@ function pgNhac(){
         <div id="zqueue" class="zmp-queue-list"></div>
         <div id="zlyrics" class="zmp-lyrics-wrap" style="display:none">
           <div class="zmp-lyrics-empty">
-            <div style="font-size:24px;margin-bottom:8px">🎤</div>
+            <div style="font-size:32px;margin-bottom:10px">🎤</div>
             Tính năng lời nhạc đang phát triển
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── BOTTOM BAR ── -->
+    <!-- Mobile search overlay -->
+    <div class="zmp-mobile-search" id="zmobile-search">
+      <div class="zmp-mobile-search-box">
+        <button class="zmp-mobile-back" onclick="zCloseMobileSearch()">←</button>
+        <input class="zmp-mobile-search-inp" id="zs-inp-mobile" type="text"
+          placeholder="Tìm bài hát, nghệ sĩ..."
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter') zSearchMobile()"/>
+        <button class="zmp-search-btn" onclick="zSearchMobile()">Tìm</button>
+      </div>
+      <div class="zmp-mobile-tags">
+        ${['🇻🇳 Nhạc Việt','🎤 V-Pop','🎧 Rap Việt','🎶 Bolero','🌙 Lo-Fi','⚡ EDM'].map(t=>
+          `<button class="zmp-tag" onclick="zQuickMobile('${t.replace(/['"]/g,'')}')">${t}</button>`
+        ).join('')}
+      </div>
+      <div id="zmobile-tracklist" class="zmp-mobile-tracklist">
+        <div class="zmp-list-empty">
+          <div style="font-size:32px;opacity:.4">🎵</div>
+          <div>Tìm bài hát để bắt đầu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB search (mobile) -->
+    <button class="zmp-fab" onclick="zOpenMobileSearch()" title="Tìm nhạc">🔍</button>
+
+    <!-- Bottom mini player -->
     <div class="zmp-bottom" id="zbottom" style="display:none">
       <div class="zbt-art"><img id="zbt-art" src="" alt=""></div>
       <div class="zbt-info">
@@ -217,6 +243,7 @@ function pgNhac(){
   zRenderQueue();
 }
 
+
 // ── Search ────────────────────────────────────────────────
 window.zSearch = async function(){
   const q = document.getElementById('zs-inp')?.value?.trim();
@@ -228,14 +255,70 @@ window.zSearch = async function(){
     const tracks = await zcSearch(q);
     ZMP.results = tracks;
     ZMP.queue = [...tracks];
+    document.getElementById('ztab-all')?.classList.add('on');
+    document.getElementById('ztab-liked')?.classList.remove('on');
     if(!tracks.length){
-      tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:28px">😔</div><div>Không tìm thấy kết quả</div></div>`;
+      tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">😔</div><div>Không tìm thấy kết quả cho "${q}"</div></div>`;
       return;
     }
     zRenderList(tracks);
     zRenderQueue();
   }catch(e){
-    tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:28px">⚠️</div><div>Lỗi kết nối. Thử lại sau.</div></div>`;
+    tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">⚠️</div><div style="color:#f87171">Lỗi kết nối SoundCloud</div><div style="font-size:11px;margin-top:6px;opacity:.5">Kiểm tra mạng và thử lại</div><button class="zmp-search-btn" style="margin-top:12px" onclick="zSearch()">Thử lại</button></div>`;
+  }
+};
+
+window.zSearchMobile = async function(){
+  const q = document.getElementById('zs-inp-mobile')?.value?.trim();
+  if(!q) return;
+  const tl = document.getElementById('zmobile-tracklist');
+  if(!tl) return;
+  tl.innerHTML = `<div class="zmp-list-loading"><div class="zmp-spin"></div><div>Đang tìm "${q}"…</div></div>`;
+  try{
+    const tracks = await zcSearch(q);
+    ZMP.results = tracks;
+    ZMP.queue = [...tracks];
+    if(!tracks.length){
+      tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">😔</div><div>Không tìm thấy kết quả</div></div>`;
+      return;
+    }
+    zRenderList(tracks, 'zmobile-tracklist');
+    zRenderQueue();
+    zCloseMobileSearch();
+  }catch(e){
+    tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">⚠️</div><div style="color:#f87171">Lỗi kết nối</div><button class="zmp-search-btn" style="margin-top:12px" onclick="zSearchMobile()">Thử lại</button></div>`;
+  }
+};
+
+window.zOpenMobileSearch = function(){
+  document.getElementById('zmobile-search')?.classList.add('show');
+  setTimeout(()=>document.getElementById('zs-inp-mobile')?.focus(), 100);
+};
+window.zCloseMobileSearch = function(){
+  document.getElementById('zmobile-search')?.classList.remove('show');
+};
+window.zQuickMobile = function(q){
+  const inp = document.getElementById('zs-inp-mobile');
+  if(inp) inp.value = q.replace(/^\S+\s/,'');
+  zSearchMobile();
+};
+
+window.zSwitchListTab = function(tab){
+  document.getElementById('ztab-all')?.classList.toggle('on', tab==='all');
+  document.getElementById('ztab-liked')?.classList.toggle('on', tab==='liked');
+  if(tab==='liked'){
+    const likedTracks = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
+    if(!likedTracks.length){
+      const tl = document.getElementById('ztracklist');
+      if(tl) tl.innerHTML = '<div class="zmp-list-empty"><div style="font-size:32px;opacity:.4">❤️</div><div>Chưa có bài hát yêu thích</div></div>';
+      return;
+    }
+    ZMP.results = likedTracks;
+    ZMP.queue = [...likedTracks];
+    zRenderList(likedTracks);
+    zRenderQueue();
+  } else {
+    if(ZMP.results.length) zRenderList(ZMP.results);
   }
 };
 
@@ -247,19 +330,23 @@ window.zQuick = function(q){
   zSearch();
 };
 
-function zRenderList(tracks){
-  const tl = document.getElementById('ztracklist');
+function zRenderList(tracks, containerId='ztracklist'){
+  const tl = document.getElementById(containerId);
   if(!tl) return;
-  tl.innerHTML = `<div class="zmp-list-head">KẾT QUẢ (${tracks.length})</div>` +
+  if(!tracks.length){
+    tl.innerHTML='<div class="zmp-list-empty"><div style="font-size:32px;opacity:.4">😔</div><div>Không tìm thấy kết quả</div></div>';
+    return;
+  }
+  tl.innerHTML = `<div class="zmp-list-head">KẾT QUẢ · ${tracks.length} bài</div>` +
     tracks.map((t,i)=>`
-    <div class="zmp-track ${ZMP.curIdx===i?'zactive':''}" id="zt-${t.id}" onclick="zPlay(${i})">
-      <div class="zmp-track-idx">
-        <span class="zmp-track-idx-num">${i+1}</span>
-        <div class="zmp-playing-anim"><div class="zpa-bar"></div><div class="zpa-bar"></div><div class="zpa-bar"></div></div>
+    <div class="zmp-track ${ZMP.curIdx===i&&ZMP.results===tracks?'zactive':''}" id="zt-${t.id}" onclick="zPlay(${i})">
+      <div class="zmp-track-num">
+        <span class="zmp-track-num-val">${i+1}</span>
+        <div class="zmp-bars"><span></span><span></span><span></span></div>
       </div>
-      <div class="zmp-track-art">
+      <div class="zmp-track-thumb">
         <img src="${t.art||''}" alt="" onerror="this.style.display='none'">
-        <div class="zmp-track-art-ov">▶</div>
+        <div class="zmp-track-thumb-ov">▶</div>
       </div>
       <div class="zmp-track-info">
         <div class="zmp-track-name">${esc(t.title)}</div>
@@ -307,13 +394,13 @@ function zShowPlayer(track, load){
   if(idle) idle.style.display = 'none';
   if(bottom) bottom.style.display = 'flex';
 
-  // Blur BG
+  // BG blur from art
   const bg = document.getElementById('zbg');
-  if(bg && track.art){ bg.style.backgroundImage=`url('${track.art}')`; bg.classList.add('loaded'); }
+  if(bg && track.art) bg.style.backgroundImage = `url('${track.art}')`;
 
-  // Vinyl art
-  const art = document.getElementById('zv-art');
-  if(art) art.style.backgroundImage = `url('${track.art||''}')`;
+  // Album art image
+  const artImg = document.getElementById('zart-img');
+  if(artImg) artImg.src = track.art || '';
 
   // Info
   const tEl = document.getElementById('zsong-title'); if(tEl) tEl.textContent = track.title;
@@ -338,8 +425,6 @@ function zShowPlayer(track, load){
 
 async function zLoadPlay(track){
   const ov = document.getElementById('zload-ov');
-  const disc = document.getElementById('zvdisc');
-  const wrap = document.getElementById('zvwrap');
 
   if(ov) ov.style.display = 'flex';
   if(disc){ disc.classList.remove('vspin','vpause'); }
@@ -355,12 +440,13 @@ async function zLoadPlay(track){
     audio.loop = ZMP.loop;
     ZMP.audio = audio;
 
+    const disc = document.getElementById('zart-disc');
+
     audio.addEventListener('timeupdate', zOnTime);
     audio.addEventListener('ended', zOnEnded);
     audio.addEventListener('canplay', ()=>{
       if(ov) ov.style.display='none';
-      if(disc) disc.classList.add('vspin');
-      if(wrap) wrap.classList.add('playing');
+      if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
     });
     audio.addEventListener('waiting', ()=>{ if(ov) ov.style.display='flex'; });
 
@@ -369,10 +455,17 @@ async function zLoadPlay(track){
 
     const pb = document.getElementById('zplay-btn'); if(pb) pb.textContent='⏸';
     const pbt = document.getElementById('zbt-play'); if(pbt) pbt.textContent='⏸';
-    document.getElementById('zbt-art')?.classList.add('spinning');
+    const btArt = document.getElementById('zbt-art'); if(btArt) btArt.classList.add('spinning');
   }catch(e){
-    if(ov){ ov.innerHTML = `<div style="color:#ff6b6b;font-size:12px">❌ Không thể phát bài này</div>`; }
-    setTimeout(()=>{ if(ov){ ov.style.display='none'; ov.innerHTML='<div class="zmp-load-spin"></div><div>Đang tải nhạc...</div>'; } }, 2000);
+    if(ov){
+      ov.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center">❌ Không thể kết nối SoundCloud<br><span style="font-size:11px;opacity:.6">Thử lại hoặc chọn bài khác</span></div>';
+    }
+    setTimeout(()=>{
+      if(ov){
+        ov.style.display='none';
+        ov.innerHTML='<div class="zmp-load-ring"></div><div>Đang tải nhạc...</div>';
+      }
+    }, 3000);
   }
 }
 
@@ -402,21 +495,19 @@ function zOnEnded(){
 window.zTogglePlay = function(){
   const a = ZMP.audio;
   if(!a) return;
-  const disc = document.getElementById('zvdisc');
-  const wrap = document.getElementById('zvwrap');
   if(a.paused){
     a.play(); ZMP.playing=true;
     document.getElementById('zplay-btn').textContent='⏸';
     document.getElementById('zbt-play').textContent='⏸';
-    if(disc){ disc.classList.remove('vpause'); disc.classList.add('vspin'); }
-    if(wrap) wrap.classList.add('playing');
+    const disc2 = document.getElementById('zart-disc');
+    if(disc2){ disc2.classList.add('spinning'); disc2.classList.remove('paused'); }
   } else {
     a.pause(); ZMP.playing=false;
     document.getElementById('zplay-btn').textContent='▶';
     document.getElementById('zbt-play').textContent='▶';
     document.getElementById('zbt-art')?.classList.remove('spinning');
-    if(disc){ disc.classList.add('vpause'); }
-    if(wrap) wrap.classList.remove('playing');
+    const disc2 = document.getElementById('zart-disc');
+    if(disc2){ disc2.classList.remove('spinning'); disc2.classList.add('paused'); }
   }
 };
 
