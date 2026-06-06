@@ -23,7 +23,7 @@ let _serverOk = null;
 async function checkServer() {
   if (_serverOk !== null) return _serverOk;
   try {
-    const r = await fetch(`${MUSIC_SERVER}/ping`, { signal: AbortSignal.timeout(3000) });
+    const r = await fetch(`${MUSIC_SERVER}/ping`, { signal: AbortSignal.timeout(8000) });
     _serverOk = r.ok;
   } catch { _serverOk = false; }
   setTimeout(() => { _serverOk = null; }, 60000);
