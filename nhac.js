@@ -473,7 +473,16 @@ window.zSeekBar = function(e){
 window.zToggleLike = function(){
   const t = ZMP.results[ZMP.curIdx]; if(!t) return;
   const k = String(t.id);
-  if(ZMP.liked.has(k)) ZMP.liked.delete(k); else ZMP.liked.add(k);
+  if(ZMP.liked.has(k)){
+    ZMP.liked.delete(k);
+    const likedTracks = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
+    localStorage.setItem('zmp_liked_tracks', JSON.stringify(likedTracks.filter(x=>String(x.id)!==k)));
+  } else {
+    ZMP.liked.add(k);
+    const likedTracks = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
+    if(!likedTracks.find(x=>String(x.id)===k)) likedTracks.unshift(t);
+    localStorage.setItem('zmp_liked_tracks', JSON.stringify(likedTracks));
+  }
   localStorage.setItem('zmp_liked', JSON.stringify([...ZMP.liked]));
   const lb = document.getElementById('zlike-btn');
   const liked = ZMP.liked.has(k);

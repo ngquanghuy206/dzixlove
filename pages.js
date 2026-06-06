@@ -692,21 +692,41 @@ function pgWatchlist(){
       <div class="c-info"><div class="c-title">${t}</div><div class="c-sub">${y} ${srcTag(m)}</div></div>
     </div>`;
   }
+  // Load liked music tracks
+  const likedMusic = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
+  function mCard(t){
+    const title=esc(t.title||'?'), artist=esc(t.artist||''), art=t.art||'';
+    return `<div class="wl-music-card" onclick="go('nhac')">
+      <div class="wlm-art">
+        <img src="${art}" alt="" onerror="this.style.display='none'">
+        <div class="wlm-art-ov">🎵</div>
+      </div>
+      <div class="wlm-info">
+        <div class="wlm-title">${title}</div>
+        <div class="wlm-artist">${artist}</div>
+      </div>
+      <div class="wlm-dur">${t.dur?Math.floor(t.dur/60)+':'+(t.dur%60).toString().padStart(2,'0'):''}</div>
+    </div>`;
+  }
   app.innerHTML=renderNav()+`<div class="wl-page page">
     <h1>Thư viện của tôi</h1>
-    <p style="font-size:13px;color:var(--mu)">Phim yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 YouTube</p>
+    <p style="font-size:13px;color:var(--mu)">Phim yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 YouTube · 🎵 Nhạc</p>
     <div class="wl-tabs">
-      <button class="wl-tab on" id="wt1" onclick="swWL('wl')">❤️ Yêu thích (${S.wl.length})</button>
+      <button class="wl-tab on" id="wt1" onclick="swWL('wl')">❤️ Phim (${S.wl.length})</button>
       <button class="wl-tab" id="wt2" onclick="swWL('hi')">🕑 Lịch sử (${S.hist.length})</button>
+      <button class="wl-tab" id="wt3" onclick="swWL('mu')">🎵 Nhạc (${likedMusic.length})</button>
     </div>
     <div id="wtc1">${S.wl.length?`<div class="grid">${S.wl.map(wCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🎬</div><h3>Chưa có yêu thích</h3><p>Bấm ❤️ để lưu phim.</p><button class="btn btn-red" onclick="go('home')" style="margin-top:13px">Khám phá</button></div>`}</div>
     <div id="wtc2" style="display:none">${S.hist.length?`<div class="grid">${S.hist.map(wCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🕑</div><h3>Chưa có lịch sử</h3><p>Xem phim để xuất hiện ở đây.</p></div>`}</div>
+    <div id="wtc3" style="display:none">${likedMusic.length?`<div class="wl-music-list">${likedMusic.map(mCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🎵</div><h3>Chưa có nhạc yêu thích</h3><p>Bấm ❤️ khi nghe nhạc để lưu vào đây.</p><button class="btn btn-red" onclick="go('nhac')" style="margin-top:13px">Nghe nhạc</button></div>`}</div>
   </div>`;
   window.swWL=t=>{
     document.getElementById('wtc1').style.display=t==='wl'?'':'none';
     document.getElementById('wtc2').style.display=t==='hi'?'':'none';
+    document.getElementById('wtc3').style.display=t==='mu'?'':'none';
     document.getElementById('wt1').className='wl-tab'+(t==='wl'?' on':'');
     document.getElementById('wt2').className='wl-tab'+(t==='hi'?' on':'');
+    document.getElementById('wt3').className='wl-tab'+(t==='mu'?' on':'');
   };
   setupNavScroll();
 }

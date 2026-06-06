@@ -108,6 +108,9 @@ function renderNav(){
   const p = S.page;
   const isOn = (pg, cat) => (p===pg && (!cat||S.cat===cat)) ? 'on' : '';
   return `<div id="nav">
+    <button class="hamburger" id="ham-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="logo" onclick="go('home')">DZI<b> MUSIC & MOVIE</b></div>
     <ul class="nav-links">
       <li><a class="${isOn('home')}" onclick="go('home')">Trang chủ</a></li>
@@ -133,10 +136,55 @@ function renderNav(){
         </div>
         <div id="drop"></div>
       </div>
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;color:#fff;flex-shrink:0" onclick="go('watchlist')">
-        ${S.wl.length||'👤'}
-      </div>
     </div>
+  </div>
+
+  <!-- MOBILE SIDEBAR OVERLAY -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">DZI<b> MUSIC & MOVIE</b></div>
+      <button class="sb-close" onclick="closeSidebar()">✕</button>
+    </div>
+
+    <!-- MODE SWITCHER: NHẠC / PHIM -->
+    <div class="sb-mode">
+      <button class="sb-mode-btn ${p==='nhac'?'active':''}" onclick="go('nhac');closeSidebar()">
+        <span class="sbm-icon">🎵</span>
+        <span class="sbm-label">Nghe Nhạc</span>
+      </button>
+      <button class="sb-mode-btn ${p!=='nhac'?'active':''}" onclick="go('home');closeSidebar()">
+        <span class="sbm-icon">🎬</span>
+        <span class="sbm-label">Xem Phim</span>
+      </button>
+    </div>
+
+    <div class="sb-divider"></div>
+
+    <!-- PHIM LINKS -->
+    <div class="sb-section-title">📽 Phim</div>
+    <ul class="sb-links">
+      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">🏠 Trang chủ</a></li>
+      <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'});closeSidebar()">🔥 Phim mới</a></li>
+      <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'});closeSidebar()">🎥 Phim lẻ</a></li>
+      <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'});closeSidebar()">📺 Phim bộ</a></li>
+      <li><a class="${p==='lt'?'on':''}" onclick="go('lt');closeSidebar()" style="color:var(--gold)">🔊 Lồng tiếng</a></li>
+      <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'});closeSidebar()">🎌 Anime</a></li>
+      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'});closeSidebar()" style="color:var(--yt)">🔴 YouTube</a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <div class="sb-section-title">🎵 Nhạc</div>
+    <ul class="sb-links">
+      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()" style="color:var(--green)">🎵 Nghe nhạc</a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <ul class="sb-links">
+      <li><a onclick="go('watchlist');closeSidebar()">❤️ Yêu thích</a></li>
+    </ul>
   </div>`;
 }
 
@@ -253,3 +301,26 @@ window.navInput = async function(q){
 
 window.closeNav=()=>{ const d=document.getElementById('drop'); if(d){d.className='';d.innerHTML='';} };
 document.addEventListener('click',e=>{ const sw=document.getElementById('sw'); if(sw&&!sw.contains(e.target)) closeNav(); });
+
+// ═══════════════════════════════════════
+//  SIDEBAR TOGGLE
+// ═══════════════════════════════════════
+window.toggleSidebar = function(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const btn = document.getElementById('ham-btn');
+  if(!sb) return;
+  const open = sb.classList.toggle('open');
+  if(ov) ov.classList.toggle('show', open);
+  if(btn) btn.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+};
+window.closeSidebar = function(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const btn = document.getElementById('ham-btn');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('show');
+  if(btn) btn.classList.remove('open');
+  document.body.style.overflow = '';
+};
