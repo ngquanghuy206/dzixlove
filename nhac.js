@@ -237,22 +237,24 @@ window.zSearch = async function(){
 
 // Mobile: switch between search view and player view
 window.zMobileShowPlayer = function(){
+  if(window.innerWidth > 750) return;
   const left = document.getElementById('zmp')?.querySelector('.zmp-left');
   const center = document.getElementById('zmp-center');
   const backBtn = document.getElementById('zmp-back-btn');
-  if(window.innerWidth > 750) return;
-  if(left) left.style.display = 'none';
-  if(center) center.style.display = 'flex';
+  if(left){ left.classList.add('mobile-hide'); left.classList.remove('mobile-show'); }
+  if(center){ center.classList.add('mobile-show'); center.classList.remove('mobile-hide'); }
   if(backBtn) backBtn.style.display = 'flex';
 };
 window.zMobileBackToSearch = function(){
+  if(window.innerWidth > 750) return;
   const left = document.getElementById('zmp')?.querySelector('.zmp-left');
   const center = document.getElementById('zmp-center');
   const backBtn = document.getElementById('zmp-back-btn');
-  if(window.innerWidth > 750) return;
-  if(left) left.style.display = '';
-  if(center) center.style.display = 'none';
+  if(left){ left.classList.remove('mobile-hide'); }
+  if(center){ center.classList.remove('mobile-show'); }
   if(backBtn) backBtn.style.display = 'none';
+  // Scroll to top of search
+  left?.scrollTo(0,0);
 };
 
 window.zSwitchListTab = function(tab){

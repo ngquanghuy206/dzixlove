@@ -946,11 +946,16 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 
 /* ══ Mobile: search view by default, player hidden until track plays ══ */
 @media(max-width:750px){
-  .zmp-left { display: block; }
-  .zmp-center { display: none; padding: 16px 16px 12px; }
-  .zmp-bottom { display: flex; }
+  /* Default: show search, hide player */
+  .zmp-left { display: flex !important; }
+  .zmp-center { display: none !important; padding: 16px 16px 12px; }
   .zmp-art-wrap { width: 200px; height: 200px; margin-bottom: 18px; }
   .zmp-song-title { font-size: 16px; }
+}
+/* When JS switches to player view on mobile */
+@media(max-width:750px){
+  .zmp-center.mobile-show { display: flex !important; }
+  .zmp-left.mobile-hide { display: none !important; }
 }
 
 /* ── Mobile back button (top-left, shown when player is active) ── */
@@ -987,8 +992,8 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 
 /* Khi mini player hiện, đẩy content lên */
 body.has-player { padding-bottom: 72px; }
-#persistent .zmp-bottom { display: none; }
-#persistent .zmp-bottom.active { display: flex; }
+#persistent .zmp-bottom { display: none !important; }
+#persistent .zmp-bottom.active { display: flex !important; }
 
 /* ═══════════════════════════════
    TRANG CHỦ GIỚI THIỆU
