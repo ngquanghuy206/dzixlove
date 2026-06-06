@@ -16,23 +16,37 @@ const ZMP = {
   liked: new Set(JSON.parse(localStorage.getItem('zmp_liked')||'[]')),
 };
 
-// Multiple CORS proxies with fallback
+// ─── Local server config ────────────────────────────────
+const LOCAL_SERVER = 'http://prem-eu5.bot-hosting.cloud:20427';
+let _serverOnline = null; // null=chưa check, true/false
+
+async function checkServer() {
+  if (_serverOnline !== null) return _serverOnline;
+  try {
+    const r = await fetch(`${LOCAL_SERVER}/ping`, { signal: AbortSignal.timeout(1500) });
+    _serverOnline = r.ok;
+  } catch {
+    _serverOnline = false;
+  }
+  // Re-check mỗi 30s
+  setTimeout(() => { _serverOnline = null; }, 30000);
+  return _serverOnline;
+}
+
+// Fallback CORS proxies khi không có server
 const CORS_PROXIES = [
   url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://cors-anywhere.herokuapp.com/${url}`,
 ];
 
-async function corsGet(url, asJson=true) {
+async function corsGet(url, asJson = true) {
   let lastErr;
   for (const proxy of CORS_PROXIES) {
     try {
-      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(8000) });
+      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(9000) });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return asJson ? r.json() : r.text();
-    } catch(e) {
-      lastErr = e;
-    }
+    } catch(e) { lastErr = e; }
   }
   throw lastErr || new Error('All CORS proxies failed');
 }
@@ -57,6 +71,15 @@ async function zcGetId(){
 }
 
 async function zcSearch(q){
+  const online = await checkServer();
+  if(online){
+    // Dùng local server — nhanh, không cần CORS proxy
+    const r = await fetch(`${LOCAL_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(15000) });
+    if(!r.ok) throw new Error('Server error ' + r.status);
+    const d = await r.json();
+    return d.tracks || [];
+  }
+  // Fallback: gọi SoundCloud API qua CORS proxy
   const cid = await zcGetId();
   const url = `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(q)}&client_id=${cid}&limit=20&offset=0`;
   const d = await corsGet(url);
@@ -73,6 +96,15 @@ async function zcSearch(q){
 }
 
 async function zcStream(track){
+  const online = await checkServer();
+  if(online){
+    // Dùng local server
+    const r = await fetch(`${LOCAL_SERVER}/stream?url=${encodeURIComponent(track.url)}`, { signal: AbortSignal.timeout(15000) });
+    if(!r.ok) throw new Error('Stream error ' + r.status);
+    const d = await r.json();
+    return d.url;
+  }
+  // Fallback: CORS proxy
   const cid = await zcGetId();
   const resolve = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(track.url)}&client_id=${cid}`;
   const d = await corsGet(resolve);
@@ -255,6 +287,18 @@ function pgNhac(){
   </div>`;
 
   setupNavScroll();
+
+  // Check server và hiện badge
+  checkServer().then(online => {
+    const tl = document.getElementById('ztracklist');
+    if(!tl) return;
+    const badge = document.createElement('div');
+    badge.style.cssText = 'text-align:center;padding:8px 0 4px;font-size:11px;opacity:.6';
+    badge.innerHTML = online
+      ? '🟢 Server cục bộ đang chạy — tìm nhạc siêu nhanh!'
+      : '🌐 Dùng CORS proxy (chậm hơn) — chạy <code>python server.py</code> để tăng tốc';
+    tl.prepend(badge);
+  });
 
   // Restore state
   if(ZMP.results.length) zRenderList(ZMP.results);
