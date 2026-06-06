@@ -263,13 +263,13 @@ window.zSearch = async function(){
     zRenderList(tracks);
     zRenderQueue();
   }catch(e){
-    const isOffline = e.message === 'SERVER_OFFLINE' || e.message?.includes('fetch');
     tl.innerHTML = `<div class="zmp-list-empty">
-      <div style="font-size:32px;opacity:.5">${isOffline?'🔌':'⚠️'}</div>
-      <div style="color:#f87171">${isOffline?'Server chưa chạy':'Lỗi kết nối'}</div>
-      <div style="font-size:11px;margin-top:6px;opacity:.5">${isOffline?'Khởi động server.py trên bot hosting':'Thử lại sau'}</div>
+      <div style="font-size:32px;opacity:.5">⚠️</div>
+      <div style="color:#f87171">Lỗi kết nối server</div>
+      <div style="font-size:11px;margin-top:6px;opacity:.5">${e.message||'Thử lại sau'}</div>
       <button class="zmp-search-btn" style="margin-top:12px" onclick="zSearch()">Thử lại</button>
     </div>`;
+    console.error('[zSearch]', e);
   }
 };
 
@@ -432,7 +432,8 @@ async function zLoadPlay(track){
   const ov = document.getElementById('zload-ov');
 
   if(ov) ov.style.display = 'flex';
-  if(disc){ disc.classList.remove('vspin','vpause'); }
+  const disc = document.getElementById('zart-disc');
+  if(disc){ disc.classList.remove('spinning','paused'); }
 
   // Stop old audio
   if(ZMP.audio){ ZMP.audio.pause(); ZMP.audio.src=''; ZMP.audio=null; }
@@ -444,8 +445,6 @@ async function zLoadPlay(track){
     audio.volume = ZMP.volume;
     audio.loop = ZMP.loop;
     ZMP.audio = audio;
-
-    const disc = document.getElementById('zart-disc');
 
     audio.addEventListener('timeupdate', zOnTime);
     audio.addEventListener('ended', zOnEnded);
