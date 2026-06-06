@@ -1,7 +1,136 @@
 // ═══════════════════════════════════════
-//  HOME PAGE
+//  HOME PAGE — GIỚI THIỆU
 // ═══════════════════════════════════════
-async function pgHome(){
+function pgHome(){
+  const app=document.getElementById('app');
+  app.innerHTML = renderNav() + `
+  <div class="page" id="hp-intro">
+
+    <!-- HERO INTRO -->
+    <div class="intro-hero">
+      <div class="intro-hero-bg"></div>
+      <div class="intro-hero-content">
+        <div class="intro-avatar-wrap">
+          <div class="intro-avatar-ring"></div>
+          <div class="intro-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="64" height="64"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+        </div>
+        <div class="intro-tag-line">
+          <span class="intro-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Hà Đông · Hà Nội
+          </span>
+          <span class="intro-badge intro-badge-green">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 3a7 7 0 1 1 0 14A7 7 0 0 1 12 5zm0 2.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zm0 2a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"/></svg>
+            Sinh năm 2006
+          </span>
+        </div>
+        <h1 class="intro-name">Nguyễn Hoàng Khánh Nam</h1>
+        <div class="intro-alias">
+          <span class="intro-dzi">DZI</span>
+        </div>
+        <p class="intro-desc">
+          Chào mừng bạn đến với <strong>DZI MUSIC &amp; MOVIE</strong> — nền tảng nghe nhạc &amp; xem phim hoàn toàn <em>miễn phí</em>, được xây dựng bởi một người đam mê âm nhạc và điện ảnh từ Hà Đông, Hà Nội.
+        </p>
+        <div class="intro-cta-row">
+          <button class="btn btn-red intro-cta" onclick="go('phim')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Xem Phim
+          </button>
+          <button class="btn intro-cta" style="background:linear-gradient(135deg,#064e3b,#059669)" onclick="go('nhac')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            Nghe Nhạc
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT SECTION -->
+    <div class="intro-about-grid">
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </div>
+        <h3>Xem Phim</h3>
+        <p>Phim Việt, phim bộ, phim lẻ, lồng tiếng, thuyết minh. Anime mới nhất. YouTube không quảng cáo. Tất cả miễn phí.</p>
+        <button class="btn btn-ghost intro-card-btn" onclick="go('phim')">Khám phá →</button>
+      </div>
+
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#064e3b,#10b981)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>DZI x MUSIC</h3>
+        <p>Nghe nhạc trực tiếp từ SoundCloud. V-Pop, Rap Việt, Bolero, Lo-Fi, EDM, K-Pop. Playlist cá nhân, yêu thích &amp; tìm kiếm.</p>
+        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--green);color:var(--green)" onclick="go('nhac')">Nghe ngay →</button>
+      </div>
+
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Miễn Phí 100%</h3>
+        <p>Không đăng ký, không tài khoản, không quảng cáo phiền hà. Truy cập trực tiếp, xem &amp; nghe không giới hạn.</p>
+        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--blue);color:var(--blue)" onclick="go('nhac')">Bắt đầu →</button>
+      </div>
+    </div>
+
+    <!-- SOUNDCLOUD FEATURED — DZI x MUSIC -->
+    <section class="intro-sc-section">
+      <div class="intro-sc-header">
+        <div class="intro-sc-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          DZI x MUSIC
+        </div>
+        <span class="intro-sc-sub">Nghe nhạc từ SoundCloud</span>
+      </div>
+      <div class="intro-sc-embed">
+        <iframe
+          width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+          src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2108099826&color=%2310b981&auto_play=false&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
+        </iframe>
+      </div>
+      <button class="btn intro-sc-more" onclick="go('nhac')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Khám phá thêm nhạc →
+      </button>
+    </section>
+
+    <!-- STATS ROW -->
+    <div class="intro-stats">
+      <div class="intro-stat">
+        <div class="intro-stat-num">∞</div>
+        <div class="intro-stat-label">Phim miễn phí</div>
+      </div>
+      <div class="intro-stat">
+        <div class="intro-stat-num">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="intro-stat-label">DZI x MUSIC</div>
+      </div>
+      <div class="intro-stat">
+        <div class="intro-stat-num">0đ</div>
+        <div class="intro-stat-label">Chi phí</div>
+      </div>
+      <div class="intro-stat">
+        <div class="intro-stat-num">24/7</div>
+        <div class="intro-stat-label">Hoạt động</div>
+      </div>
+    </div>
+
+    ${renderFooter()}
+  </div>`;
+  setupNavScroll();
+}
+
+// ═══════════════════════════════════════
+//  PHIM PAGE — TRANG XEM PHIM (cũ là home)
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+//  PHIM PAGE (catalog)
+// ═══════════════════════════════════════
+async function pgPhim(){
   const app=document.getElementById('app');
   app.innerHTML = renderNav() + `<div class="page" id="hp">
     <div class="hero" style="display:flex;align-items:center;justify-content:center;background:var(--s1)">
@@ -28,7 +157,7 @@ async function pgHome(){
     try{ ytV = await ytSearch('phim chiếu rạp 2024 hay nhất',1); }catch(e){ ytV=[]; }
   }catch(e){
     const hp2=document.getElementById('hp');
-    if(hp2) hp2.innerHTML=`<div style="padding:160px 0;text-align:center"><div style="font-size:36px">😞</div><div style="font-size:14px;color:var(--mu);margin-top:11px">Lỗi kết nối API. Kiểm tra mạng.</div><button class="btn btn-red" onclick="pgHome()" style="margin-top:14px">Thử lại</button></div>`+renderFooter();
+    if(hp2) hp2.innerHTML=`<div style="padding:160px 0;text-align:center"><div style="font-size:36px">😞</div><div style="font-size:14px;color:var(--mu);margin-top:11px">Lỗi kết nối API. Kiểm tra mạng.</div><button class="btn btn-red" onclick="pgPhim()" style="margin-top:14px">Thử lại</button></div>`+renderFooter();
     return;
   }
 

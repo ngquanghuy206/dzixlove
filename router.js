@@ -5,6 +5,7 @@ function render(){
   clearInterval(window._ht);
   switch(S.page){
     case 'home':      pgHome();      break;
+    case 'phim':      pgPhim();      break;
     case 'lt':        pgLT();        break;
     case 'cat':       pgCat();       break;
     case 'det-kk':    pgDetKK();     break;

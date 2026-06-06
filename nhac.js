@@ -77,7 +77,7 @@ function pgNhac(){
       <div class="zmp-left">
         <div class="zmp-search">
           <div class="zmp-search-box">
-            <span style="font-size:14px;color:rgba(255,255,255,.3)">🔍</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input class="zmp-search-inp" id="zs-inp" type="text"
               placeholder="Tìm bài hát, nghệ sĩ..."
               autocomplete="off"
@@ -92,13 +92,13 @@ function pgNhac(){
         </div>
         <div class="zmp-list-tabs">
           <div class="zmp-list-tab on" id="ztab-all" onclick="zSwitchListTab('all')">Kết quả</div>
-          <div class="zmp-list-tab" id="ztab-liked" onclick="zSwitchListTab('liked')">❤️ Đã thích</div>
+          <div class="zmp-list-tab" id="ztab-liked" onclick="zSwitchListTab('liked')"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Đã thích</div>
         </div>
         <div id="ztracklist" class="zmp-tracklist">
           <div class="zmp-list-empty">
             <div style="font-size:36px;opacity:.4">🎵</div>
             <div>Tìm bài hát để bắt đầu</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:4px">Powered by SoundCloud</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.15);margin-top:4px">DZI x MUSIC</div>
           </div>
         </div>
       </div>
@@ -113,7 +113,7 @@ function pgNhac(){
 
         <!-- Idle state -->
         <div id="zmp-idle" class="zmp-idle">
-          <div class="zmp-idle-icon">🎵</div>
+          <div class="zmp-idle-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
           <div>Chọn bài hát để phát nhạc</div>
           <div style="font-size:10px;opacity:.5;margin-top:4px">Tìm trên SoundCloud</div>
         </div>
@@ -151,15 +151,15 @@ function pgNhac(){
           <!-- Controls -->
           <div class="zmp-controls">
             <button class="zctl" id="zshuffle-btn" onclick="zToggleShuffle()" title="Shuffle">⇄</button>
-            <button class="zctl" onclick="zPrev()" title="Trước">⏮</button>
-            <button class="zctl-play" id="zplay-btn" onclick="zTogglePlay()">▶</button>
-            <button class="zctl" onclick="zNext()" title="Tiếp">⏭</button>
-            <button class="zctl" id="zloop-btn" onclick="zToggleLoop()" title="Lặp">🔁</button>
+            <button class="zctl" onclick="zPrev()" title="Trước"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+            <button class="zctl-play" id="zplay-btn" onclick="zTogglePlay()"><svg id="zplay-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+            <button class="zctl" onclick="zNext()" title="Tiếp"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="m6 18 8.5-6L6 6v12zm2-8.14 5.5 3.64L8 19.14V9.86zM16 6h2v12h-2z"/></svg></button>
+            <button class="zctl" id="zloop-btn" onclick="zToggleLoop()" title="Lặp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
           </div>
 
           <!-- Volume -->
           <div class="zmp-vol">
-            <span class="zvol-icon" onclick="zMute()">🔊</span>
+            <span class="zvol-icon" onclick="zMute()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></span>
             <input type="range" class="zvol-sl" id="zvol" min="0" max="1" step="0.02"
               value="${ZMP.volume}" oninput="zSetVol(this.value)">
           </div>
@@ -206,52 +206,23 @@ function pgNhac(){
     </div>
 
     <!-- FAB search (mobile) -->
-    <button class="zmp-fab" onclick="zOpenMobileSearch()" title="Tìm nhạc">🔍</button>
+    <button class="zmp-fab" onclick="zOpenMobileSearch()" title="Tìm nhạc"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
 
-    <!-- Bottom mini player -->
-    <div class="zmp-bottom" id="zbottom" style="display:none">
-      <div class="zbt-art"><img id="zbt-art" src="" alt=""></div>
-      <div class="zbt-info">
-        <div class="zbt-title" id="zbt-title">–</div>
-        <div class="zbt-artist" id="zbt-artist">–</div>
-      </div>
-      <div class="zbt-controls">
-        <button class="zbt-btn" onclick="zPrev()">⏮</button>
-        <button class="zbt-play" id="zbt-play" onclick="zTogglePlay()">▶</button>
-        <button class="zbt-btn" onclick="zNext()">⏭</button>
-      </div>
-      <div class="zbt-prog">
-        <div class="zbt-bar" onclick="zSeekBar(event)">
-          <div class="zbt-fill" id="zbt-fill" style="width:0%"></div>
-        </div>
-        <div class="zbt-times"><span id="zbt-cur">0:00</span><span id="zbt-dur">0:00</span></div>
-      </div>
-      <div class="zbt-vol">
-        <span class="zbt-vol-icon">🔊</span>
-        <input type="range" class="zbt-vol-sl" min="0" max="1" step="0.02"
-          value="${ZMP.volume}" oninput="zSetVol(this.value)">
-      </div>
-    </div>
   </div>`;
 
   setupNavScroll();
 
-  // Check server và hiện badge
-  checkServer().then(online => {
-    const tl = document.getElementById('ztracklist');
-    if(!tl) return;
-    const badge = document.createElement('div');
-    badge.style.cssText = 'text-align:center;padding:8px 0 4px;font-size:11px;opacity:.6';
-    badge.innerHTML = online
-      ? '🟢 Server cục bộ đang chạy — tìm nhạc siêu nhanh!'
-      : '🌐 Dùng CORS proxy (chậm hơn) — chạy <code>python server.py</code> để tăng tốc';
-    tl.prepend(badge);
-  });
-
-  // Restore state
+  // Restore state khi quay lại trang nhạc
   if(ZMP.results.length) zRenderList(ZMP.results);
   if(ZMP.curIdx >= 0 && ZMP.results[ZMP.curIdx]) zShowPlayer(ZMP.results[ZMP.curIdx], false);
   zRenderQueue();
+
+  // Sync play button với trạng thái audio hiện tại
+  if(ZMP.audio && !ZMP.audio.paused){
+    const pb = document.getElementById('zplay-btn'); if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    const disc = document.getElementById('zart-disc');
+    if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
+  }
 }
 
 
@@ -314,6 +285,11 @@ window.zOpenMobileSearch = function(){
 };
 window.zCloseMobileSearch = function(){
   document.getElementById('zmobile-search')?.classList.remove('show');
+  // Sau khi đóng overlay, scroll lên tracklist chính để thấy kết quả
+  const tl = document.getElementById('ztracklist');
+  if(tl && ZMP.results.length) {
+    setTimeout(() => tl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
 };
 window.zQuickMobile = function(q){
   const inp = document.getElementById('zs-inp-mobile');
@@ -364,7 +340,7 @@ function zRenderList(tracks, containerId='ztracklist'){
       </div>
       <div class="zmp-track-thumb">
         <img src="${t.art||''}" alt="" onerror="this.style.display='none'">
-        <div class="zmp-track-thumb-ov">▶</div>
+        <div class="zmp-track-thumb-ov"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
       </div>
       <div class="zmp-track-info">
         <div class="zmp-track-name">${esc(t.title)}</div>
@@ -410,7 +386,9 @@ function zShowPlayer(track, load){
   const bottom = document.getElementById('zbottom');
   if(inner) inner.style.display = 'flex';
   if(idle) idle.style.display = 'none';
-  if(bottom) bottom.style.display = 'flex';
+  // Mini player persistent - dùng class active + body padding
+  if(bottom){ bottom.classList.add('active'); bottom.style.display = ''; }
+  document.body.classList.add('has-player');
 
   // BG blur from art
   const bg = document.getElementById('zbg');
@@ -424,11 +402,11 @@ function zShowPlayer(track, load){
   const tEl = document.getElementById('zsong-title'); if(tEl) tEl.textContent = track.title;
   const aEl = document.getElementById('zsong-artist'); if(aEl) aEl.textContent = track.artist;
   const stEl = document.getElementById('zstats');
-  if(stEl) stEl.innerHTML = `🎧 ${fmtN(track.plays)} · ❤️ ${fmtN(track.likes)}`;
+  if(stEl) stEl.innerHTML = `<svg width=14 height=14 viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M3 18v-6a9 9 0 0 1 18 0v6'/><path d='M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z'/></svg> ${fmtN(track.plays)} · <svg width=12 height=12 viewBox='0 0 24 24' fill='currentColor'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg> ${fmtN(track.likes)}`;
 
   // Like btn
   const lb = document.getElementById('zlike-btn');
-  if(lb){ const liked=ZMP.liked.has(String(track.id)); lb.className='zmp-like-btn'+(liked?' liked':''); lb.textContent=liked?'❤️ Đã thích':'🤍 Thích'; }
+  if(lb){ const liked=ZMP.liked.has(String(track.id)); lb.className='zmp-like-btn'+(liked?' liked':''); lb.innerHTML=liked?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Đã thích`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Thích`; }
 
   // Duration
   const durEl = document.getElementById('zpt-dur'); if(durEl) durEl.textContent = fmtT(track.dur);
@@ -463,15 +441,17 @@ async function zLoadPlay(track){
     audio.addEventListener('ended', zOnEnded);
     audio.addEventListener('canplay', ()=>{
       if(ov) ov.style.display='none';
-      if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
     });
     audio.addEventListener('waiting', ()=>{ if(ov) ov.style.display='flex'; });
 
     await audio.play();
     ZMP.playing = true;
 
-    const pb = document.getElementById('zplay-btn'); if(pb) pb.textContent='⏸';
-    const pbt = document.getElementById('zbt-play'); if(pbt) pbt.textContent='⏸';
+    // Add spinning ngay sau play, không chờ canplay (iOS Safari không fire canplay kịp)
+    if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
+    if(ov) ov.style.display='none';
+    const pb = document.getElementById('zplay-btn'); if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    const pbt = document.getElementById('zbt-play'); if(pbt) pbt.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     const btArt = document.getElementById('zbt-art'); if(btArt) btArt.classList.add('spinning');
   }catch(e){
     if(ov){
@@ -594,7 +574,7 @@ window.zToggleLike = function(){
   localStorage.setItem('zmp_liked', JSON.stringify([...ZMP.liked]));
   const lb = document.getElementById('zlike-btn');
   const liked = ZMP.liked.has(k);
-  if(lb){ lb.className='zmp-like-btn'+(liked?' liked':''); lb.textContent=liked?'❤️ Đã thích':'🤍 Thích'; }
+  if(lb){ lb.className='zmp-like-btn'+(liked?' liked':''); lb.innerHTML=liked?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Đã thích`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Thích`; }
 };
 
 window.zSwitchTab = function(tab){

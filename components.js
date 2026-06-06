@@ -114,6 +114,7 @@ function renderNav(){
     <div class="logo" onclick="go('home')">DZI<b> MUSIC & MOVIE</b></div>
     <ul class="nav-links">
       <li><a class="${isOn('home')}" onclick="go('home')">Trang chủ</a></li>
+      <li><a class="${p==='phim'||isOn('cat','phim-moi')?'on':''}" onclick="go('phim')">Phim</a></li>
       <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'})">Phim mới</a></li>
       <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'})">Phim lẻ</a></li>
       <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'})">Phim bộ</a></li>
@@ -124,9 +125,9 @@ function renderNav(){
       <li><a onclick="go('watchlist')">Yêu thích</a></li>
     </ul>
     <div class="nav-right">
-      <div class="search-wrap" id="sw">
+      <div class="search-wrap" id="sw" style="${p==='nhac'?'display:none':''}">
         <div class="search-box">
-          <span style="color:var(--mu);font-size:14px">🔍</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="${p==='nhac'?'Tìm bài hát, nghệ sĩ...':'Tìm phim, anime, YT...'}" id="nav-q"
             value="${p==='search'?esc(S.q):''}"
             autocomplete="off"
