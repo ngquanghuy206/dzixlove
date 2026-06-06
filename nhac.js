@@ -300,6 +300,7 @@ window.zSearchMobile = async function(){
       return;
     }
     zRenderList(tracks, 'zmobile-tracklist');
+    zRenderList(tracks);  // render vào trang chính để sau khi đóng overlay vẫn thấy
     zRenderQueue();
     zCloseMobileSearch();
   }catch(e){
