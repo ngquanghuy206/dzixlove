@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-//  NHẠC — ZING MP3 Style  |  SoundCloud API
+//  NHẠC — ZING MP3 Style  |  SoundCloud via DZI Server
 // ═══════════════════════════════════════════════════════════
 
 const ZMP = {
@@ -16,39 +16,18 @@ const ZMP = {
   liked: new Set(JSON.parse(localStorage.getItem('zmp_liked')||'[]')),
 };
 
-// ─── Local server config ────────────────────────────────
-const LOCAL_SERVER = 'http://prem-eu5.bot-hosting.cloud:20427';
-let _serverOnline = null; // null=chưa check, true/false
+// ─── Server ─────────────────────────────────────────────
+const MUSIC_SERVER = 'http://prem-eu5.bot-hosting.cloud:20427';
+let _serverOk = null;
 
 async function checkServer() {
-  if (_serverOnline !== null) return _serverOnline;
+  if (_serverOk !== null) return _serverOk;
   try {
-    const r = await fetch(`${LOCAL_SERVER}/ping`, { signal: AbortSignal.timeout(1500) });
-    _serverOnline = r.ok;
-  } catch {
-    _serverOnline = false;
-  }
-  // Re-check mỗi 30s
-  setTimeout(() => { _serverOnline = null; }, 30000);
-  return _serverOnline;
-}
-
-// Fallback CORS proxies khi không có server
-const CORS_PROXIES = [
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-];
-
-async function corsGet(url, asJson = true) {
-  let lastErr;
-  for (const proxy of CORS_PROXIES) {
-    try {
-      const r = await fetch(proxy(url), { signal: AbortSignal.timeout(9000) });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return asJson ? r.json() : r.text();
-    } catch(e) { lastErr = e; }
-  }
-  throw lastErr || new Error('All CORS proxies failed');
+    const r = await fetch(`${MUSIC_SERVER}/ping`, { signal: AbortSignal.timeout(3000) });
+    _serverOk = r.ok;
+  } catch { _serverOk = false; }
+  setTimeout(() => { _serverOk = null; }, 60000);
+  return _serverOk;
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -56,62 +35,23 @@ function fmtT(s){ if(!s||isNaN(s))return'0:00'; const m=Math.floor(s/60),sec=Mat
 function fmtN(n){ if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return String(n); }
 
 // ── SoundCloud ───────────────────────────────────────────
-async function zcGetId(){
-  if(ZMP.clientId) return ZMP.clientId;
-  try{
-    const html = await corsGet('https://soundcloud.com/', false);
-    const srcs = [...html.matchAll(/src="(https:\/\/a-v2\.sndcdn\.com\/assets\/[^"]+\.js)"/g)];
-    if(!srcs.length) throw new Error('no script');
-    const js = await corsGet(srcs[srcs.length-1][1], false);
-    const m = js.match(/client_id:"([^"]+)"/);
-    if(m){ ZMP.clientId=m[1]; return m[1]; }
-  }catch(e){}
-  ZMP.clientId='iZIs9mchVcX5lhVRyQGGAYlNPVldzAoX';
-  return ZMP.clientId;
-}
-
+// Web gửi query → MUSIC_SERVER tìm → trả JSON về
 async function zcSearch(q){
   const online = await checkServer();
-  if(online){
-    // Dùng local server — nhanh, không cần CORS proxy
-    const r = await fetch(`${LOCAL_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(15000) });
-    if(!r.ok) throw new Error('Server error ' + r.status);
-    const d = await r.json();
-    return d.tracks || [];
-  }
-  // Fallback: gọi SoundCloud API qua CORS proxy
-  const cid = await zcGetId();
-  const url = `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(q)}&client_id=${cid}&limit=20&offset=0`;
-  const d = await corsGet(url);
-  return (d.collection||[]).map(t=>({
-    id: t.id,
-    title: t.title||'Unknown',
-    artist: t.user?.username||'Unknown',
-    art: (t.artwork_url||t.user?.avatar_url||'').replace('-large','-t300x300'),
-    dur: t.duration?Math.floor(t.duration/1000):0,
-    plays: t.playback_count||0,
-    likes: t.likes_count||0,
-    url: t.permalink_url||'',
-  }));
+  if(!online) throw new Error('SERVER_OFFLINE');
+  const r = await fetch(`${MUSIC_SERVER}/search?q=${encodeURIComponent(q)}`, { signal: AbortSignal.timeout(20000) });
+  if(!r.ok) throw new Error('Server lỗi ' + r.status);
+  const d = await r.json();
+  return d.tracks || [];
 }
 
 async function zcStream(track){
   const online = await checkServer();
-  if(online){
-    // Dùng local server
-    const r = await fetch(`${LOCAL_SERVER}/stream?url=${encodeURIComponent(track.url)}`, { signal: AbortSignal.timeout(15000) });
-    if(!r.ok) throw new Error('Stream error ' + r.status);
-    const d = await r.json();
-    return d.url;
-  }
-  // Fallback: CORS proxy
-  const cid = await zcGetId();
-  const resolve = `https://api-v2.soundcloud.com/resolve?url=${encodeURIComponent(track.url)}&client_id=${cid}`;
-  const d = await corsGet(resolve);
-  const tc = d.media?.transcodings?.find(t=>t.format?.protocol==='progressive') || d.media?.transcodings?.[0];
-  if(!tc) throw new Error('no stream');
-  const s = await corsGet(tc.url+'?client_id='+cid);
-  return s.url;
+  if(!online) throw new Error('SERVER_OFFLINE');
+  const r = await fetch(`${MUSIC_SERVER}/stream?url=${encodeURIComponent(track.url)}`, { signal: AbortSignal.timeout(15000) });
+  if(!r.ok) throw new Error('Stream lỗi ' + r.status);
+  const d = await r.json();
+  return d.url;
 }
 
 // ════════════════════════════════════════
@@ -327,7 +267,13 @@ window.zSearch = async function(){
     zRenderList(tracks);
     zRenderQueue();
   }catch(e){
-    tl.innerHTML = `<div class="zmp-list-empty"><div style="font-size:32px;opacity:.5">⚠️</div><div style="color:#f87171">Lỗi kết nối SoundCloud</div><div style="font-size:11px;margin-top:6px;opacity:.5">Kiểm tra mạng và thử lại</div><button class="zmp-search-btn" style="margin-top:12px" onclick="zSearch()">Thử lại</button></div>`;
+    const isOffline = e.message === 'SERVER_OFFLINE' || e.message?.includes('fetch');
+    tl.innerHTML = `<div class="zmp-list-empty">
+      <div style="font-size:32px;opacity:.5">${isOffline?'🔌':'⚠️'}</div>
+      <div style="color:#f87171">${isOffline?'Server chưa chạy':'Lỗi kết nối'}</div>
+      <div style="font-size:11px;margin-top:6px;opacity:.5">${isOffline?'Khởi động server.py trên bot hosting':'Thử lại sau'}</div>
+      <button class="zmp-search-btn" style="margin-top:12px" onclick="zSearch()">Thử lại</button>
+    </div>`;
   }
 };
 
