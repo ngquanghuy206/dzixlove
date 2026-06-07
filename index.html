@@ -44,6 +44,16 @@
 <div id="app"></div>
 <div id="toast"></div>
 
+<!-- Picture-in-Picture floating player -->
+<div id="dzi-pip">
+  <iframe id="dzi-pip-frame" src="about:blank" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
+  <div id="dzi-pip-bar">
+    <span id="dzi-pip-title">Đang xem...</span>
+    <button class="pip-btn" id="pip-back-btn" title="Quay lại" onclick="pipGoBack()">⬆</button>
+    <button class="pip-btn" title="Đóng" onclick="pipClose()">✕</button>
+  </div>
+</div>
+
 <!-- Persistent: mini player + audio, không bị xóa khi navigate -->
 <div id="persistent">
   <div class="zmp-bottom" id="zbottom" style="display:none">

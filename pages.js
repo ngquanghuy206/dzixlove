@@ -53,7 +53,7 @@ function pgHome(){
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
         </div>
         <h3>Xem Phim</h3>
-        <p>Phim Việt, phim bộ, phim lẻ, lồng tiếng, thuyết minh. Anime mới nhất. YouTube không quảng cáo. Tất cả miễn phí.</p>
+        <p>Phim Việt, phim bộ, phim lẻ, lồng tiếng, thuyết minh. Anime mới nhất. DZITube không quảng cáo. Tất cả miễn phí.</p>
         <button class="btn btn-ghost intro-card-btn" onclick="go('phim')">Khám phá →</button>
       </div>
 
@@ -304,7 +304,7 @@ async function pgPhim(){
     <section class="sec"><div class="sec-head"><h2 class="sec-title">📺 Phim bộ</h2></div>${skRow()}</section>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">🎬 Phim lẻ</h2></div>${skRow()}</section>
     <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(255,0,0,.1);color:var(--yt)">🔴 YOUTUBE</span><div class="div-line"></div></div>
-    <section class="sec"><div class="sec-head"><h2 class="sec-title">🔴 Phim hot trên YouTube</h2></div>${skYTRow()}</section>
+    <section class="sec"><div class="sec-head"><h2 class="sec-title">🔴 Phim hot trên DZITube</h2></div>${skYTRow()}</section>
     <div class="div-row"><div class="div-line"></div><span class="div-label" style="background:rgba(168,85,247,.1);color:var(--purple)">🎌 ANIME</span><div class="div-line"></div></div>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">📅 Anime đang chiếu</h2></div>${skRow()}</section>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">🏆 Top Anime</h2></div>${skRow()}</section>
@@ -419,7 +419,7 @@ const CAT_LABEL = {
   'phim-moi':'🆕 Phim mới', 'phim-le':'🎬 Phim lẻ', 'phim-bo':'📺 Phim bộ',
   'hoat-hinh':'🎌 Hoạt hình', 'tv-shows':'📡 TV Shows',
   'anime':'🏆 Top Anime', 'anime-now':'📅 Anime đang chiếu',
-  'yt':'🔴 Tìm kiếm YouTube',
+  'yt':'🔴 Tìm kiếm DZITube',
 };
 
 async function pgCat(){
@@ -429,7 +429,7 @@ async function pgCat(){
     <h1>${CAT_LABEL[S.cat]||S.cat}</h1>
     ${isYT?`<div class="big-search-wrap" style="margin-bottom:14px">
       <span>🔍</span>
-      <input class="big-search" id="yt-q" type="text" placeholder="Tìm video YouTube..." autocomplete="off"
+      <input class="big-search" id="yt-q" type="text" placeholder="Tìm video DZITube..." autocomplete="off"
         oninput="ytLive(this.value)"
         onkeydown="if(event.key==='Enter'){clearTimeout(window._ytT);loadYT(this.value,1)}"/>
     </div>`:''}
@@ -459,7 +459,7 @@ window.loadYT = async function(q,p){
     else{ grid.insertAdjacentHTML('beforeend',cards); }
     if(count) count.textContent=vids.length?`${vids.length} video cho "${_ytQ}"`:' ';
     if(more) more.innerHTML=vids.length>=5?`<button class="btn btn-ghost" onclick="loadYT('${esc(_ytQ)}',${_ytPage+1})">Tải thêm ↓</button>`:'';
-  }catch(e){ if(grid) grid.innerHTML=`<div style="text-align:center;padding:48px;color:var(--mu)">Lỗi YouTube: ${esc(e.message)}</div>`; }
+  }catch(e){ if(grid) grid.innerHTML=`<div style="text-align:center;padding:48px;color:var(--mu)">Lỗi DZITube: ${esc(e.message)}</div>`; }
 };
 window.ytLive=function(q){ clearTimeout(window._ytT); if(!q.trim())return; window._ytT=setTimeout(()=>loadYT(q,1),500); };
 
@@ -664,6 +664,7 @@ async function pgPlayKK(){
   let playerHTML;
   if(embed){
     playerHTML=`<iframe src="${esc(embed)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
+    PIP.src = embed; PIP.title = movie.name || S.slug;
   } else if(m3u8){
     playerHTML=`<video id="hls-v" controls autoplay style="position:absolute;inset:0;width:100%;height:100%"></video>`;
   } else {
@@ -726,9 +727,11 @@ async function pgPlayAni(){
     const eOpts=Array.from({length:eMax},(_,i)=>`<option value="${i+1}"${i+1===epn?' selected':''}>Tập ${i+1}</option>`).join('');
     const dOpts=`<option value="0"${dub===0?' selected':''}>Sub</option><option value="1"${dub===1?' selected':''}>Dub</option>`;
 
+    const aniEmbedSrc = vsAnime(id,epn,dub);
+    PIP.src = aniEmbedSrc; PIP.title = anime&&anime.title||'Anime';
     app.innerHTML=renderNav()+`<div class="player-page page">
       <div class="player-wrap">
-        <iframe id="ani-fr" src="${esc(vsAnime(id,epn,dub))}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
+        <iframe id="ani-fr" src="${esc(aniEmbedSrc)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
       </div>
       <div class="player-info">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -769,17 +772,18 @@ function pgPlayYT(){
   const id=S.ytId||'';
   if(!id){ go('home'); return; }
   const embed=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
+  PIP.src = embed; PIP.title = 'DZITube Video';
   const thumb=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  addHist({uid:'yt_'+id,name:'YouTube: '+id,thumb:thumb,year:'',src:'yt',ytId:id});
+  addHist({uid:'yt_'+id,name:'DZITube: '+id,thumb:thumb,year:'',src:'yt',ytId:id});
   app.innerHTML=renderNav()+`<div class="player-page page">
     <div class="player-wrap">
       <iframe src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
     </div>
     <div class="player-info">
-      <div class="player-title">🔴 YouTube Video</div>
+      <div class="player-title">🔴 DZITube Video</div>
       <div class="player-meta">Video ID: ${esc(id)} · <span style="color:var(--yt);font-weight:600">YouTube Embed</span></div>
       <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
-        <a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" class="btn btn-yt">🔴 Mở trên YouTube</a>
+        <a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" class="btn btn-yt">🔴 Mở trên DZITube</a>
         <button class="btn btn-ghost" onclick="go('cat',{cat:'yt'})">🔍 Tìm video khác</button>
       </div>
     </div>
@@ -808,7 +812,7 @@ async function pgSearch(){
       <button class="f-tab${src==='vn'?' on-vn':''}" id="f-vn" onclick="setSrc('vn')">🇻🇳 Phim Việt</button>
       <button class="f-tab${src==='lt'?' on-lt':''}" id="f-lt" onclick="setSrc('lt')">🔊 Lồng tiếng</button>
       <button class="f-tab${src==='ani'?' on-ani':''}" id="f-ani" onclick="setSrc('ani')">🎌 Anime</button>
-      <button class="f-tab${src==='yt'?' on-yt':''}" id="f-yt" onclick="setSrc('yt')">🔴 YouTube</button>
+      <button class="f-tab${src==='yt'?' on-yt':''}" id="f-yt" onclick="setSrc('yt')">🔴 DZITube</button>
     </div>
     <div id="s-count" class="result-count">${q?'Đang tìm...':''}</div>
     <div id="s-grid" class="${src==='yt'?'yt-grid':'grid'}">${q?skGrid(12):''}</div>
@@ -835,7 +839,7 @@ window.runSearch=async function(q,p){
       const vids=await ytSearch(q,p);
       if(p===1){ grid.innerHTML=vids.map(CardYT).join('')||`<div style="text-align:center;padding:48px;color:var(--mu)">Không tìm thấy.</div>`; }
       else{ grid.insertAdjacentHTML('beforeend',vids.map(CardYT).join('')); }
-      if(count) count.textContent=vids.length?`${vids.length} video YouTube cho "${q}"`:' ';
+      if(count) count.textContent=vids.length?`${vids.length} video DZITube cho "${q}"`:' ';
       if(more) more.innerHTML=vids.length>=5?`<button class="btn btn-ghost" onclick="runSearch('${esc(q)}',${p+1})">Tải thêm ↓</button>`:'';
       return;
     }
@@ -924,7 +928,7 @@ function pgWatchlist(){
   }
   app.innerHTML=renderNav()+`<div class="wl-page page">
     <h1>Thư viện của tôi</h1>
-    <p style="font-size:13px;color:var(--mu)">Phim yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 YouTube · 🎵 Nhạc</p>
+    <p style="font-size:13px;color:var(--mu)">Phim yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 DZITube · 🎵 Nhạc</p>
     <div class="wl-tabs">
       <button class="wl-tab on" id="wt1" onclick="swWL('wl')">❤️ Phim (${S.wl.length})</button>
       <button class="wl-tab" id="wt2" onclick="swWL('hi')">🕑 Lịch sử (${S.hist.length})</button>

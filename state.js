@@ -38,11 +38,106 @@ function showToast(msg){
   _toast = setTimeout(()=>{ el.style.display='none'; }, 2600);
 }
 
+// ── PiP state ───────────────────────────
+const PIP = { active: false, src: '', title: '', fromPage: null, fromOpts: {} };
+
+function pipShow(src, title){
+  const pip = document.getElementById('dzi-pip');
+  const fr  = document.getElementById('dzi-pip-frame');
+  const tl  = document.getElementById('dzi-pip-title');
+  if(!pip || !fr) return;
+  if(fr.src !== src) fr.src = src;
+  if(tl) tl.textContent = title || 'Đang xem...';
+  pip.classList.add('show');
+  PIP.active = true;
+  PIP.src = src;
+  PIP.title = title;
+}
+
+window.pipClose = function(){
+  const pip = document.getElementById('dzi-pip');
+  const fr  = document.getElementById('dzi-pip-frame');
+  if(pip) pip.classList.remove('show');
+  if(fr) fr.src = 'about:blank';
+  PIP.active = false; PIP.src = ''; PIP.title = '';
+};
+
+window.pipGoBack = function(){
+  // Navigate back to player page
+  if(PIP.fromPage){
+    const p = PIP.fromPage, o = PIP.fromOpts;
+    PIP.fromPage = null;
+    pipClose();
+    go(p, o);
+  }
+};
+
+// Draggable PiP
+(function(){
+  const pip = document.getElementById('dzi-pip');
+  if(!pip) return;
+  let ox=0,oy=0,startX=0,startY=0,dragging=false;
+  pip.addEventListener('pointerdown', e=>{
+    if(e.target.classList.contains('pip-btn')) return;
+    dragging=true; pip.setPointerCapture(e.pointerId);
+    startX=e.clientX-ox; startY=e.clientY-oy;
+  });
+  pip.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    ox=e.clientX-startX; oy=e.clientY-startY;
+    pip.style.transform=`translate(${ox}px,${oy}px)`;
+  });
+  pip.addEventListener('pointerup', ()=>{ dragging=false; });
+})();
+
+const PLAYER_PAGES = new Set(['play-kk','play-ani','play-yt']);
+
 window.go = function(page, opts){
   opts = opts||{};
+
+  // If currently on player page → activate PiP before navigating away
+  if(PLAYER_PAGES.has(S.page) && !PLAYER_PAGES.has(page)){
+    // Grab the live iframe src directly from DOM
+    const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
+    if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
+      PIP.src = liveIframe.src;
+    }
+    if(PIP.src){
+      PIP.fromPage = S.page;
+      PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId, epIdx: S.epIdx, svIdx: S.svIdx };
+      pipShow(PIP.src, PIP.title || document.querySelector('.player-title')?.textContent || 'Đang xem...');
+    }
+  }
+
+  // If navigating TO a player page → close PiP
+  if(PLAYER_PAGES.has(page)){
+    pipClose();
+  }
+
   S.page = page;
   ['slug','malId','ytId','q','src','cat','ltTab'].forEach(k=>{ if(opts[k]!==undefined) S[k]=opts[k]; });
-  S.epIdx=0; S.svIdx=0; S.epNum=1; S.dub=0;
+  if(!PLAYER_PAGES.has(page)){ S.epIdx=0; S.svIdx=0; S.epNum=1; S.dub=0; }
   window.scrollTo({top:0,behavior:'smooth'});
   render();
+};
+
+// Intercept browser back button
+window.addEventListener('popstate', function(){
+  if(PLAYER_PAGES.has(S.page)){
+    const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
+    if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
+      PIP.src = liveIframe.src;
+      PIP.fromPage = S.page;
+      PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId };
+      pipShow(PIP.src, PIP.title || 'Đang xem...');
+    }
+  }
+});
+// Push state when entering player so back button fires popstate
+const _origRender = window.render;
+window.render = function(){
+  if(PLAYER_PAGES.has(S.page)){
+    history.pushState({ page: S.page }, '', location.href);
+  }
+  _origRender();
 };
