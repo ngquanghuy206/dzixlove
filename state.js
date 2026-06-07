@@ -47,11 +47,13 @@ function pipShow(src, title){
   const tl  = document.getElementById('dzi-pip-title');
   if(!pip || !fr) return;
 
-  // Build src with autoplay=1
+  // Build src with autoplay=1 and muted=1 (required for browser autoplay policy)
   let pipSrc = src;
   try {
     const u = new URL(src);
     u.searchParams.set('autoplay','1');
+    u.searchParams.set('muted','1');
+    u.searchParams.set('mute','1');
     pipSrc = u.toString();
   } catch(e){ pipSrc = src; }
 
