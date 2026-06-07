@@ -1072,7 +1072,7 @@ async function shortLoad(q){
     const qs=new URLSearchParams({_p:'/yt/shorts'});
     if(q) qs.set('q',q);
     if(_shortPage) qs.set('pageToken',_shortPage);
-    const d=await (await fetch('/api/music?'+qs)).json();
+    const d=await (await fetch((window.API_BASE||'')+'/api/music?'+qs)).json();
     const items=d.items||[];
     _shortPage=d.nextPageToken||null;
     _shortVideos=[..._shortVideos,...items];

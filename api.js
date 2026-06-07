@@ -61,7 +61,7 @@ async function ytSearch(q, page, pageToken){
   try{
     const qs = new URLSearchParams({ _p: '/yt/search', q });
     if(pageToken) qs.set('pageToken', pageToken);
-    const d = await get('/api/music?' + qs.toString(), true);
+    const d = await get((window.API_BASE||'')+'/api/music?' + qs.toString(), true);
     if(d && Array.isArray(d.items)){
       if(d.nextPageToken) _ytPageTokens[q+'_'+(page+1)] = d.nextPageToken;
       return d.items;
@@ -72,14 +72,14 @@ async function ytSearch(q, page, pageToken){
 
 async function ytTrending(){
   try{
-    const d = await get('/api/music?_p=/yt/trending', true);
+    const d = await get((window.API_BASE||'')+'/api/music?_p=/yt/trending', true);
     return (d && d.items) ? d.items : [];
   }catch(e){ return []; }
 }
 
 async function ytDetail(videoId){
   try{
-    const d = await get('/api/music?_p=/yt/detail&videoId='+encodeURIComponent(videoId), true);
+    const d = await get((window.API_BASE||'')+'/api/music?_p=/yt/detail&videoId='+encodeURIComponent(videoId), true);
     return d || null;
   }catch(e){ return null; }
 }

@@ -13,6 +13,9 @@ const JK   = 'https://api.jikan.moe/v4';
 const VS   = 'https://vidsrc.icu/embed';
 const KIMG = 'https://phimimg.com';
 
+// ── Backend server (bot-hosting) ──
+const API_BASE = 'http://prem-eu5.bot-hosting.cloud:20427';
+
 // Invidious instances (fallback list)
 const INV_HOSTS = [
   'https://inv.nadeko.net',

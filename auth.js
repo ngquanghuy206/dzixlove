@@ -120,7 +120,7 @@ window.doLogin = async function(){
   try {
     let r;
     try {
-      r = await fetch('/api/login',{
+      r = await fetch((window.API_BASE||'')+'/api/login',{
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({username:u, password:p})
       });
@@ -176,7 +176,7 @@ window.doRegisterSendOtp = async function(){
   if(!em.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
   btn.disabled=true; btn.textContent='⏳ Đang gửi OTP...'; err.style.display='none';
   try {
-    const r = await fetch('/api/register/send-otp',{
+    const r = await fetch((window.API_BASE||'')+'/api/register/send-otp',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username:u, password:p, email:em})
     });
@@ -200,7 +200,7 @@ window.doRegisterVerify = async function(){
   if(!otp||otp.length!==6){ showErr(err,'Nhập đủ 6 số OTP'); return; }
   btn.disabled=true; btn.textContent='⏳ Đang xác minh...'; err.style.display='none';
   try {
-    const r = await fetch('/api/register',{
+    const r = await fetch((window.API_BASE||'')+'/api/register',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username:u, password:p, email:em, otp})
     });
@@ -254,7 +254,7 @@ window.doForgotSend = async function(){
   if(!email.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
   btn.disabled=true; btn.textContent='⏳ Đang gửi...'; err.style.display='none';
   try {
-    const r=await fetch('/api/forgot-password',{
+    const r=await fetch((window.API_BASE||'')+'/api/forgot-password',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email})
     });
@@ -274,7 +274,7 @@ window.doVerifyForgotOtp = async function(){
   if(!otp||otp.length!==6){ showErr(err,'OTP gồm 6 số'); return; }
   btn.disabled=true; btn.textContent='⏳...'; err.style.display='none';
   try {
-    const r=await fetch('/api/verify-otp',{
+    const r=await fetch((window.API_BASE||'')+'/api/verify-otp',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:_forgotEmail,otp})
     });
@@ -295,7 +295,7 @@ window.doResetPassword = async function(){
   if(pw!==pw2){ showErr(err,'Mật khẩu không khớp'); return; }
   btn.disabled=true; btn.textContent='⏳...'; err.style.display='none';
   try {
-    const r=await fetch('/api/reset-password',{
+    const r=await fetch((window.API_BASE||'')+'/api/reset-password',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:_forgotEmail,otp:_forgotOtp,new_password:pw})
     });
@@ -314,7 +314,7 @@ window.doLogout = function(){
   closeDziModal('dzi-account-modal');
   updateNavUser();
   dziToast('👋 Đã đăng xuất','#5a6a8a');
-  if(tok) fetch('/api/logout',{method:'POST',headers:{'Authorization':'Bearer '+tok}}).catch(()=>{});
+  if(tok) fetch((window.API_BASE||'')+'/api/logout',{method:'POST',headers:{'Authorization':'Bearer '+tok}}).catch(()=>{});
 };
 
 // ── ACCOUNT MODAL ──
@@ -376,7 +376,7 @@ window.openAccountModal = function(){
 async function loadAccountStats(){
   if(!DZI_TOKEN) return;
   try {
-    const r = await fetch('/api/user/profile',{headers:{'Authorization':'Bearer '+DZI_TOKEN}});
+    const r = await fetch((window.API_BASE||'')+'/api/user/profile',{headers:{'Authorization':'Bearer '+DZI_TOKEN}});
     if(!r.ok) return;
     const d = await r.json();
     const el = id => document.getElementById(id);
@@ -397,7 +397,7 @@ window.handleAvatarChange = function(input){
     const store = _rememberMe ? localStorage : sessionStorage;
     store.setItem('dzi_user', JSON.stringify(DZI_USER));
     updateNavUser();
-    fetch('/api/user/avatar',{
+    fetch((window.API_BASE||'')+'/api/user/avatar',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+DZI_TOKEN},
       body:JSON.stringify({avatar:src})
@@ -418,7 +418,7 @@ window.doChangePw = async function(){
   if(newpw!==newpw2){ err.textContent='Mật khẩu xác nhận không khớp'; return; }
   btn.disabled=true; btn.textContent='⏳...'; err.textContent='';
   try {
-    const r=await fetch('/api/user/change-password',{
+    const r=await fetch((window.API_BASE||'')+'/api/user/change-password',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+DZI_TOKEN},
       body:JSON.stringify({old_password:oldpw,new_password:newpw})
@@ -486,7 +486,7 @@ window.saveAdminStats = async function(){
   if(isNaN(val)||val<0){ if(err){err.textContent='Vui lòng nhập số hợp lệ';err.style.display='block';} return; }
   // Save via API
   try {
-    const r = await fetch('/api/admin/stats',{
+    const r = await fetch((window.API_BASE||'')+'/api/admin/stats',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+DZI_TOKEN},
       body:JSON.stringify({trust_count: val})
