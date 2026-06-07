@@ -792,7 +792,11 @@ async function pgPlayAni(){
       const e=document.getElementById('a-ep'), db=document.getElementById('a-dub');
       const ne=parseInt((e&&e.value)||1), nd=parseInt((db&&db.value)||0);
       const fr=document.getElementById('ani-fr');
-      if(fr) fr.src=vsAnime(id,ne,nd);
+      if(fr){
+        // FIX: thêm autoplay=1 khi đổi tập
+        try{ const u=new URL(vsAnime(id,ne,nd)); u.searchParams.set('autoplay','1'); fr.src=u.toString(); }
+        catch(err){ fr.src=vsAnime(id,ne,nd); }
+      }
     };
   }catch(e){
     app.innerHTML=renderNav()+`<div class="player-page page"><div class="no-video" style="height:50vh"><div style="font-size:48px;opacity:.4">🎌</div><h3>Không tải được</h3><p style="color:var(--mu);font-size:13px">${esc(e.message)}</p></div>${renderFooter()}</div>`;
@@ -868,7 +872,7 @@ async function pgPlayYT(){
     ${renderFooter()}
   </div>`;
   setupNavScroll();
-  initYTPlayer('${id}');
+  initYTPlayer(id);
 }
 
 // ═══════════════════════════════════════
@@ -985,7 +989,7 @@ function pgWatchlist(){
   function wCard(m, idx){
     const t=esc(m.name||'?'), po=m.thumb||PH(), y=m.year||'';
     let oc,pc;
-    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;;}
+    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;}
     else if(m.src==='yt'){oc=`go('play-yt',{ytId:'${esc(m.ytId||m.uid.replace('yt_',''))}'})`; pc=oc;}
     else{oc=`go('det-kk',{slug:'${esc(m.slug)}'})`;pc=`go('play-kk',{slug:'${esc(m.slug)}'})` ;}
     return `<div class="card" onclick="${oc}">
@@ -1001,7 +1005,7 @@ function pgWatchlist(){
   function hCard(m, idx){
     const t=esc(m.name||'?'), po=m.thumb||PH(), y=m.year||'';
     let oc,pc;
-    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;;}
+    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;}
     else if(m.src==='yt'){oc=`go('play-yt',{ytId:'${esc(m.ytId||m.uid.replace('yt_',''))}'})`; pc=oc;}
     else{oc=`go('det-kk',{slug:'${esc(m.slug)}'})`;pc=`go('play-kk',{slug:'${esc(m.slug)}'})` ;}
     const pos = m.positionSec||0;

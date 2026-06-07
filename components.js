@@ -344,3 +344,11 @@ window.closeSidebar = function(){
   if(btn) btn.classList.remove('open');
   document.body.style.overflow = '';
 };
+
+// FIX: initPipDrag stub — tránh crash khi state.js gọi trước khi được define
+// Nếu cần drag PiP player thật sự, implement ở đây
+if(!window.initPipDrag){
+  window.initPipDrag = function(){
+    // No PiP drag implemented — placeholder
+  };
+}

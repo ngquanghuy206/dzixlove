@@ -19,5 +19,7 @@ function render(){
     default:          pgHome();
   }
 }
+// FIX: gán window.render TRƯỚC khi state.js IIFE đã wrap nó
+// Router load sau state.js, nên ghi đè lại đúng thứ tự
 window.render = render;
 render();

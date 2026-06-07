@@ -25,7 +25,6 @@ window.toggleWL = function(raw){
 };
 
 function addHist(m){
-  // Preserve existing positionSec if new entry doesn't have one
   const existing = S.hist.find(x=>x.uid===m.uid);
   if(existing && m.positionSec===undefined) m.positionSec = existing.positionSec||0;
   m.addedAt = Date.now();
@@ -66,11 +65,12 @@ function showToast(msg){
   _toast = setTimeout(()=>{ el.style.display='none'; }, 2600);
 }
 
-
+// FIX: initPipDrag được định nghĩa trong components.js — gọi sau khi DOM sẵn sàng
+// Tránh lỗi "initPipDrag is not defined" nếu components.js chưa load
 if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded', initPipDrag);
+  document.addEventListener('DOMContentLoaded', ()=>{ if(window.initPipDrag) initPipDrag(); });
 } else {
-  initPipDrag();
+  if(window.initPipDrag) initPipDrag();
 }
 
 const PLAYER_PAGES = new Set(['play-kk','play-ani','play-yt']);
@@ -79,7 +79,6 @@ window.go = function(page, opts){
   opts = opts||{};
 
   if(PLAYER_PAGES.has(page)){
-    // Clear watch position timer when entering player
     window._watchTimer && clearInterval(window._watchTimer);
   }
 
@@ -97,11 +96,14 @@ window.addEventListener('popstate', function(e){
   }
 });
 
-const _origRender = window.render;
-window.render = function(){
-  if(PLAYER_PAGES.has(S.page)){
-    const prevState = history.state || {};
-    history.pushState({ page: S.page, from: prevState.page || 'home', fromOpts: prevState.fromOpts || {} }, '', location.href);
-  }
-  _origRender();
-};
+// FIX: lưu ref render gốc chỉ khi nó đã tồn tại, tránh loop vô hạn
+(function(){
+  const _origRender = window.render;
+  window.render = function(){
+    if(PLAYER_PAGES.has(S.page)){
+      const prevState = history.state || {};
+      history.pushState({ page: S.page, from: prevState.page || 'home', fromOpts: prevState.fromOpts || {} }, '', location.href);
+    }
+    if(_origRender) _origRender();
+  };
+})();

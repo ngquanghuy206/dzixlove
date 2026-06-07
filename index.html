@@ -30,7 +30,19 @@
 <meta name="twitter:image" content="https://files.catbox.moe/v56bhy.jpeg"/>
 
 <!-- STRUCTURED DATA -->
-<script type="application/ld+json" src="schema.json"></script>
+<script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "DZI MUSIC & MOVIE",
+  "url": "https://dzimusic.movie",
+  "description": "Nền tảng xem phim Việt, Anime, YouTube miễn phí",
+  "inLanguage": "vi",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://dzimusic.movie/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}</script>
 
 <!-- FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>

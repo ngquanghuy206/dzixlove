@@ -17,9 +17,7 @@ const ZMP = {
 };
 
 // ─── Server ─────────────────────────────────────────────
-// Route qua Vercel API → tránh Mixed Content (http server → https web)
 function msUrl(path){
-  // /search?q=x → /api/music?_p=/search&q=x
   const [p, qs] = path.split('?');
   return '/api/music?' + (qs ? '_p='+encodeURIComponent(p)+'&'+qs : '_p='+encodeURIComponent(p));
 }
@@ -36,7 +34,6 @@ async function checkServer() {
 }
 
 // ── Helpers ──────────────────────────────────────────────
-// AbortSignal.timeout không support iOS cũ → dùng AbortController
 function fetchTimeout(url, ms){
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), ms);
@@ -47,7 +44,6 @@ function fmtT(s){ if(!s||isNaN(s))return'0:00'; const m=Math.floor(s/60),sec=Mat
 function fmtN(n){ if(!n)return'0'; if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return(n/1e3).toFixed(1)+'K'; return String(n); }
 
 // ── SoundCloud ───────────────────────────────────────────
-// Web gửi query → MUSIC_SERVER tìm → trả JSON về
 async function zcSearch(q){
   const r = await fetchTimeout(msUrl('/search?q=' + encodeURIComponent(q)), 25000);
   if(!r.ok) throw new Error('Server loi ' + r.status);
@@ -87,7 +83,7 @@ function pgNhac(){
         </div>
         <div class="zmp-tags">
           ${['🇻🇳 Nhạc Việt','🎤 V-Pop','🎧 Rap Việt','🎶 Bolero','🌙 Lo-Fi','⚡ EDM','💫 K-Pop','🎸 Rock'].map(t=>
-            `<button class="zmp-tag" onclick="zQuick('${t.replace(/['"]/g,'')}')">${t}</button>`
+            `<button class="zmp-tag" onclick="zQuick('${t.replace(/['\"]/g,'')}')">${t}</button>`
           ).join('')}
         </div>
         <div class="zmp-list-tabs">
@@ -198,7 +194,8 @@ function pgNhac(){
 
   // Sync play button với trạng thái audio hiện tại
   if(ZMP.audio && !ZMP.audio.paused){
-    const pb = document.getElementById('zplay-btn'); if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    const pb = document.getElementById('zplay-btn');
+    if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     const disc = document.getElementById('zart-disc');
     if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
   }
@@ -253,7 +250,6 @@ window.zMobileBackToSearch = function(){
   if(left){ left.classList.remove('mobile-hide'); }
   if(center){ center.classList.remove('mobile-show'); }
   if(backBtn) backBtn.style.display = 'none';
-  // Scroll to top of search
   left?.scrollTo(0,0);
 };
 
@@ -272,7 +268,6 @@ window.zSwitchListTab = function(tab){
     zRenderList(likedTracks);
     zRenderQueue();
   } else {
-    // Switch về tab kết quả - clear rồi render lại từ đầu
     const tl = document.getElementById('ztracklist');
     if(tl) tl.innerHTML = '';
     if(ZMP.results.length) zRenderList(ZMP.results);
@@ -283,7 +278,6 @@ window.zSwitchListTab = function(tab){
 window.zQuick = function(q){
   const inp = document.getElementById('zs-inp');
   if(inp) inp.value = q.replace(/^[^\s]+\s/,''); // strip emoji
-  // find matching tag
   document.querySelectorAll('.zmp-tag').forEach(el=>{ el.classList.toggle('active', el.textContent.includes(q.split(' ').slice(1).join(' '))); });
   zSearch();
 };
@@ -344,40 +338,31 @@ window.zPlay = async function(idx){
 };
 
 function zShowPlayer(track, load){
-  // Show player, hide idle
   const inner = document.getElementById('zmp-player-inner');
   const idle = document.getElementById('zmp-idle');
   const bottom = document.getElementById('zbottom');
   if(inner) inner.style.display = 'flex';
   if(idle) idle.style.display = 'none';
-  // Mini player persistent - dùng class active + body padding
   if(bottom){ bottom.classList.add('active'); bottom.style.display = ''; }
   document.body.classList.add('has-player');
-  // Mobile: switch to player view
   window.zMobileShowPlayer && window.zMobileShowPlayer();
 
-  // BG blur from art
   const bg = document.getElementById('zbg');
   if(bg && track.art) bg.style.backgroundImage = `url('${track.art}')`;
 
-  // Album art image
   const artImg = document.getElementById('zart-img');
   if(artImg) artImg.src = track.art || '';
 
-  // Info
   const tEl = document.getElementById('zsong-title'); if(tEl) tEl.textContent = track.title;
   const aEl = document.getElementById('zsong-artist'); if(aEl) aEl.textContent = track.artist;
   const stEl = document.getElementById('zstats');
   if(stEl) stEl.innerHTML = `<svg width=14 height=14 viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M3 18v-6a9 9 0 0 1 18 0v6'/><path d='M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z'/></svg> ${fmtN(track.plays)} · <svg width=12 height=12 viewBox='0 0 24 24' fill='currentColor'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg> ${fmtN(track.likes)}`;
 
-  // Like btn
   const lb = document.getElementById('zlike-btn');
   if(lb){ const liked=ZMP.liked.has(String(track.id)); lb.className='zmp-like-btn'+(liked?' liked':''); lb.innerHTML=liked?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Đã thích`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Thích`; }
 
-  // Duration
   const durEl = document.getElementById('zpt-dur'); if(durEl) durEl.textContent = fmtT(track.dur);
 
-  // Bottom bar
   const btArt = document.getElementById('zbt-art'); if(btArt) btArt.src = track.art||'';
   const btTitle = document.getElementById('zbt-title'); if(btTitle) btTitle.textContent = track.title;
   const btArtist = document.getElementById('zbt-artist'); if(btArtist) btArtist.textContent = track.artist;
@@ -392,7 +377,6 @@ async function zLoadPlay(track){
   const disc = document.getElementById('zart-disc');
   if(disc){ disc.classList.remove('spinning','paused'); }
 
-  // Stop old audio
   if(ZMP.audio){ ZMP.audio.pause(); ZMP.audio.src=''; ZMP.audio=null; }
   ZMP.playing = false;
 
@@ -410,7 +394,6 @@ async function zLoadPlay(track){
     });
     audio.addEventListener('waiting', ()=>{ if(ov) ov.style.display='flex'; });
 
-    // Restore saved position if available (only if > 5s and not near end)
     const savedEntry = S.nhacHist && S.nhacHist.find(x=>x.id===String(track.id));
     const savedPos = savedEntry && savedEntry.positionSec > 5 ? savedEntry.positionSec : 0;
 
@@ -418,20 +401,21 @@ async function zLoadPlay(track){
     ZMP._lastHistSave = null;
     ZMP.playing = true;
 
-    // Seek to saved position after playback starts
     if(savedPos && audio.duration && savedPos < audio.duration - 10){
       audio.currentTime = savedPos;
     } else if(savedPos){
-      // Try seeking once metadata is loaded
       const trySeek = ()=>{ if(audio.duration && savedPos < audio.duration - 10) audio.currentTime = savedPos; };
       audio.addEventListener('loadedmetadata', trySeek, {once:true});
     }
 
-    // Add spinning ngay sau play, không chờ canplay (iOS Safari không fire canplay kịp)
     if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
     if(ov) ov.style.display='none';
-    const pb = document.getElementById('zplay-btn'); if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-    const pbt = document.getElementById('zbt-play'); if(pbt) pbt.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+    // FIX: dùng innerHTML svg thay vì textContent để tránh bug icon
+    const pb = document.getElementById('zplay-btn');
+    if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    const pbt = document.getElementById('zbt-play');
+    if(pbt) pbt.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     const btArt = document.getElementById('zbt-art'); if(btArt) btArt.classList.add('spinning');
   }catch(e){
     if(ov){
@@ -449,15 +433,12 @@ async function zLoadPlay(track){
 function zOnTime(){
   const a = ZMP.audio; if(!a) return;
   const cur=a.currentTime, dur=a.duration||0, pct=dur?(cur/dur)*100:0;
-  // center
   const pf=document.getElementById('zpf'); if(pf) pf.style.width=pct+'%';
   const ct=document.getElementById('zpt-cur'); if(ct) ct.textContent=fmtT(cur);
   const dt=document.getElementById('zpt-dur'); if(dt) dt.textContent=fmtT(dur);
-  // bottom
   const bf=document.getElementById('zbt-fill'); if(bf) bf.style.width=pct+'%';
   const bc=document.getElementById('zbt-cur'); if(bc) bc.textContent=fmtT(cur);
   const bd=document.getElementById('zbt-dur'); if(bd) bd.textContent=fmtT(dur);
-  // Save position to music history every 5 seconds
   if(!ZMP._lastHistSave || cur - ZMP._lastHistSave >= 5){
     ZMP._lastHistSave = cur;
     const track = ZMP.results[ZMP.curIdx];
@@ -480,14 +461,20 @@ window.zTogglePlay = function(){
   if(!a) return;
   if(a.paused){
     a.play(); ZMP.playing=true;
-    document.getElementById('zplay-btn').textContent='⏸';
-    document.getElementById('zbt-play').textContent='⏸';
+    // FIX: dùng innerHTML svg thay vì textContent ký tự unicode
+    const pb = document.getElementById('zplay-btn');
+    if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    const pbt = document.getElementById('zbt-play');
+    if(pbt) pbt.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
     const disc2 = document.getElementById('zart-disc');
     if(disc2){ disc2.classList.add('spinning'); disc2.classList.remove('paused'); }
+    document.getElementById('zbt-art')?.classList.add('spinning');
   } else {
     a.pause(); ZMP.playing=false;
-    document.getElementById('zplay-btn').textContent='▶';
-    document.getElementById('zbt-play').textContent='▶';
+    const pb = document.getElementById('zplay-btn');
+    if(pb) pb.innerHTML=`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+    const pbt = document.getElementById('zbt-play');
+    if(pbt) pbt.innerHTML=`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     document.getElementById('zbt-art')?.classList.remove('spinning');
     const disc2 = document.getElementById('zart-disc');
     if(disc2){ disc2.classList.remove('spinning'); disc2.classList.add('paused'); }
@@ -570,3 +557,60 @@ window.zSwitchTab = function(tab){
   document.getElementById('ztab-queue').className = 'zrt'+(tab==='queue'?' on':'');
   document.getElementById('ztab-lyrics').className = 'zrt'+(tab==='lyrics'?' on':'');
 };
+
+// ── Keyboard Shortcuts ────────────────────────────────────
+// FIX: thêm keyboard shortcuts cho J/K/V và các phím khác
+document.addEventListener('keydown', function(e){
+  // Bỏ qua khi đang focus vào input/textarea/select
+  const tag = document.activeElement?.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+  // Bỏ qua khi đang xem phim (iframe focused)
+  if(document.activeElement?.tagName==='IFRAME') return;
+
+  switch(e.key){
+    case ' ':                          // Space = play/pause
+      e.preventDefault();
+      if(ZMP.audio) zTogglePlay();
+      break;
+    case 'k':                          // K = play/pause
+    case 'K':
+      if(ZMP.audio) zTogglePlay();
+      break;
+    case 'j':                          // J = bài trước
+    case 'J':
+      if(ZMP.results.length) zPrev();
+      break;
+    case 'l':                          // L = bài tiếp
+    case 'L':
+      if(ZMP.results.length) zNext();
+      break;
+    case 'ArrowLeft':                  // ← = tua lùi 5s
+      if(ZMP.audio){ e.preventDefault(); ZMP.audio.currentTime = Math.max(0, ZMP.audio.currentTime - 5); }
+      break;
+    case 'ArrowRight':                 // → = tua tới 5s
+      if(ZMP.audio){ e.preventDefault(); ZMP.audio.currentTime = Math.min(ZMP.audio.duration||0, ZMP.audio.currentTime + 5); }
+      break;
+    case 'ArrowUp':                    // ↑ = tăng volume
+      e.preventDefault();
+      zSetVol(Math.min(1, ZMP.volume + 0.1).toFixed(2));
+      break;
+    case 'ArrowDown':                  // ↓ = giảm volume
+      e.preventDefault();
+      zSetVol(Math.max(0, ZMP.volume - 0.1).toFixed(2));
+      break;
+    case 'v':                          // V = mute/unmute
+    case 'V':
+    case 'm':                          // M = mute
+    case 'M':
+      zMute();
+      break;
+    case 'r':                          // R = toggle loop
+    case 'R':
+      zToggleLoop();
+      break;
+    case 's':                          // S = toggle shuffle
+    case 'S':
+      zToggleShuffle();
+      break;
+  }
+});
