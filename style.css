@@ -1475,7 +1475,7 @@ body.has-player { padding-bottom: 72px; }
   height: 150%;
   border: none;
   display: block;
-  pointer-events: none;
+  pointer-events: auto;
 }
 
 /* Controls overlay — hidden by default, shown on tap/hover, auto-hide after 3s */
@@ -1492,6 +1492,12 @@ body.has-player { padding-bottom: 72px; }
 #dzi-pip.pip-show-ctrl #dzi-pip-controls,
 #dzi-pip:hover #dzi-pip-controls {
   opacity: 1;
+  /* Keep pointer-events:none so taps fall through to pip-video */
+  pointer-events: none;
+}
+/* Only close button itself is clickable */
+#dzi-pip.pip-show-ctrl .pip-btn,
+#dzi-pip:hover .pip-btn {
   pointer-events: auto;
 }
 
@@ -1514,25 +1520,22 @@ body.has-player { padding-bottom: 72px; }
   flex: 1;
 }
 
-/* Center: tap = go back to player */
-#dzi-pip-center {
+/* pip-video wrapper */
+#dzi-pip-video { cursor: pointer; position: relative; }
+
+/* Shield: transparent layer on top of iframe, catches taps to show controls */
+#dzi-pip-shield {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 3;
   cursor: pointer;
+  /* Active when controls hidden — intercepts taps */
+  pointer-events: auto;
 }
-#pip-play-ico {
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  background: rgba(0,0,0,.55);
-  display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(4px);
-  border: 1.5px solid rgba(255,255,255,.35);
-  transition: transform .15s, background .15s;
+/* When controls are showing: shield deactivates so iframe gets taps (play/pause) */
+#dzi-pip.pip-show-ctrl #dzi-pip-shield {
+  pointer-events: none;
 }
-#pip-play-ico:active { background: rgba(220,38,38,.7); transform: scale(.95); }
 
 /* Close button */
 .pip-btn {

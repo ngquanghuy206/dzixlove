@@ -100,6 +100,12 @@ function pipShowControls(){
   _pipHideT = setTimeout(()=>{ pip.classList.remove('pip-show-ctrl'); }, 3000);
 }
 
+// Tap handler on shield: show controls (shield then deactivates so iframe gets taps)
+window.pipHandleTap = function(e){
+  if(e.target.closest('.pip-btn')) return;
+  pipShowControls();
+};
+
 function initPipDrag(){
   const pip = document.getElementById('dzi-pip');
   if(!pip) return;
@@ -119,10 +125,6 @@ function initPipDrag(){
     pip.style.transform=`translate(${ox}px,${oy}px)`;
   });
   pip.addEventListener('pointerup', e=>{
-    if(!moved && !e.target.closest('.pip-btn')){
-      // Short tap = show/hide controls (auto-hide after 3s)
-      pipShowControls();
-    }
     dragging=false;
   });
 }
