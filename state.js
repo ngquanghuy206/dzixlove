@@ -58,8 +58,9 @@ window.pipClose = function(){
   const pip = document.getElementById('dzi-pip');
   const fr  = document.getElementById('dzi-pip-frame');
   if(pip) pip.classList.remove('show');
-  if(fr) fr.src = 'about:blank';
   PIP.active = false; PIP.src = ''; PIP.title = '';
+  // Delay blanking so iframe keeps playing briefly while navigating
+  setTimeout(()=>{ if(!PIP.active && fr) fr.src = 'about:blank'; }, 500);
 };
 
 window.pipGoBack = function(){
@@ -67,18 +68,22 @@ window.pipGoBack = function(){
   if(PIP.fromPage){
     const p = PIP.fromPage, o = PIP.fromOpts;
     PIP.fromPage = null;
-    pipClose();
-    go(p, o);
+    // Hide PiP visually first
+    const pip = document.getElementById('dzi-pip');
+    if(pip) pip.classList.remove('show');
+    PIP.active = false;
+    // go() is defined later in router.js, use setTimeout to be safe
+    setTimeout(()=>{ if(window.go) window.go(p, o); }, 0);
   }
 };
 
-// Draggable PiP
-(function(){
+// Draggable PiP — init after DOM ready
+function initPipDrag(){
   const pip = document.getElementById('dzi-pip');
   if(!pip) return;
   let ox=0,oy=0,startX=0,startY=0,dragging=false;
   pip.addEventListener('pointerdown', e=>{
-    if(e.target.classList.contains('pip-btn')) return;
+    if(e.target.closest('.pip-btn')) return;
     dragging=true; pip.setPointerCapture(e.pointerId);
     startX=e.clientX-ox; startY=e.clientY-oy;
   });
@@ -88,7 +93,12 @@ window.pipGoBack = function(){
     pip.style.transform=`translate(${ox}px,${oy}px)`;
   });
   pip.addEventListener('pointerup', ()=>{ dragging=false; });
-})();
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', initPipDrag);
+} else {
+  initPipDrag();
+}
 
 const PLAYER_PAGES = new Set(['play-kk','play-ani','play-yt']);
 
@@ -122,7 +132,7 @@ window.go = function(page, opts){
 };
 
 // Intercept browser back button
-window.addEventListener('popstate', function(){
+window.addEventListener('popstate', function(e){
   if(PLAYER_PAGES.has(S.page)){
     const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
     if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
@@ -131,13 +141,18 @@ window.addEventListener('popstate', function(){
       PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId };
       pipShow(PIP.src, PIP.title || 'Đang xem...');
     }
+    // Navigate back to previous non-player page
+    S.page = 'home';
+    setTimeout(()=>{ if(window.render) window.render(); }, 0);
   }
 });
 // Push state when entering player so back button fires popstate
 const _origRender = window.render;
 window.render = function(){
   if(PLAYER_PAGES.has(S.page)){
-    history.pushState({ page: S.page }, '', location.href);
+    // Store current "from" page so back buttons can navigate correctly
+    const prevState = history.state || {};
+    history.pushState({ page: S.page, from: prevState.page || 'home', fromOpts: prevState.fromOpts || {} }, '', location.href);
   }
   _origRender();
 };

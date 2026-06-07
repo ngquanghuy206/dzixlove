@@ -1440,12 +1440,12 @@ body.has-player { padding-bottom: 72px; }
   position: fixed;
   bottom: 80px;
   right: 12px;
-  width: 240px;
+  width: 300px;
   z-index: 900;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,.7);
-  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.15);
   background: #000;
   cursor: move;
   user-select: none;
@@ -1469,10 +1469,11 @@ body.has-player { padding-bottom: 72px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 10px;
-  background: rgba(10,10,18,.92);
-  backdrop-filter: blur(8px);
+  padding: 7px 10px 7px 12px;
+  background: rgba(15,15,25,.95);
+  backdrop-filter: blur(12px);
   gap: 8px;
+  border-top: 1px solid rgba(255,255,255,.07);
 }
 #dzi-pip-title {
   font-size: 11px;
@@ -1483,18 +1484,18 @@ body.has-player { padding-bottom: 72px; }
   flex: 1;
 }
 .pip-btn {
-  width: 26px; height: 26px;
-  border-radius: 6px;
-  background: rgba(255,255,255,.1);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: transparent;
   border: none;
-  color: #fff;
+  color: rgba(255,255,255,.8);
   font-size: 13px;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: background .15s;
+  transition: background .15s, color .15s;
 }
-.pip-btn:hover { background: rgba(255,255,255,.2); }
+.pip-btn:hover { background: rgba(220,38,38,.7); color: #fff; }
 @media(max-width:750px){
-  #dzi-pip { width: 180px; bottom: 70px; }
+  #dzi-pip { width: 260px; bottom: 70px; }
 }

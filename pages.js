@@ -544,7 +544,7 @@ async function pgDetKK(){
           <div class="det-acts">
             <button class="btn btn-red" onclick="go('play-kk',{slug:'${esc(movie.slug||S.slug)}'})">▶ Xem phim</button>
             <button class="fav-btn${wl?' on':''}" id="fav-btn" onclick='toggleWL(${JSON.stringify(wlData)})'>${wl?'❤️':'🤍'}</button>
-            <button class="btn btn-ghost" onclick="history.length>1?history.back():go('home')">← Quay lại</button>
+            <button class="btn btn-ghost" onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})">← Quay lại</button>
           </div>
         </div>
       </div>
@@ -618,7 +618,7 @@ async function pgDetAni(){
           <div class="det-acts">
             <button class="btn btn-red" onclick="go('play-ani',{malId:${anime.mal_id}})">▶ Xem tập 1</button>
             <button class="fav-btn${wl?' on':''}" id="fav-btn" onclick='toggleWL(${JSON.stringify(wlData)})'>${wl?'❤️':'🤍'}</button>
-            <button class="btn btn-ghost" onclick="history.length>1?history.back():go('home')">← Quay lại</button>
+            <button class="btn btn-ghost" onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})">← Quay lại</button>
           </div>
         </div>
       </div>
@@ -676,7 +676,7 @@ async function pgPlayKK(){
 
   app.innerHTML=renderNav()+`<div class="player-page page">
     <div class="player-wrap" style="position:relative">
-      <button onclick="history.back()" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+      <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       ${playerHTML}
@@ -736,7 +736,7 @@ async function pgPlayAni(){
     PIP.src = aniEmbedSrc; PIP.title = anime&&anime.title||'Anime';
     app.innerHTML=renderNav()+`<div class="player-page page">
       <div class="player-wrap" style="position:relative">
-        <button onclick="history.back()" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+        <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <iframe id="ani-fr" src="${esc(aniEmbedSrc)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
@@ -785,7 +785,7 @@ function pgPlayYT(){
   addHist({uid:'yt_'+id,name:'DZITube: '+id,thumb:thumb,year:'',src:'yt',ytId:id});
   app.innerHTML=renderNav()+`<div class="player-page page">
     <div class="player-wrap" style="position:relative">
-      <button onclick="history.back()" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+      <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <iframe src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
