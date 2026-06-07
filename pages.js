@@ -811,16 +811,6 @@ async function pgDZITube(){
   const app=document.getElementById('app');
   app.innerHTML=renderNav()+`<div class="cat-page page">
     <h1 style="color:var(--yt)">🔴 DZITube</h1>
-    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
-      <button class="btn" style="background:linear-gradient(135deg,#c00,#ef4444);color:#fff;font-size:15px;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;min-width:160px;justify-content:center" onclick="go('cat',{cat:'yt'})">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
-        Xem DZITube
-      </button>
-      <button class="btn" style="background:linear-gradient(135deg,#1a0a0a,#ff0050);color:#fff;font-size:15px;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;min-width:160px;justify-content:center" onclick="go('dzitube-short')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 10.79L8 5.09A2 2 0 0 0 5 6.84v10.32a2 2 0 0 0 3 1.75l9.05-5.7a2 2 0 0 0 0-3.42z"/></svg>
-        DZITube Short
-      </button>
-    </div>
     <div class="sec-head"><h2 class="sec-title">🔥 Trending DZITube</h2></div>
     <div id="dzt-grid" class="yt-grid">${skGrid(12).replace(/sk-p/g,'sk-yt')}</div>
   </div>`;
@@ -919,43 +909,93 @@ function shortRender(){
   const slide=document.getElementById('short-slide');
   if(!slide) return;
   const h=window.innerHeight;
-  const w=window.innerWidth;
   slide.innerHTML=_shortVideos.map((v,i)=>{
     const thumb=(v.videoThumbnails||[]).find(t=>t.quality==='medium')||v.videoThumbnails?.[0]||{};
-    return `<div class="short-slide-item" data-idx="${i}" data-vid="${esc(v.videoId)}" style="position:absolute;top:${i*100}%;left:0;width:100%;height:${h}px;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer" onclick="shortPlay('${esc(v.videoId)}',${i})">
-      <img src="${esc(thumb.url||'')}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;opacity:.7" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"/>
-      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%,rgba(0,0,0,.3) 100%)"></div>
-      <!-- Play icon -->
-      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.9">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(255,255,255,.85)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.4)"/><path d="M10 8l6 4-6 4V8z"/></svg>
-      </div>
-      <!-- Info bottom -->
-      <div style="position:absolute;bottom:80px;left:16px;right:70px">
-        <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:6px">${esc(v.title||'')}</div>
-        <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
-      </div>
-      <!-- Side actions -->
-      <div style="position:absolute;bottom:100px;right:12px;display:flex;flex-direction:column;align-items:center;gap:20px">
-        <div style="text-align:center;cursor:pointer" onclick="event.stopPropagation();go('play-yt',{ytId:'${esc(v.videoId)}'})">
-          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+    return `<div class="short-slide-item" data-idx="${i}" data-vid="${esc(v.videoId)}" style="position:absolute;top:${i*100}%;left:0;width:100%;height:${h}px;background:#000;overflow:hidden">
+      <!-- Thumbnail + overlay (ẩn khi đang play) -->
+      <div id="short-thumb-${i}" style="position:absolute;inset:0;z-index:2">
+        <img src="${esc(thumb.url||'')}" style="width:100%;height:100%;object-fit:cover;opacity:.7" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%,rgba(0,0,0,.3) 100%)"></div>
+        <!-- Tap to play -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);cursor:pointer" onclick="shortPlay('${esc(v.videoId)}',${i})">
+          <svg width="72" height="72" viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.5)"/><path d="M10 8l6 4-6 4V8z"/></svg>
+        </div>
+        <!-- Info bottom -->
+        <div style="position:absolute;bottom:80px;left:16px;right:70px;pointer-events:none">
+          <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:4px">${esc(v.title||'')}</div>
+          <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
+        </div>
+        <!-- Side: mở full player -->
+        <div style="position:absolute;bottom:100px;right:12px;text-align:center;cursor:pointer" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
           </div>
-          <div style="color:#fff;font-size:10px;margin-top:3px">Mở</div>
+          <div style="color:#fff;font-size:10px;margin-top:3px">Mở rộng</div>
         </div>
       </div>
-      <!-- Progress dots -->
-      <div id="short-dots-${i}" style="position:absolute;bottom:30px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:4px"></div>
+      <!-- YT iframe (hidden until play) -->
+      <div id="short-iframe-${i}" style="position:absolute;inset:0;z-index:1;display:none">
+        <iframe id="short-yt-${i}" width="100%" height="100%"
+          style="border:none;display:block"
+          allow="autoplay;encrypted-media"
+          allowfullscreen>
+        </iframe>
+        <!-- Tap overlay to pause/resume -->
+        <div style="position:absolute;inset:0;z-index:3;cursor:pointer" onclick="shortToggle(${i})"></div>
+        <!-- Pause icon (shows on tap) -->
+        <div id="short-pause-icon-${i}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .3s">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(255,255,255,.85)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.4)"/><rect x="8" y="7" width="3" height="10" rx="1"/><rect x="13" y="7" width="3" height="10" rx="1"/></svg>
+        </div>
+        <!-- Info bottom khi đang play -->
+        <div style="position:absolute;bottom:80px;left:16px;right:70px;pointer-events:none;z-index:4">
+          <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:4px">${esc(v.title||'')}</div>
+          <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
+        </div>
+        <!-- Side: mở full player -->
+        <div style="position:absolute;bottom:100px;right:12px;text-align:center;cursor:pointer;z-index:5" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </div>
+          <div style="color:#fff;font-size:10px;margin-top:3px">Mở rộng</div>
+        </div>
+      </div>
     </div>`;
   }).join('');
   shortGoto(_shortIdx,false);
 }
 
 window.shortPlay=function(vid,idx){
-  // tap to play → open full player
-  go('play-yt',{ytId:vid});
+  // Hide thumbnail, show iframe and load YT embed with autoplay
+  const thumb=document.getElementById('short-thumb-'+idx);
+  const iframeWrap=document.getElementById('short-iframe-'+idx);
+  const iframe=document.getElementById('short-yt-'+idx);
+  if(!iframe||!iframeWrap) return;
+  if(thumb) thumb.style.display='none';
+  iframeWrap.style.display='block';
+  // Only set src if not already set
+  if(!iframe.src||iframe.src==='about:blank'||!iframe.src.includes('youtube')){
+    iframe.src=`https://www.youtube.com/embed/${vid}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
+  }
+  window._shortPlayingIdx=idx;
+};
+
+window.shortToggle=function(idx){
+  // Show pause icon briefly
+  const icon=document.getElementById('short-pause-icon-'+idx);
+  if(icon){ icon.style.opacity='1'; setTimeout(()=>{ if(icon) icon.style.opacity='0'; },600); }
 };
 
 function shortGoto(idx,animate){
+  // Pause iframe của slide trước
+  if(typeof window._shortPlayingIdx==='number' && window._shortPlayingIdx!==idx){
+    const oldIframe=document.getElementById('short-yt-'+window._shortPlayingIdx);
+    if(oldIframe) oldIframe.src='';
+    const oldWrap=document.getElementById('short-iframe-'+window._shortPlayingIdx);
+    if(oldWrap) oldWrap.style.display='none';
+    const oldThumb=document.getElementById('short-thumb-'+window._shortPlayingIdx);
+    if(oldThumb) oldThumb.style.display='block';
+    window._shortPlayingIdx=null;
+  }
   _shortIdx=idx;
   const slide=document.getElementById('short-slide');
   if(!slide) return;
