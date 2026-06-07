@@ -293,7 +293,7 @@ img{display:block}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(79,124,255,.2);border-top-color:var(--primary);border-radius:50%;animation:sp .7s linear infinite}
 .spin-lg{width:32px;height:32px;border-width:3px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.loading{height:65vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px}
+.loading{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 .loading p{font-size:13px;color:var(--mu)}
 
 /* PAGE ANIM */
@@ -1042,12 +1042,11 @@ body.has-player { padding-bottom: 72px; }
 
 .intro-hero {
   position: relative;
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 80px 24px 60px;
+  padding: 64px 24px 40px;
 }
 .intro-hero-bg {
   position: absolute;

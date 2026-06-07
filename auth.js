@@ -18,6 +18,19 @@ let _rememberMe    = localStorage.getItem('dzi_remember') === '1';
       DZI_TOKEN = tok;
       DZI_USER  = JSON.parse(usr);
       DZI_ADMIN = DZI_USER.role === 'admin';
+      // Re-verify admin từ server nếu role bị lưu sai
+      if(!DZI_ADMIN && DZI_TOKEN){
+        fetch((window.API_BASE||'')+'/api/user/profile',{headers:{'Authorization':'Bearer '+DZI_TOKEN}})
+          .then(r=>r.ok?r.json():null).then(d=>{
+            if(d && d.is_admin){
+              DZI_USER.role='admin'; DZI_ADMIN=true;
+              const s2=localStorage.getItem('dzi_token')?localStorage:sessionStorage;
+              s2.setItem('dzi_user',JSON.stringify(DZI_USER));
+              if(window.render) render();
+              if(window.updateNavUser) updateNavUser();
+            }
+          }).catch(()=>{});
+      }
     } catch(e){ DZI_TOKEN = null; DZI_USER = null; }
   }
 })();
@@ -336,6 +349,7 @@ window.openAccountModal = function(){
   if(el('dzi-acc-username'))    el('dzi-acc-username').textContent    = DZI_USER.username||'—';
   if(el('dzi-acc-email'))       el('dzi-acc-email').textContent       = DZI_USER.email||'—';
   if(el('dzi-acc-role'))        el('dzi-acc-role').textContent        = DZI_ADMIN?'👑 Admin':'Thành viên';
+  if(el('dzi-acc-role2'))       el('dzi-acc-role2').textContent       = DZI_ADMIN?'👑 Admin':'Thành viên';
   if(el('dzi-acc-joindate'))    el('dzi-acc-joindate').textContent    = DZI_USER.joinDate||'—';
   if(el('dzi-acc-username-at')) el('dzi-acc-username-at').textContent = DZI_USER.username||'—';
 
@@ -520,8 +534,17 @@ window.saveAdminStats = async function(){
   }
 };
 
-// Load saved trust count from localStorage on startup
+// Load trust count từ server (fallback localStorage)
 (function loadTrustCount(){
   const saved = localStorage.getItem('dzi_trust_count');
   if(saved) window.DZI_TRUST_COUNT = parseInt(saved);
+  fetch((window.API_BASE||'')+'/api/stats')
+    .then(r=>r.json()).then(d=>{
+      if(d && d.trust_count){
+        window.DZI_TRUST_COUNT = d.trust_count;
+        localStorage.setItem('dzi_trust_count', d.trust_count);
+        // Re-render home nếu đang ở trang home
+        if(window.S && window.S.page==='home' && window.pgHome) pgHome();
+      }
+    }).catch(()=>{});
 })();

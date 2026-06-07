@@ -317,7 +317,7 @@ async function pgPhim(){
     const ytHTML = (ytV||[]).length
       ? ytV.map(CardYT).join('')
       : `<div style="color:var(--mu);font-size:13px;padding:18px">YouTube không load. <a onclick="go('cat',{cat:'yt'})" style="color:var(--yt);cursor:pointer">Tìm thủ công →</a></div>`;
-    const staleNote = isStale ? `<div id="phim-refresh-note" style="position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:rgba(255,255,255,.5);font-size:11px;padding:4px 12px;border-radius:20px;z-index:500;pointer-events:none">Đang cập nhật...</div>` : '';
+    const staleNote = ''; // Update ngầm, không thông báo
     return `${staleNote}<div class="hero" id="hero">${heroHTML}<div class="hdots">${dotsHTML}</div></div>
     <section class="sec">
       <div class="sec-head"><h2 class="sec-title">🆕 Phim Việt mới cập nhật</h2><a class="see-all" onclick="go('cat',{cat:'phim-moi'})">Tất cả →</a></div>
@@ -387,11 +387,9 @@ async function pgPhim(){
     return;
   }
 
-  // ── Không có cache: hiện skeleton rồi fetch ──
+  // ── Không có cache: hiện skeleton rồi fetch (không spinner, load ngầm) ──
   app.innerHTML = renderNav() + `<div class="page" id="hp">
-    <div class="hero" style="display:flex;align-items:center;justify-content:center;background:var(--s1)">
-      <div style="text-align:center"><div class="spin spin-lg" style="margin:0 auto 12px"></div><p style="font-size:13px;color:var(--mu)">Đang tải phim...</p></div>
-    </div>
+    <div class="hero sk" style="height:420px;border-radius:0;flex-shrink:0"></div>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">🆕 Phim Việt mới</h2></div>${skRow()}</section>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">🔊 Lồng tiếng</h2></div>${skRow()}</section>
     <section class="sec"><div class="sec-head"><h2 class="sec-title">📺 Phim bộ</h2></div>${skRow()}</section>
@@ -593,7 +591,7 @@ window.loadCat = async function(p){
 // ═══════════════════════════════════════
 async function pgDetKK(){
   const app=document.getElementById('app');
-  app.innerHTML=renderNav()+`<div class="det page"><div class="loading"><div class="spin spin-lg"></div><p>Đang tải phim...</p></div></div>`;
+  app.innerHTML=renderNav()+`<div class="det page"><div class="loading" style="padding-top:40px"><div class="spin"></div></div></div>`;
   setupNavScroll();
   let data, movie, episodes=[];
   try{ data=await kkDetail(S.slug); movie=data&&data.movie||data; episodes=data&&data.episodes||[]; }
@@ -676,7 +674,7 @@ async function pgDetKK(){
 // ═══════════════════════════════════════
 async function pgDetAni(){
   const app=document.getElementById('app');
-  app.innerHTML=renderNav()+`<div class="det page"><div class="loading"><div class="spin spin-lg"></div><p>Đang tải anime...</p></div></div>`;
+  app.innerHTML=renderNav()+`<div class="det page"><div class="loading" style="padding-top:40px"><div class="spin"></div></div></div>`;
   setupNavScroll();
   let anime;
   try{ const d=await jkDetail(S.malId); anime=d&&d.data||d; }
@@ -745,7 +743,7 @@ async function pgDetAni(){
 // ═══════════════════════════════════════
 async function pgPlayKK(){
   const app=document.getElementById('app');
-  app.innerHTML=renderNav()+`<div class="player-page page"><div class="loading"><div class="spin spin-lg"></div><p>Đang tải player...</p></div></div>`;
+  app.innerHTML=renderNav()+`<div class="player-page page"><div class="loading" style="padding-top:40px"><div class="spin"></div></div></div>`;
   setupNavScroll();
   let data, movie, episodes=[];
   try{ data=await kkDetail(S.slug); movie=data&&data.movie||data; episodes=data&&data.episodes||[]; }
@@ -835,7 +833,7 @@ async function pgPlayKK(){
 async function pgPlayAni(){
   const app=document.getElementById('app');
   const id=S.malId, epn=S.epNum||1, dub=S.dub||0;
-  app.innerHTML=renderNav()+`<div class="player-page page"><div class="loading"><div class="spin spin-lg"></div><p>Đang tải anime player...</p></div></div>`;
+  app.innerHTML=renderNav()+`<div class="player-page page"><div class="loading" style="padding-top:40px"><div class="spin"></div></div></div>`;
   setupNavScroll();
   try{
     const d=await jkDetail(id); const anime=d&&d.data||d;
