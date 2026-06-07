@@ -233,6 +233,40 @@ function renderNav(){
       </a></li>
     </ul>
 
+    <div class="sb-divider"></div>
+
+    <!-- NHIỆM VỤ -->
+    <div class="sb-section-title" style="color:#fbbf24">⚔️ NHIỆM VỤ</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='missions'?'on':''}" onclick="go('missions');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- LIÊN HỆ ADMIN -->
+    <div class="sb-section-title">LIÊN HỆ</div>
+    <ul class="sb-icon-links">
+      <li><a href="https://zalo.me/0993329535" target="_blank" rel="noopener">
+        <span class="sbi" style="background:linear-gradient(135deg,#0a2540,#0068ff)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+        </span><span style="color:#4f9eff">Zalo Admin</span>
+      </a></li>
+      <li><a href="https://t.me/dzimeomeo" target="_blank" rel="noopener">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a3a5c,#29b6f6)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.68 8.26l-2.05 9.66c-.15.68-.55.84-1.11.52l-3.07-2.26-1.48 1.43c-.16.16-.3.3-.62.3l.22-3.12 5.67-5.12c.25-.22-.05-.34-.38-.12L6.97 14.6 3.94 13.6c-.66-.21-.67-.66.14-.97l11.16-4.3c.55-.2 1.03.13.44.93z"/></svg>
+        </span><span style="color:#29b6f6">Telegram</span>
+      </a></li>
+      <li><a href="https://tiktok.com/@hkhanhnam206" target="_blank" rel="noopener">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a0a0a,#ee1d52)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.32a8.16 8.16 0 004.77 1.52V7.39a4.85 4.85 0 01-1-.7z"/></svg>
+        </span><span style="color:#ee1d52">@hkhanhnam206</span>
+      </a></li>
+    </ul>
+
   </div>`;
 }
 

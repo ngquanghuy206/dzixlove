@@ -327,6 +327,7 @@ window.zPlay = async function(idx){
   const track = ZMP.results[idx];
   if(!track) return;
   ZMP.curIdx = idx;
+  if(window.missionProgress) missionProgress('listen_music');
 
   // Update active states
   document.querySelectorAll('.zmp-track').forEach(el=>el.classList.remove('zactive'));

@@ -23,6 +23,7 @@ function render(){
     case 'search':    pgSearch();    break;
     case 'watchlist': pgWatchlist(); break;
     case 'nhac':      pgNhac();      break;
+    case 'missions':  pgMissions();  break;
     default:          pgHome();
   }
 }

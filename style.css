@@ -1620,3 +1620,240 @@ body.has-player { padding-bottom: 72px; }
 #short-yt-player { width: 100vw !important; height: 100vh !important; }
 #short-yt-player iframe { width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; pointer-events: none; }
 
+
+/* ═══════════════════════════════════════════════════════
+   DZI AUTH SYSTEM CSS
+════════════════════════════════════════════════════════ */
+
+/* Nav user button */
+.nav-user-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(79,124,255,.12); border: 1px solid rgba(79,124,255,.25);
+  border-radius: 20px; padding: 5px 12px 5px 6px;
+  color: var(--tx); font-family: "Rajdhani", sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .2s; white-space: nowrap;
+}
+.nav-user-btn:hover { background: rgba(79,124,255,.22); border-color: rgba(79,124,255,.5); }
+
+/* Auth card */
+.dzi-auth-card {
+  width: 100%; max-width: 400px;
+  background: rgba(7,11,23,.95);
+  border: 1px solid rgba(79,124,255,.2);
+  border-radius: 28px; padding: 32px 28px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), 0 0 80px rgba(79,124,255,.08);
+  position: relative; z-index: 1;
+  backdrop-filter: blur(24px);
+}
+
+/* Tab buttons */
+.dzi-tab-btn {
+  flex: 1; padding: 9px; border: none; border-radius: 9px;
+  background: transparent; color: rgba(232,238,255,.45);
+  font-family: "Rajdhani", sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all .2s;
+}
+.dzi-tab-btn.active {
+  background: rgba(79,124,255,.2);
+  color: #e8eeff;
+  box-shadow: 0 2px 12px rgba(79,124,255,.2);
+}
+
+/* Field label */
+.dzi-field-label {
+  font-size: 13px; font-weight: 700; color: rgba(232,238,255,.7);
+  margin-bottom: 7px;
+}
+
+/* Input */
+.dzi-input {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,.05);
+  border: 1.5px solid rgba(79,124,255,.15);
+  border-radius: 13px; font-size: 15px; color: #e8eeff;
+  outline: none; font-family: "Rajdhani", sans-serif;
+  box-sizing: border-box; transition: border-color .2s, background .2s;
+}
+.dzi-input:focus {
+  border-color: rgba(79,124,255,.5);
+  background: rgba(79,124,255,.07);
+}
+.dzi-input::placeholder { color: rgba(232,238,255,.25); }
+.dzi-input:-webkit-autofill, .dzi-input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #070b17 inset !important;
+  -webkit-text-fill-color: #e8eeff !important;
+  border-color: rgba(79,124,255,.3) !important;
+}
+
+/* Auth button */
+.dzi-auth-btn {
+  width: 100%; padding: 15px; border: none; border-radius: 13px;
+  font-size: 16px; font-weight: 800; cursor: pointer;
+  background: linear-gradient(135deg, #4f7cff, #7c3aed);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(79,124,255,.4);
+  transition: opacity .15s, transform .15s;
+  font-family: "Rajdhani", sans-serif; letter-spacing: .3px;
+}
+.dzi-auth-btn:hover { opacity: .9; transform: translateY(-1px); }
+.dzi-auth-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* Error */
+.dzi-auth-err {
+  background: rgba(255,82,82,.1); border: 1px solid rgba(255,82,82,.3);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: #ff5252;
+  display: none;
+}
+
+/* Password eye */
+.dzi-pw-eye {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.04); border: 1px solid rgba(79,124,255,.15);
+  border-radius: 8px; cursor: pointer; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(232,238,255,.4); transition: all .18s; padding: 0;
+}
+.dzi-pw-eye svg { width: 16px; height: 16px; }
+.dzi-pw-eye:hover { background: rgba(79,124,255,.15); border-color: rgba(79,124,255,.4); color: #4f7cff; }
+.dzi-pw-eye.active { background: rgba(79,124,255,.2); color: #4f7cff; }
+
+/* Remember check */
+.dzi-remember-check {
+  width: 20px; height: 20px; border-radius: 6px;
+  border: 1.5px solid rgba(79,124,255,.3); background: rgba(255,255,255,.05);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; font-size: 12px;
+}
+.dzi-remember-check.checked {
+  background: linear-gradient(135deg,#4f7cff,#7c3aed);
+  border-color: transparent; color: #fff;
+}
+
+/* OTP Timer */
+.dzi-otp-timer {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; font-size: 13px; color: rgba(232,238,255,.45); margin-bottom: 8px;
+}
+.dzi-otp-timer-val { font-weight: 800; font-variant-numeric: tabular-nums; color: #4f7cff; }
+.dzi-otp-bar { width: 100px; height: 4px; background: rgba(79,124,255,.15); border-radius: 2px; overflow: hidden; display: inline-block; }
+.dzi-otp-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg,#4f7cff,#7c3aed); transition: width 1s linear; }
+
+/* Modals */
+.dzi-modal-overlay {
+  position: fixed; inset: 0; background: rgba(4,6,15,.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 10000; padding: 16px;
+  backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity .25s;
+}
+.dzi-modal-overlay.open { opacity: 1; }
+
+.dzi-modal-box {
+  width: 100%; max-width: 380px;
+  background: #070b17;
+  border: 1px solid rgba(79,124,255,.2);
+  border-radius: 22px; padding: 24px 22px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 40px rgba(79,124,255,.06);
+  max-height: 90vh; overflow-y: auto;
+}
+.dzi-modal-title {
+  font-size: 18px; font-weight: 800; color: #e8eeff;
+  margin-bottom: 16px; text-align: center;
+}
+.dzi-modal-close-btn {
+  width: 100%; padding: 11px; background: rgba(255,255,255,.05);
+  border: 1px solid rgba(79,124,255,.15); border-radius: 12px;
+  color: rgba(232,238,255,.5); font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: "Rajdhani", sans-serif;
+  transition: all .2s;
+}
+.dzi-modal-close-btn:hover { background: rgba(255,82,82,.08); color: #ff5252; border-color: rgba(255,82,82,.2); }
+
+
+/* ═══════════════════════════════════════════
+   DZI v18 — TRUST BAR + ADMIN CARD + MISSIONS
+═══════════════════════════════════════════ */
+
+/* ── Trust Bar ── */
+.intro-trust-bar{
+  display:flex;align-items:center;gap:14px;
+  margin:18px 16px 0;
+  background:rgba(34,197,94,.06);
+  border:1px solid rgba(34,197,94,.2);
+  border-radius:18px;padding:14px 16px;
+  animation:fadeInUp .5s ease .1s both;
+}
+.trust-avatars{display:flex;flex-shrink:0}
+.ta{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:900;color:#fff;
+  border:2px solid #04060f;margin-left:-8px;
+}
+.ta:first-child{margin-left:0}
+.trust-text{flex:1;min-width:0}
+.trust-num{font-size:20px;font-weight:900;color:#22c55e;line-height:1}
+.trust-label{font-size:11px;color:rgba(232,238,255,.45);margin-top:2px}
+.trust-badge{
+  flex-shrink:0;display:flex;align-items:center;gap:5px;
+  font-size:11px;font-weight:700;color:#22c55e;
+  background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);
+  padding:5px 10px;border-radius:20px;
+}
+
+/* ── Mission Promo Card ── */
+.intro-mission-card{
+  display:flex;align-items:center;gap:12px;
+  margin:14px 16px 0;
+  background:rgba(79,124,255,.07);
+  border:1px solid rgba(79,124,255,.2);
+  border-radius:18px;padding:14px 16px;
+  cursor:pointer;transition:all .25s;
+  animation:fadeInUp .5s ease .2s both;
+}
+.intro-mission-card:active{transform:scale(.98);opacity:.9}
+.imc-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.imc-icon{font-size:28px;flex-shrink:0}
+.imc-title{font-size:15px;font-weight:800;color:#e8eeff}
+.imc-sub{font-size:12px;color:rgba(232,238,255,.5);margin-top:2px}
+.imc-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.imc-ring{position:relative;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+
+/* ── Admin Info Card ── */
+.intro-admin-card{
+  margin:14px 16px 24px;
+  background:linear-gradient(135deg,rgba(79,124,255,.08),rgba(124,58,237,.06));
+  border:1px solid rgba(79,124,255,.2);
+  border-radius:20px;padding:18px;
+  animation:fadeInUp .5s ease .3s both;
+}
+.iac-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.iac-crown{
+  width:52px;height:52px;border-radius:16px;
+  background:linear-gradient(135deg,#1a2744,#4f7cff);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;flex-shrink:0;
+  box-shadow:0 4px 16px rgba(79,124,255,.3);
+}
+.iac-name{font-size:16px;font-weight:900;color:#e8eeff}
+.iac-role{font-size:11px;color:rgba(232,238,255,.45);margin-top:3px}
+.iac-contacts{display:flex;flex-wrap:wrap;gap:8px}
+.iac-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:12px;
+  font-size:12px;font-weight:700;text-decoration:none;
+  border:1px solid;transition:all .2s;
+  cursor:pointer;
+}
+.iac-btn:active{transform:scale(.96)}
+.iac-zalo{color:#4f9eff;border-color:rgba(79,158,255,.3);background:rgba(79,158,255,.08)}
+.iac-tele{color:#29b6f6;border-color:rgba(41,182,246,.3);background:rgba(41,182,246,.08)}
+.iac-tiktok{color:#ee1d52;border-color:rgba(238,29,82,.3);background:rgba(238,29,82,.08)}
+
+/* ── Missions Page ── */
+#pg-missions .intro-stat{animation:fadeInUp .4s ease both}
+
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}

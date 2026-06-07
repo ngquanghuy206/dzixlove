@@ -86,13 +86,244 @@
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════════════ -->
+<div id="dzi-auth-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;position:fixed;inset:0;z-index:9999;background:#04060f">
+  <!-- Glow orbs -->
+  <div style="position:absolute;inset:0;pointer-events:none;overflow:hidden">
+    <div style="position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(79,124,255,.18),transparent 70%);top:-200px;left:-200px"></div>
+    <div style="position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.15),transparent 70%);bottom:-200px;right:-200px"></div>
+  </div>
+
+  <div class="dzi-auth-card">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#4f7cff,#7c3aed);margin-bottom:14px;box-shadow:0 8px 32px rgba(79,124,255,.4)">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </div>
+      <div id="dzi-title-login" style="font-size:26px;font-weight:800;color:#e8eeff;letter-spacing:-.5px">Chào mừng trở lại</div>
+      <div id="dzi-title-register" style="font-size:26px;font-weight:800;color:#e8eeff;letter-spacing:-.5px;display:none">Tạo tài khoản</div>
+      <div id="dzi-sub-login" style="font-size:14px;color:rgba(232,238,255,.45);margin-top:4px">Đăng nhập vào DZI MUSIC & MOVIE</div>
+      <div id="dzi-sub-register" style="font-size:14px;color:rgba(232,238,255,.45);margin-top:4px;display:none">Tạo tài khoản miễn phí ngay</div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;background:rgba(255,255,255,.05);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px">
+      <button id="dzi-tab-login" class="dzi-tab-btn active" onclick="switchAuthTab('login')">Đăng nhập</button>
+      <button id="dzi-tab-reg"   class="dzi-tab-btn"        onclick="switchAuthTab('register')">Đăng ký</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="dzi-login-form" style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div class="dzi-field-label">Tên đăng nhập</div>
+        <input class="dzi-input" id="dzi-login-user" type="text" placeholder="Nhập tên đăng nhập" autocomplete="username"
+          onkeydown="if(event.key==='Enter')document.getElementById('dzi-login-pass').focus()">
+      </div>
+      <div>
+        <div class="dzi-field-label">Mật khẩu</div>
+        <div style="position:relative">
+          <input class="dzi-input" id="dzi-login-pass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password"
+            style="padding-right:48px" onkeydown="if(event.key==='Enter')doLogin()">
+          <button type="button" class="dzi-pw-eye" onclick="dziTogglePw('dzi-login-pass',this)">
+            <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-off-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none" onclick="dziToggleRemember()">
+          <div class="dzi-remember-check" id="dzi-remember-check"></div>
+          <span style="font-size:13px;color:rgba(232,238,255,.55)">Ghi nhớ đăng nhập</span>
+        </div>
+        <span onclick="openForgotModal()" style="font-size:13px;font-weight:700;color:rgba(79,124,255,.9);cursor:pointer">Quên mật khẩu?</span>
+      </div>
+      <div class="dzi-auth-err" id="dzi-login-err"></div>
+      <button class="dzi-auth-btn" id="dzi-login-btn" onclick="doLogin()">🔐 Đăng nhập</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="dzi-register-form" style="display:none;flex-direction:column;gap:14px">
+      <!-- Step 1 -->
+      <div id="dzi-reg-step1">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <div class="dzi-field-label">Tên đăng nhập</div>
+            <input class="dzi-input" id="dzi-reg-user" type="text" placeholder="Tối thiểu 6 ký tự" autocomplete="username">
+          </div>
+          <div>
+            <div class="dzi-field-label">Mật khẩu</div>
+            <div style="position:relative">
+              <input class="dzi-input" id="dzi-reg-pass" type="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" style="padding-right:48px">
+              <button type="button" class="dzi-pw-eye" onclick="dziTogglePw('dzi-reg-pass',this)">
+                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="eye-off-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="dzi-field-label">Gmail</div>
+            <input class="dzi-input" id="dzi-reg-email" type="email" placeholder="example@gmail.com"
+              onkeydown="if(event.key==='Enter')doRegisterSendOtp()">
+          </div>
+          <div class="dzi-auth-err" id="dzi-reg-err"></div>
+          <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegisterSendOtp()">📧 Gửi mã OTP xác minh</button>
+        </div>
+      </div>
+      <!-- Step 2: OTP -->
+      <div id="dzi-reg-step2" style="display:none;flex-direction:column;gap:10px">
+        <p style="font-size:12px;color:rgba(232,238,255,.45);text-align:center;margin:0">📨 Mã OTP đã gửi về Gmail của bạn</p>
+        <div class="dzi-otp-timer">
+          ⏱ Còn lại: <span class="dzi-otp-timer-val" id="dzi-reg-timer-val">5:00</span>
+          <span class="dzi-otp-bar"><span class="dzi-otp-fill" id="dzi-reg-bar-fill" style="width:100%"></span></span>
+        </div>
+        <input class="dzi-input" id="dzi-reg-otp" type="text" maxlength="6" placeholder="Nhập OTP 6 số"
+          style="letter-spacing:8px;font-size:20px;text-align:center">
+        <button class="dzi-auth-btn" id="dzi-reg-otp-btn" onclick="doRegisterVerify()">✅ Xác minh & Đăng ký</button>
+        <div style="text-align:center">
+          <span onclick="doRegisterSendOtp()" style="color:rgba(79,124,255,.8);font-size:12px;cursor:pointer">🔄 Gửi lại OTP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom link -->
+    <div id="dzi-auth-bottom-login" style="text-align:center;font-size:14px;color:rgba(232,238,255,.45);margin-top:16px">
+      Chưa có tài khoản? <span onclick="switchAuthTab('register')" style="color:#a78bfa;font-weight:700;cursor:pointer">Tạo ngay</span>
+    </div>
+    <div id="dzi-auth-bottom-reg" style="text-align:center;font-size:14px;color:rgba(232,238,255,.45);margin-top:16px;display:none">
+      Đã có tài khoản? <span onclick="switchAuthTab('login')" style="color:#4f7cff;font-weight:700;cursor:pointer">Đăng nhập</span>
+    </div>
+
+    <!-- Skip -->
+    <div style="text-align:center;margin-top:12px">
+      <span onclick="document.getElementById('dzi-auth-screen').style.display='none';document.getElementById('app').style.display=''" style="font-size:12px;color:rgba(232,238,255,.3);cursor:pointer">Tiếp tục không đăng nhập →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     FORGOT PASSWORD MODAL
+════════════════════════════════════════════════════ -->
+<div class="dzi-modal-overlay" id="dzi-forgot-modal" onclick="if(event.target===this)closeDziModal('dzi-forgot-modal')">
+  <div class="dzi-modal-box">
+    <div class="dzi-modal-title">🔑 Quên mật khẩu</div>
+    <div id="dzi-forgot-step1">
+      <div class="dzi-field-label">Gmail đã đăng ký</div>
+      <input class="dzi-input" id="dzi-forgot-email" type="email" placeholder="example@gmail.com"
+        onkeydown="if(event.key==='Enter')doForgotSend()" style="margin-bottom:10px">
+      <div class="dzi-auth-err" id="dzi-forgot-err1"></div>
+      <button class="dzi-auth-btn" id="dzi-forgot-btn1" onclick="doForgotSend()" style="margin-top:8px">📧 Gửi mã OTP</button>
+    </div>
+    <div id="dzi-forgot-step2" style="display:none">
+      <p style="font-size:13px;color:rgba(232,238,255,.45);text-align:center;margin-bottom:10px">Nhập mã OTP đã gửi về Gmail</p>
+      <div class="dzi-otp-timer">
+        ⏱ Còn lại: <span class="dzi-otp-timer-val" id="dzi-forgot-timer-val">5:00</span>
+        <span class="dzi-otp-bar"><span class="dzi-otp-fill" id="dzi-forgot-bar-fill" style="width:100%"></span></span>
+      </div>
+      <div class="dzi-field-label" style="margin-top:12px">Mã OTP (6 số)</div>
+      <input class="dzi-input" id="dzi-forgot-otp" type="text" maxlength="6" placeholder="123456"
+        style="letter-spacing:6px;font-size:20px;text-align:center;margin-bottom:10px">
+      <div class="dzi-auth-err" id="dzi-forgot-err2"></div>
+      <button class="dzi-auth-btn" id="dzi-forgot-btn2" onclick="doVerifyForgotOtp()" style="margin-top:8px">✅ Xác nhận OTP</button>
+      <div style="text-align:center;margin-top:8px">
+        <span onclick="doForgotSend()" style="color:rgba(79,124,255,.8);font-size:12px;cursor:pointer">Gửi lại OTP</span>
+      </div>
+    </div>
+    <div id="dzi-forgot-step3" style="display:none">
+      <p style="font-size:13px;color:rgba(232,238,255,.45);text-align:center;margin-bottom:16px">OTP hợp lệ! Nhập mật khẩu mới</p>
+      <div class="dzi-field-label">Mật khẩu mới</div>
+      <input class="dzi-input" id="dzi-forgot-newpw" type="password" placeholder="Tối thiểu 6 ký tự" style="margin-bottom:10px">
+      <div class="dzi-field-label">Xác nhận mật khẩu</div>
+      <input class="dzi-input" id="dzi-forgot-confirmpw" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:10px">
+      <div class="dzi-auth-err" id="dzi-forgot-err3"></div>
+      <button class="dzi-auth-btn" id="dzi-forgot-btn3" onclick="doResetPassword()" style="margin-top:8px">🔐 Đặt lại mật khẩu</button>
+    </div>
+    <button onclick="closeDziModal('dzi-forgot-modal')" class="dzi-modal-close-btn" style="margin-top:14px">Đóng</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     ACCOUNT INFO MODAL
+════════════════════════════════════════════════════ -->
+<div class="dzi-modal-overlay" id="dzi-account-modal" onclick="if(event.target===this)closeDziModal('dzi-account-modal')">
+  <div class="dzi-modal-box" style="max-width:440px;padding:0;overflow:hidden">
+    <!-- Banner -->
+    <div style="position:relative;height:120px;background:linear-gradient(135deg,#04060f,#4f7cff,#7c3aed);overflow:visible">
+      <button onclick="closeDziModal('dzi-account-modal')" style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,.35);border:none;color:#fff;font-size:18px;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+      <div style="position:absolute;inset:0;opacity:.3;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22100%22><circle cx=%2220%22 cy=%2215%22 r=%221.5%22 fill=%22white%22/><circle cx=%2270%22 cy=%2235%22 r=%221%22 fill=%22white%22/><circle cx=%22130%22 cy=%2210%22 r=%222%22 fill=%22white%22/><circle cx=%22160%22 cy=%2250%22 r=%221.5%22 fill=%22white%22/></svg>')"></div>
+      <!-- Avatar -->
+      <div style="position:absolute;bottom:-38px;left:50%;transform:translateX(-50%);z-index:3">
+        <div style="position:relative;width:80px">
+          <div id="dzi-av-circle" style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:34px;overflow:hidden;border:4px solid #04060f;box-shadow:0 4px 20px rgba(79,124,255,.4)">
+            <span style="font-size:28px;font-weight:900;color:#fff">?</span>
+          </div>
+          <div onclick="document.getElementById('dzi-av-input').click()" style="position:absolute;bottom:2px;right:2px;width:24px;height:24px;border-radius:50%;background:#4f7cff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #04060f">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="12" height="12"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <input type="file" id="dzi-av-input" accept="image/*" style="display:none" onchange="handleAvatarChange(this)">
+        </div>
+      </div>
+    </div>
+    <!-- Body -->
+    <div style="padding:48px 20px 20px;background:#04060f;overflow-y:auto;max-height:calc(90vh - 120px)">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:20px;font-weight:800;color:#e8eeff" id="dzi-acc-username">—</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px">
+          <span style="background:rgba(79,124,255,.15);color:#4f7cff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(79,124,255,.3)" id="dzi-acc-role">Thành viên</span>
+        </div>
+        <div style="font-size:12px;color:rgba(232,238,255,.4);margin-top:6px">@ <span id="dzi-acc-username-at">—</span> · Tham gia: <span id="dzi-acc-joindate">—</span></div>
+      </div>
+      <!-- Level & EXP -->
+      <div id="dzi-acc-lv-wrap"></div>
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="background:rgba(79,124,255,.08);border:1px solid rgba(79,124,255,.2);border-left:3px solid #4f7cff;border-radius:14px;padding:12px">
+          <div style="font-size:10px;font-weight:800;color:#4f7cff;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">❤️ Yêu thích</div>
+          <div style="font-size:20px;font-weight:900;color:#e8eeff" id="dzi-acc-favcount">0</div>
+        </div>
+        <div style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-left:3px solid #7c3aed;border-radius:14px;padding:12px">
+          <div style="font-size:10px;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🎬 Đã xem</div>
+          <div style="font-size:20px;font-weight:900;color:#e8eeff" id="dzi-acc-watchcount">0</div>
+        </div>
+      </div>
+      <!-- Info -->
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(79,124,255,.1);border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(79,124,255,.08)">
+          <span style="color:rgba(232,238,255,.4);font-size:13px;width:70px;flex-shrink:0">📧 Email</span>
+          <b id="dzi-acc-email" style="font-size:13px;color:#e8eeff;word-break:break-all">—</b>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:6px 0">
+          <span style="color:rgba(232,238,255,.4);font-size:13px;width:70px;flex-shrink:0">👤 Vai trò</span>
+          <b id="dzi-acc-role2" style="font-size:13px;color:#a78bfa">Thành viên</b>
+        </div>
+      </div>
+      <!-- Change password -->
+      <div style="background:rgba(255,255,255,.04);border:1px solid rgba(79,124,255,.1);border-radius:14px;padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:#e8eeff;margin-bottom:10px">🔐 Đổi mật khẩu</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <input class="dzi-input" id="dzi-acc-oldpw" type="password" placeholder="Mật khẩu hiện tại">
+          <input class="dzi-input" id="dzi-acc-newpw" type="password" placeholder="Mật khẩu mới (≥6 ký tự)">
+          <input class="dzi-input" id="dzi-acc-newpw2" type="password" placeholder="Xác nhận mật khẩu mới">
+          <div id="dzi-acc-pw-err" style="color:#ff5252;font-size:12px;min-height:16px"></div>
+          <button class="dzi-auth-btn" id="dzi-acc-pw-btn" onclick="doChangePw()">Cập nhật mật khẩu</button>
+        </div>
+      </div>
+      <!-- Logout -->
+      <button onclick="doLogout()" style="width:100%;padding:13px;background:rgba(255,82,82,.1);border:1px solid rgba(255,82,82,.25);border-radius:14px;color:#ff5252;font-size:14px;font-weight:700;cursor:pointer">🚪 Đăng xuất</button>
+    </div>
+  </div>
+</div>
+
 <!-- SCRIPTS (load order matters) -->
-<script src="config.js?v=12"></script>
-<script src="api.js?v=12"></script>
-<script src="state.js?v=12"></script>
-<script src="components.js?v=12"></script>
-<script src="pages.js?v=12"></script>
-<script src="nhac.js?v=12"></script>
-<script src="router.js?v=12"></script>
+<script src="config.js?v=18"></script>
+<script src="api.js?v=18"></script>
+<script src="state.js?v=18"></script>
+<script src="missions.js?v=18"></script>
+<script src="components.js?v=18"></script>
+<script src="pages.js?v=18"></script>
+<script src="nhac.js?v=18"></script>
+<script src="auth.js?v=18"></script>
+<script src="router.js?v=18"></script>
 </body>
 </html>

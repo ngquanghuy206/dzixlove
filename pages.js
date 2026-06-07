@@ -1,8 +1,13 @@
 // ═══════════════════════════════════════
-//  HOME PAGE — GIỚI THIỆU
+//  HOME PAGE — GIỚI THIỆU (v18 Enhanced)
 // ═══════════════════════════════════════
 function pgHome(){
   const app=document.getElementById('app');
+  const ms = (window.DZI_USER && window.initMissionState) ? initMissionState(DZI_USER.username) : null;
+  const doneCnt = ms ? ms.missions.filter(m=>m.done).length : 0;
+  const lv = ms ? calcLevel(ms.totalExp) : 1;
+  const lvColor = ms ? getLvColor(lv) : '#4f7cff';
+  const trustCount = window.DZI_TRUST_COUNT || 1247;
   app.innerHTML = renderNav() + `
   <div class="page" id="hp-intro">
 
@@ -125,6 +130,27 @@ function pgHome(){
     </section>
 
     <!-- STATS ROW -->
+    <!-- TRUST COUNTER -->
+    <div class="intro-trust-bar">
+      <div class="trust-avatars">
+        <div class="ta" style="background:linear-gradient(135deg,#4f7cff,#7c3aed)">K</div>
+        <div class="ta" style="background:linear-gradient(135deg,#059669,#0284c7)">H</div>
+        <div class="ta" style="background:linear-gradient(135deg,#dc2626,#f97316)">M</div>
+        <div class="ta" style="background:linear-gradient(135deg,#9333ea,#ec4899)">A</div>
+        <div class="ta" style="background:linear-gradient(135deg,#0891b2,#7c3aed)">T</div>
+        <div class="ta" style="background:rgba(79,124,255,.2);color:rgba(232,238,255,.6);font-size:10px">+${Math.max(0,trustCount-5)}</div>
+      </div>
+      <div class="trust-text">
+        <div class="trust-num" id="trust-counter">${trustCount.toLocaleString()}</div>
+        <div class="trust-label">người dùng đã tin tưởng DZI</div>
+      </div>
+      <div class="trust-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Uy tín
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
     <div class="intro-stats">
       <div class="intro-stat">
         <div class="intro-stat-num">∞</div>
@@ -146,9 +172,75 @@ function pgHome(){
       </div>
     </div>
 
+    <!-- MISSIONS PROMO (nếu đã login) -->
+    ${window.DZI_USER ? `
+    <div class="intro-mission-card" onclick="go('missions')">
+      <div class="imc-left">
+        <div class="imc-icon">⚔️</div>
+        <div>
+          <div class="imc-title">Nhiệm vụ hôm nay</div>
+          <div class="imc-sub">${doneCnt}/7 hoàn thành · Lv<span style="color:${lvColor};font-weight:900"> ${lv}</span> ${getLvTitle(lv)}</div>
+        </div>
+      </div>
+      <div class="imc-right">
+        <div class="imc-ring">
+          <svg width="44" height="44" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(79,124,255,.2)" stroke-width="4"/>
+            <circle cx="22" cy="22" r="18" fill="none" stroke="#4f7cff" stroke-width="4" stroke-dasharray="${Math.round(113.1*doneCnt/7)} 113.1" stroke-linecap="round" transform="rotate(-90 22 22)"/>
+          </svg>
+          <span style="position:absolute;font-size:12px;font-weight:900;color:#e8eeff">${doneCnt}</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(232,238,255,.4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>` : `
+    <div class="intro-mission-card" onclick="openDziModal('dzi-auth-screen')" style="border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.05)">
+      <div class="imc-left">
+        <div class="imc-icon">🎯</div>
+        <div>
+          <div class="imc-title" style="color:#fbbf24">Hệ thống nhiệm vụ</div>
+          <div class="imc-sub">Đăng nhập để nhận 7 nhiệm vụ · Kiếm EXP · Thăng cấp</div>
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(251,191,36,.5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>`}
+
+    <!-- ADMIN INFO CARD -->
+    <div class="intro-admin-card">
+      <div class="iac-header">
+        <div class="iac-crown">👨‍💻</div>
+        <div>
+          <div class="iac-name">Nguyễn Hoàng Khánh Nam</div>
+          <div class="iac-role">DZI · Founder & Developer · 2006</div>
+        </div>
+      </div>
+      <div class="iac-contacts">
+        <a class="iac-btn iac-zalo" href="https://zalo.me/0993329535" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
+          Zalo
+        </a>
+        <a class="iac-btn iac-tele" href="https://t.me/dzimeomeo" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.68 8.26l-2.05 9.66c-.15.68-.55.84-1.11.52l-3.07-2.26-1.48 1.43c-.16.16-.3.3-.62.3l.22-3.12 5.67-5.12c.25-.22-.05-.34-.38-.12L6.97 14.6 3.94 13.6c-.66-.21-.67-.66.14-.97l11.16-4.3c.55-.2 1.03.13.44.93z"/></svg>
+          Telegram
+        </a>
+        <a class="iac-btn iac-tiktok" href="https://tiktok.com/@hkhanhnam206" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.32a8.16 8.16 0 004.77 1.52V7.39a4.85 4.85 0 01-1-.7z"/></svg>
+          @hkhanhnam206
+        </a>
+      </div>
+    </div>
+
     ${renderFooter()}
   </div>`;
   setupNavScroll();
+  // Animate trust counter
+  setTimeout(()=>{
+    const el = document.getElementById('trust-counter');
+    if(!el) return;
+    const target = trustCount;
+    let cur = target - 30;
+    const step = () => { cur = Math.min(cur+3, target); el.textContent = cur.toLocaleString(); if(cur<target) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }, 300);
 }
 
 // ═══════════════════════════════════════
@@ -346,6 +438,7 @@ async function pgPhim(){
 //  LỒNG TIẾNG PAGE
 // ═══════════════════════════════════════
 async function pgLT(){
+  if(window.missionProgress) missionProgress('watch_lt');
   const app=document.getElementById('app');
   app.innerHTML = renderNav() + `<div class="lt-page page">
     <h1>🔊 Lồng tiếng / Thuyết minh</h1>
@@ -423,6 +516,7 @@ const CAT_LABEL = {
 };
 
 async function pgCat(){
+  if(S.cat==='anime' && window.missionProgress) missionProgress('explore');
   const app=document.getElementById('app');
   const isYT = S.cat==='yt';
   app.innerHTML = renderNav() + `<div class="cat-page page">
@@ -657,6 +751,7 @@ async function pgPlayKK(){
   catch(e){ go('home'); return; }
 
   addHist({uid:'kk_'+(movie._id||movie.slug),name:movie.name,thumb:fixImg(movie.thumb_url||movie.poster_url),year:movie.year,src:'kk',slug:movie.slug||S.slug});
+  if(window.missionProgress) missionProgress('watch_phim'); if(window.missionProgress) missionProgress('watch_phim_bo');
 
   // Track watch position by elapsed time
   const _histUid = 'kk_'+(movie._id||movie.slug);
@@ -748,6 +843,7 @@ async function pgPlayAni(){
     const imgs=anime.images||{};
     const po=(imgs.jpg&&imgs.jpg.large_image_url)||(imgs.webp&&imgs.webp.image_url)||'';
     addHist({uid:'ani_'+id,name:title,thumb:po,year,src:'ani',malId:id});
+    if(window.missionProgress) missionProgress('watch_anime');
     // Track watch position by elapsed time
     const _ahUid='ani_'+id, _apPos=(S.hist.find(x=>x.uid===_ahUid)||{}).positionSec||0;
     let _awStart=Date.now(), _awPos=_apPos;
@@ -1049,6 +1145,7 @@ window.shortPlayIdx=function(idx){
   _shortIdx=idx;
   const v=_shortVideos[idx];
   if(!v) return;
+  if(window.missionProgress) missionProgress('watch_short');
   _shortCurrentVid=v.videoId;
 
   // Update info UI
@@ -1173,6 +1270,7 @@ async function pgPlayYT(){
   }catch(e){}
 
   addHist({uid:'yt_'+id,name:videoTitle||('DZITube: '+id),thumb:thumb,year:'',src:'yt',ytId:id});
+  if(window.missionProgress) missionProgress('watch_yt');
   const _yhUid='yt_'+id, _ypPos=(S.hist.find(x=>x.uid===_yhUid)||{}).positionSec||0;
   let _ywStart=Date.now(), _ywPos=_ypPos;
   window._watchTimer&&clearInterval(window._watchTimer);
@@ -1240,6 +1338,7 @@ async function pgPlayYT(){
 // ═══════════════════════════════════════
 let _srchT;
 async function pgSearch(){
+  if(window.missionProgress) missionProgress('search');
   const app=document.getElementById('app');
   const q=S.q, src=S.src||'all';
   app.innerHTML=renderNav()+`<div class="search-page page">
@@ -1335,6 +1434,7 @@ window.runSearch=async function(q,p){
 //  WATCHLIST PAGE
 // ═══════════════════════════════════════
 function pgWatchlist(){
+  if(window.missionProgress) missionProgress('check_hist');
   const app=document.getElementById('app');
   const PER_PAGE = 20;
 

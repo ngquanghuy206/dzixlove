@@ -18,7 +18,10 @@ window.toggleWL = function(raw){
   const m = typeof raw==='string' ? JSON.parse(raw) : raw;
   const k = String(m.uid);
   if(inWL(k)){ S.wl=S.wl.filter(x=>x.uid!==k); showToast('💔 Đã xóa khỏi yêu thích'); }
-  else { S.wl.unshift(m); showToast('❤️ Đã thêm vào yêu thích'); }
+  else {
+    S.wl.unshift(m); showToast('❤️ Đã thêm vào yêu thích');
+    if(window.missionProgress) missionProgress('favorite');
+  }
   localStorage.setItem('lp_wl', JSON.stringify(S.wl));
   const fb = document.getElementById('fav-btn');
   if(fb){ const on=inWL(k); fb.className='fav-btn'+(on?' on':''); fb.textContent=on?'❤️':'🤍'; }
