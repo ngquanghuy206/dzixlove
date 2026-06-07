@@ -1500,6 +1500,16 @@ body.has-player { padding-bottom: 72px; }
   height: 100%;
   border: none;
 }
+.yt-player-outer #yt-api-player {
+  z-index: 1;
+}
+.yt-player-outer #yt-api-player iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: none;
+}
 .yt-back-btn {
   position: absolute;
   top: 10px; left: 10px;

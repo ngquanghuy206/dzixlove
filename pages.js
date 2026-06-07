@@ -1185,8 +1185,8 @@ async function pgPlayYT(){
       </button>
       <!-- YT IFrame API target -->
       <div id="yt-api-player"></div>
-      <!-- Transparent tap overlay to show/hide controls -->
-      <div id="yt-tap-overlay" style="position:absolute;inset:0;z-index:4;cursor:pointer" onclick="ytToggleCtrl()"></div>
+      <!-- Transparent tap overlay to show/hide controls (z-index > iframe to catch iOS touch) -->
+      <div id="yt-tap-overlay" style="position:absolute;inset:0;z-index:14;cursor:pointer;pointer-events:auto" onclick="ytTapOverlayClick(event)"></div>
       <!-- Custom controls -->
       <div class="yt-ctrl" id="yt-ctrl">
         <div class="yt-prog-wrap">
@@ -1608,17 +1608,17 @@ function fmtYTTime(s){
 function ytShowCtrl(){
   const ctrl = document.getElementById('yt-ctrl');
   const back = document.querySelector('.yt-back-btn');
+  const overlay = document.getElementById('yt-tap-overlay');
   _ytCtrlVisible = true;
   if(ctrl){ ctrl.style.opacity='1'; ctrl.style.pointerEvents='auto'; }
   if(back){ back.style.opacity='1'; }
+  // Khi controls hiện: overlay transparent, không chặn controls phía trên
+  if(overlay){ overlay.style.pointerEvents='none'; }
   clearTimeout(_ytHideTimer);
-  // Tự ẩn sau 3s nếu đang play
   if(_ytPlayer){
     try{
       const s = _ytPlayer.getPlayerState();
-      if(s===1){ // đang play
-        _ytHideTimer = setTimeout(ytHideCtrl, 3000);
-      }
+      if(s===1){ _ytHideTimer = setTimeout(ytHideCtrl, 3000); }
     }catch(e){}
   }
 }
@@ -1626,10 +1626,18 @@ function ytShowCtrl(){
 function ytHideCtrl(){
   const ctrl = document.getElementById('yt-ctrl');
   const back = document.querySelector('.yt-back-btn');
+  const overlay = document.getElementById('yt-tap-overlay');
   _ytCtrlVisible = false;
   if(ctrl){ ctrl.style.opacity='0'; ctrl.style.pointerEvents='none'; }
   if(back){ back.style.opacity='0'; }
+  // Khi controls ẩn: overlay bắt touch để show lại
+  if(overlay){ overlay.style.pointerEvents='auto'; }
 }
+
+// Tap overlay click — chỉ toggle, không fire khi tap controls
+window.ytTapOverlayClick = function(e){
+  ytToggleCtrl();
+};
 
 function ytToggleCtrl(){
   if(_ytCtrlVisible) ytHideCtrl();
@@ -1743,20 +1751,7 @@ window.initYTPlayer = function(videoId){
           startYTTimer();
           // Bắt đầu auto-hide sau 3s
           _ytHideTimer = setTimeout(ytHideCtrl, 3000);
-          // Setup touch/click trên player để show controls
-          const tapOverlay = document.getElementById('yt-tap-overlay');
-          if(tapOverlay){
-            let _lastTouch=0;
-            tapOverlay.addEventListener('touchend', function(ev){
-              _lastTouch=Date.now();
-              ev.preventDefault();
-              ytToggleCtrl();
-            }, {passive:false});
-            tapOverlay.addEventListener('click', function(ev){
-              if(Date.now()-_lastTouch<400) return;
-              ytToggleCtrl();
-            });
-          }
+          // Tap overlay xử lý qua onclick inline (ytTapOverlayClick)
           // Setup volume slider với pointer events (fix mobile)
           const volSl = document.getElementById('yt-vol');
           if(volSl){
