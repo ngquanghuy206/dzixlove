@@ -156,7 +156,7 @@ function renderNav(){
         </span>
         <span class="sbm-label">Nghe Nhạc</span>
       </button>
-      <button class="sb-mode-btn ${p!=='nhac'?'active':''}" onclick="go('home');closeSidebar()">
+      <button class="sb-mode-btn ${p!=='nhac'?'active':''}" onclick="go('phim');closeSidebar()">
         <span class="sbm-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
         </span>
@@ -166,13 +166,24 @@ function renderNav(){
 
     <div class="sb-divider"></div>
 
+    <!-- TRANG CHỦ -->
+    <ul class="sb-icon-links">
+      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#6366f1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>Trang chủ
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
     <!-- PHIM LINKS -->
     <div class="sb-section-title">PHIM</div>
     <ul class="sb-icon-links">
-      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">
+      <li><a class="${isOn('phim')}" onclick="go('phim');closeSidebar()">
         <span class="sbi" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </span>Trang chủ
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </span>Xem Phim
       </a></li>
       <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'});closeSidebar()">
         <span class="sbi" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">
@@ -244,12 +255,6 @@ function renderFooter(){
       <div>
         <div class="ft-logo">DZI<b> MUSIC & MOVIE</b></div>
         <div class="ft-tag">Phim Việt · Anime · YouTube — Hoàn toàn miễn phí</div>
-        <div class="ft-src">
-          <span class="ft-chip" style="background:rgba(16,185,129,.15);color:var(--green)">🇻🇳 KKPhim</span>
-          <span class="ft-chip" style="background:rgba(168,85,247,.15);color:var(--purple)">🎌 Jikan/MAL</span>
-          <span class="ft-chip" style="background:rgba(255,0,0,.15);color:var(--yt)">🔴 YouTube</span>
-          <span class="ft-chip" style="background:rgba(59,130,246,.15);color:var(--blue)">📺 VidSrc</span>
-        </div>
       </div>
       <div class="ft-cols">
         <div class="ft-col"><h4>Phim Việt</h4><ul>
@@ -268,7 +273,6 @@ function renderFooter(){
         </ul></div>
         <div class="ft-col"><h4>🎵 Nhạc</h4><ul>
           <li><a onclick="go('nhac')">Nghe Nhạc</a></li>
-          <li><a onclick="go('nhac')">SoundCloud</a></li>
         </ul></div>
         <div class="ft-col"><h4>Tài khoản</h4><ul>
           <li><a onclick="go('watchlist')">Yêu thích</a></li>
@@ -278,7 +282,6 @@ function renderFooter(){
     </div>
     <div class="ft-bot">
       <div>© 2026 DZI MUSIC & MOVIE</div>
-      <div>KKPhim · Jikan · Invidious · VidSrc</div>
     </div>
   </footer>`;
 }
@@ -316,15 +319,15 @@ window.navInput = async function(q){
       if(!ki.length&&!ji.length&&!yi.length){ drop.className=''; drop.innerHTML=''; return; }
       let html='';
       if(ki.length){
-        html+='<div class="drop-sep">🇻🇳 Phim Việt (KKPhim)</div>';
+        html+='<div class="drop-sep">🇻🇳 Phim Việt</div>';
         html+=ki.map(m=>`<div class="drop-item" onclick="go('det-kk',{slug:'${m.slug}'});closeNav()">
           <img src="${fixImg(m.thumb_url||m.poster_url)||PH(32,48)}" onerror="this.src='${PH(32,48)}'">
           <div><div class="di-title">${esc(m.name||m.title||'')}</div>
-          <div class="di-sub"><span class="tag vn">KKPhim</span>${esc(m.year||'')}</div></div>
+          <div class="di-sub"><span class="tag vn">🇻🇳</span>${esc(m.year||'')}</div></div>
         </div>`).join('');
       }
       if(ji.length){
-        html+='<div class="drop-sep">🎌 Anime (Jikan/MAL)</div>';
+        html+='<div class="drop-sep">🎌 Anime</div>';
         html+=ji.map(m=>{ const imgs=m.images||{}; const po2=(imgs.jpg&&imgs.jpg.image_url)||(imgs.webp&&imgs.webp.image_url)||PH(32,48);
           return `<div class="drop-item" onclick="go('det-ani',{malId:${m.mal_id}});closeNav()">
             <img src="${po2}" onerror="this.src='${PH(32,48)}'">

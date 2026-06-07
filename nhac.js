@@ -115,7 +115,7 @@ function pgNhac(){
         <div id="zmp-idle" class="zmp-idle">
           <div class="zmp-idle-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
           <div>Chọn bài hát để phát nhạc</div>
-          <div style="font-size:10px;opacity:.5;margin-top:4px">Tìm trên SoundCloud</div>
+          <div style="font-size:10px;opacity:.5;margin-top:4px">Tìm kiếm nhạc</div>
         </div>
 
         <!-- Player (hidden until track loads) -->
@@ -272,7 +272,11 @@ window.zSwitchListTab = function(tab){
     zRenderList(likedTracks);
     zRenderQueue();
   } else {
+    // Switch về tab kết quả - clear rồi render lại từ đầu
+    const tl = document.getElementById('ztracklist');
+    if(tl) tl.innerHTML = '';
     if(ZMP.results.length) zRenderList(ZMP.results);
+    else if(tl) tl.innerHTML = '<div class="zmp-list-empty"><div style="font-size:32px;opacity:.4">🔍</div><div>Tìm bài hát để bắt đầu</div></div>';
   }
 };
 
@@ -417,7 +421,7 @@ async function zLoadPlay(track){
     const btArt = document.getElementById('zbt-art'); if(btArt) btArt.classList.add('spinning');
   }catch(e){
     if(ov){
-      ov.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center">❌ Không thể kết nối SoundCloud<br><span style="font-size:11px;opacity:.6">Thử lại hoặc chọn bài khác</span></div>';
+      ov.innerHTML = '<div style="color:#f87171;font-size:13px;text-align:center">❌ Không thể phát bài này<br><span style="font-size:11px;opacity:.6">Thử lại hoặc chọn bài khác</span></div>';
     }
     setTimeout(()=>{
       if(ov){

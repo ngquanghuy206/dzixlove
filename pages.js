@@ -13,7 +13,7 @@ function pgHome(){
         <div class="intro-avatar-wrap">
           <div class="intro-avatar-ring"></div>
           <div class="intro-avatar">
-            <img src="anh.JPG" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+            <img src="anh.jpg" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
           </div>
         </div>
         <div class="intro-tag-line">
@@ -62,7 +62,7 @@ function pgHome(){
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
         </div>
         <h3>DZI x MUSIC</h3>
-        <p>Nghe nhạc trực tiếp từ SoundCloud. V-Pop, Rap Việt, Bolero, Lo-Fi, EDM, K-Pop. Playlist cá nhân, yêu thích &amp; tìm kiếm.</p>
+        <p>Nghe nhạc trực tuyến miễn phí. V-Pop, Rap Việt, Bolero, Lo-Fi, EDM, K-Pop. Playlist cá nhân, yêu thích &amp; tìm kiếm.</p>
         <button class="btn btn-ghost intro-card-btn" style="border-color:var(--green);color:var(--green)" onclick="go('nhac')">Nghe ngay →</button>
       </div>
 
@@ -527,7 +527,7 @@ async function pgDetKK(){
         <div class="det-poster"><img src="${po}" onerror="this.src='${PH(180,270)}'"/></div>
         <div class="det-info">
           <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px">
-            <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,.15);color:var(--green);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:1px">🇻🇳 KKPhim</span>
+            
             ${isLT?`<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(245,158,11,.15);color:var(--gold);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px">🔊 Lồng tiếng</span>`:''}
           </div>
           <h1 class="det-title">${esc(title)}</h1>
@@ -596,7 +596,7 @@ async function pgDetAni(){
       <div class="det-body">
         <div class="det-poster"><img src="${po}" onerror="this.src='${PH(180,270)}'"/></div>
         <div class="det-info">
-          <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,.15);color:var(--purple);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:1px;margin-bottom:9px">🎌 Anime · VidSrc.icu</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,.15);color:var(--purple);font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:1px;margin-bottom:9px">🎌 Anime</span>
           <h1 class="det-title">${esc(title)}</h1>
           ${eng&&eng!==title?`<div class="det-ori">${esc(eng)}</div>`:''}
           <div class="det-chips">
@@ -679,7 +679,7 @@ async function pgPlayKK(){
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div style="flex:1">
           <div class="player-title">${esc(title)}${curEp&&curEp.name?` <span style="color:var(--green);font-size:17px">— ${esc(curEp.name)}</span>`:''}</div>
-          <div class="player-meta">${year}${server?' · '+esc(server.server_name):''}${embed||m3u8?' · 🟢 Đang phát':' · ⚠️ Không có nguồn'} · <span style="color:var(--green);font-weight:600">🇻🇳 KKPhim</span></div>
+          <div class="player-meta">${year}${server?' · '+esc(server.server_name):''}${embed||m3u8?' · 🟢 Đang phát':' · ⚠️ Không có nguồn'}</div>
           ${epSW}${svSW}
         </div>
         <div style="display:flex;gap:7px;align-items:center;flex-shrink:0">
