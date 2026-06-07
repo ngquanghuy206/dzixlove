@@ -9,6 +9,7 @@ const S = {
   epIdx: 0, svIdx: 0, epNum: 1, dub: 0,
   wl: JSON.parse(localStorage.getItem('lp_wl')||'[]'),
   hist: JSON.parse(localStorage.getItem('lp_h')||'[]'),
+  nhacHist: JSON.parse(localStorage.getItem('lp_nh')||'[]'),
 };
 
 const inWL = id => S.wl.some(m=>m.uid===String(id));
@@ -24,9 +25,38 @@ window.toggleWL = function(raw){
 };
 
 function addHist(m){
-  S.hist = [m, ...S.hist.filter(x=>x.uid!==m.uid)].slice(0,80);
+  // Preserve existing positionSec if new entry doesn't have one
+  const existing = S.hist.find(x=>x.uid===m.uid);
+  if(existing && m.positionSec===undefined) m.positionSec = existing.positionSec||0;
+  m.addedAt = Date.now();
+  S.hist = [m, ...S.hist.filter(x=>x.uid!==m.uid)].slice(0,200);
   localStorage.setItem('lp_h', JSON.stringify(S.hist));
 }
+
+window.updateHistPos = function(uid, positionSec){
+  const entry = S.hist.find(x=>x.uid===uid);
+  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_h', JSON.stringify(S.hist)); }
+};
+
+window.addNhacHist = function(track, positionSec){
+  if(!track||!track.id) return;
+  const entry = {
+    id: String(track.id),
+    title: track.title||'?',
+    artist: track.artist||'',
+    art: track.art||'',
+    dur: track.dur||0,
+    positionSec: Math.floor(positionSec||0),
+    addedAt: Date.now(),
+  };
+  S.nhacHist = [entry, ...S.nhacHist.filter(x=>x.id!==entry.id)].slice(0,200);
+  localStorage.setItem('lp_nh', JSON.stringify(S.nhacHist));
+};
+
+window.updateNhacHistPos = function(id, positionSec){
+  const entry = S.nhacHist.find(x=>x.id===String(id));
+  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_nh', JSON.stringify(S.nhacHist)); }
+};
 
 let _toast;
 function showToast(msg){
@@ -148,6 +178,8 @@ window.go = function(page, opts){
 
   if(PLAYER_PAGES.has(page)){
     pipClose();
+    // Clear watch position timer when entering player
+    window._watchTimer && clearInterval(window._watchTimer);
   }
 
   S.page = page;

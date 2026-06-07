@@ -13,6 +13,7 @@ function fixImg(u){
   return KIMG + '/upload/vod/' + u;
 }
 const PH = (w,h) => `https://placehold.co/${w||155}x${h||232}/111820/64748b?text=...`;
+function fmtNum(n){ if(!n||isNaN(n))return''; if(n>=1e9)return(n/1e9).toFixed(1)+'T'; if(n>=1e6)return(n/1e6).toFixed(1)+'Tr'; if(n>=1e3)return(n/1e3).toFixed(1)+'N'; return String(n); }
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
 // ── CACHE ──
@@ -53,17 +54,37 @@ const jkDetail = id  => get(jkUrl('/anime/'+id+'/full'));
 // ═══════════════════════════════════════
 //  YOUTUBE VIA INVIDIOUS
 // ═══════════════════════════════════════
-async function ytSearch(q, page){
-  page = page||1;
-  for(const host of INV_HOSTS){
-    try{
-      const url = px(host+'/api/v1/search?q='+encodeURIComponent(q)+'&page='+page+'&type=video');
-      const d = await get(url, true);
-      if(Array.isArray(d) && d.length) return d.filter(v=>v.type==='video'&&v.videoId);
-    }catch(e){ continue; }
-  }
-  return [];
+// YouTube search — qua /api/music?_p=/yt/... → server.py → YouTube Data API v3
+const _ytPageTokens = {}; // cache nextPageToken theo "query_page"
+
+async function ytSearch(q, page, pageToken){
+  try{
+    const qs = new URLSearchParams({ _p: '/yt/search', q });
+    if(pageToken) qs.set('pageToken', pageToken);
+    const d = await get('/api/music?' + qs.toString(), true);
+    if(d && Array.isArray(d.items)){
+      if(d.nextPageToken) _ytPageTokens[q+'_'+(page+1)] = d.nextPageToken;
+      return d.items;
+    }
+    return [];
+  }catch(e){ console.warn('ytSearch error:', e); return []; }
 }
+
+async function ytTrending(){
+  try{
+    const d = await get('/api/music?_p=/yt/trending', true);
+    return (d && d.items) ? d.items : [];
+  }catch(e){ return []; }
+}
+
+async function ytDetail(videoId){
+  try{
+    const d = await get('/api/music?_p=/yt/detail&videoId='+encodeURIComponent(videoId), true);
+    return d || null;
+  }catch(e){ return null; }
+}
+
+function ytNextToken(q, page){ return _ytPageTokens[q+'_'+page] || null; }
 
 function ytThumb(v){
   if(!v.videoThumbnails || !v.videoThumbnails.length) return PH(210,118);

@@ -440,28 +440,39 @@ async function pgCat(){
   setupNavScroll();
   if(isYT){
     const inp=document.getElementById('yt-q'); if(inp) inp.focus();
-    await loadYT('phim hay vietsub 2024',1);
+    await loadYT('',1); // load trending by default
   } else {
     await loadCat(1);
   }
 }
 
-let _ytQ='', _ytPage=1;
+let _ytQ='', _ytPage=1, _ytToken='';
 window.loadYT = async function(q,p){
+  const isNew = (q && q !== _ytQ) || p===1;
+  if(isNew){ _ytToken=''; _ytPage=1; }
   _ytQ=q||_ytQ; _ytPage=p||1;
   const grid=document.getElementById('cat-grid'), count=document.getElementById('cat-count'), more=document.getElementById('cat-more');
   if(!grid) return;
   if(p===1) grid.innerHTML='<div class="yt-grid">'+Array(12).fill('<div class="sk sk-yt"></div>').join('')+'</div>';
   try{
-    const vids=await ytSearch(_ytQ,_ytPage);
+    let vids;
+    if(!_ytQ.trim()){
+      vids = await ytTrending();
+      if(count) count.textContent = vids.length ? '🔥 Trending YouTube Việt Nam' : ' ';
+      if(more) more.innerHTML='';
+    } else {
+      const token = _ytPage>1 ? ytNextToken(_ytQ, _ytPage) : '';
+      vids = await ytSearch(_ytQ, _ytPage, token);
+      const nextToken = ytNextToken(_ytQ, _ytPage+1);
+      if(count) count.textContent=vids.length?`Kết quả cho "${_ytQ}"`:' ';
+      if(more) more.innerHTML=vids.length>=10&&nextToken?`<button class="btn btn-ghost" onclick="loadYT('${esc(_ytQ)}',${_ytPage+1})">Tải thêm ↓</button>`:'';
+    }
     const cards=vids.map(CardYT).join('');
     if(p===1){ grid.innerHTML=cards||'<div style="text-align:center;padding:48px;color:var(--mu)">Không tìm thấy.</div>'; }
     else{ grid.insertAdjacentHTML('beforeend',cards); }
-    if(count) count.textContent=vids.length?`${vids.length} video cho "${_ytQ}"`:' ';
-    if(more) more.innerHTML=vids.length>=5?`<button class="btn btn-ghost" onclick="loadYT('${esc(_ytQ)}',${_ytPage+1})">Tải thêm ↓</button>`:'';
   }catch(e){ if(grid) grid.innerHTML=`<div style="text-align:center;padding:48px;color:var(--mu)">Lỗi DZITube: ${esc(e.message)}</div>`; }
 };
-window.ytLive=function(q){ clearTimeout(window._ytT); if(!q.trim())return; window._ytT=setTimeout(()=>loadYT(q,1),500); };
+window.ytLive=function(q){ clearTimeout(window._ytT); if(!q.trim()){ loadYT('',1); return; } window._ytT=setTimeout(()=>loadYT(q,1),500); };
 
 window.loadCat = async function(p){
   p=p||1;
@@ -647,6 +658,16 @@ async function pgPlayKK(){
 
   addHist({uid:'kk_'+(movie._id||movie.slug),name:movie.name,thumb:fixImg(movie.thumb_url||movie.poster_url),year:movie.year,src:'kk',slug:movie.slug||S.slug});
 
+  // Track watch position by elapsed time
+  const _histUid = 'kk_'+(movie._id||movie.slug);
+  const _prevPos = (S.hist.find(x=>x.uid===_histUid)||{}).positionSec||0;
+  let _watchStart = Date.now(), _watchPos = _prevPos;
+  window._watchTimer && clearInterval(window._watchTimer);
+  window._watchTimer = setInterval(()=>{
+    _watchPos = _prevPos + Math.round((Date.now()-_watchStart)/1000);
+    if(window.updateHistPos) updateHistPos(_histUid, _watchPos);
+  }, 5000);
+
   const title=movie.name||'', year=movie.year||'';
   const svIdx=Math.min(S.svIdx,Math.max(0,episodes.length-1));
   const server=episodes[svIdx]||null;
@@ -727,6 +748,11 @@ async function pgPlayAni(){
     const imgs=anime.images||{};
     const po=(imgs.jpg&&imgs.jpg.large_image_url)||(imgs.webp&&imgs.webp.image_url)||'';
     addHist({uid:'ani_'+id,name:title,thumb:po,year,src:'ani',malId:id});
+    // Track watch position by elapsed time
+    const _ahUid='ani_'+id, _apPos=(S.hist.find(x=>x.uid===_ahUid)||{}).positionSec||0;
+    let _awStart=Date.now(), _awPos=_apPos;
+    window._watchTimer&&clearInterval(window._watchTimer);
+    window._watchTimer=setInterval(()=>{ _awPos=_apPos+Math.round((Date.now()-_awStart)/1000); if(window.updateHistPos)updateHistPos(_ahUid,_awPos); },5000);
     const wl=inWL('ani_'+id);
     const wlData=JSON.stringify({uid:'ani_'+id,name:title,thumb:po,year,src:'ani',malId:id});
     const eMax=Math.min(totalEps||200,1000);
@@ -777,14 +803,27 @@ async function pgPlayAni(){
 // ═══════════════════════════════════════
 //  PLAYER — YouTube
 // ═══════════════════════════════════════
-function pgPlayYT(){
+async function pgPlayYT(){
   const app=document.getElementById('app');
   const id=S.ytId||'';
   if(!id){ go('home'); return; }
   const embed=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1`;
   PIP.src = embed; PIP.title = 'DZITube Video';
   const thumb=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
-  addHist({uid:'yt_'+id,name:'DZITube: '+id,thumb:thumb,year:'',src:'yt',ytId:id});
+
+  // Try fetch real title from /api/youtube?type=detail
+  let videoTitle = 'DZITube Video', videoAuthor = '', videoViews = '';
+  try{
+    const det = await ytDetail(id);
+    if(det && det.title){ videoTitle=det.title; videoAuthor=det.author||''; videoViews=det.viewCount?fmtNum(parseInt(det.viewCount))+' lượt xem':''; PIP.title=det.title; }
+  }catch(e){}
+
+  addHist({uid:'yt_'+id,name:videoTitle||('DZITube: '+id),thumb:thumb,year:'',src:'yt',ytId:id});
+  // Track watch position by elapsed time
+  const _yhUid='yt_'+id, _ypPos=(S.hist.find(x=>x.uid===_yhUid)||{}).positionSec||0;
+  let _ywStart=Date.now(), _ywPos=_ypPos;
+  window._watchTimer&&clearInterval(window._watchTimer);
+  window._watchTimer=setInterval(()=>{ _ywPos=_ypPos+Math.round((Date.now()-_ywStart)/1000); if(window.updateHistPos)updateHistPos(_yhUid,_ywPos); },5000);
   app.innerHTML=renderNav()+`<div class="player-page page">
     <div class="player-wrap" style="position:relative">
       <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
@@ -793,10 +832,10 @@ function pgPlayYT(){
       <iframe src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
     </div>
     <div class="player-info">
-      <div class="player-title">🔴 DZITube Video</div>
-      <div class="player-meta">Video ID: ${esc(id)} · <span style="color:var(--yt);font-weight:600">YouTube Embed</span></div>
+      <div class="player-title">🔴 ${esc(videoTitle)}</div>
+      <div class="player-meta">${esc(videoAuthor)}${videoViews?' · '+esc(videoViews):''} · <span style="color:var(--yt);font-weight:600">YouTube</span></div>
       <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
-        <a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" class="btn btn-yt">🔴 Mở trên DZITube</a>
+        <a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" class="btn btn-yt">🔴 Mở YouTube</a>
         <button class="btn btn-ghost" onclick="go('cat',{cat:'yt'})">🔍 Tìm video khác</button>
       </div>
     </div>
@@ -906,23 +945,74 @@ window.runSearch=async function(q,p){
 // ═══════════════════════════════════════
 function pgWatchlist(){
   const app=document.getElementById('app');
+  const PER_PAGE = 20;
+
   function srcTag(m){
     if(m.src==='ani') return '<span class="tag ani">🎌</span>';
     if(m.src==='yt')  return '<span class="tag yt">🔴</span>';
     return '<span class="tag vn">🇻🇳</span>';
   }
-  function wCard(m){
+  function fmtSec(s){ if(!s||isNaN(s))return''; const m=Math.floor(s/60),sec=Math.floor(s%60); return`${m}:${sec.toString().padStart(2,'0')}`; }
+
+  // ── Yêu thích card (no STT, no progress)
+  function wCard(m, idx){
     const t=esc(m.name||'?'), po=m.thumb||PH(), y=m.year||'';
     let oc,pc;
-    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;}
+    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;;}
     else if(m.src==='yt'){oc=`go('play-yt',{ytId:'${esc(m.ytId||m.uid.replace('yt_',''))}'})`; pc=oc;}
     else{oc=`go('det-kk',{slug:'${esc(m.slug)}'})`;pc=`go('play-kk',{slug:'${esc(m.slug)}'})` ;}
     return `<div class="card" onclick="${oc}">
       <div class="c-poster"><img src="${po}" loading="lazy" onerror="this.src='${PH()}'">
-      <div class="c-ov"><div class="c-play" onclick="event.stopPropagation();${pc}">▶</div></div></div>
+      <div class="c-ov"><div class="c-play" onclick="event.stopPropagation();${pc}">▶</div></div>
+      <div class="c-stt">${idx+1}</div>
+      </div>
       <div class="c-info"><div class="c-title">${t}</div><div class="c-sub">${y} ${srcTag(m)}</div></div>
     </div>`;
   }
+
+  // ── Lịch sử phim card (with progress bar)
+  function hCard(m, idx){
+    const t=esc(m.name||'?'), po=m.thumb||PH(), y=m.year||'';
+    let oc,pc;
+    if(m.src==='ani'){oc=`go('det-ani',{malId:${m.malId}})`;pc=`go('play-ani',{malId:${m.malId}})`;;}
+    else if(m.src==='yt'){oc=`go('play-yt',{ytId:'${esc(m.ytId||m.uid.replace('yt_',''))}'})`; pc=oc;}
+    else{oc=`go('det-kk',{slug:'${esc(m.slug)}'})`;pc=`go('play-kk',{slug:'${esc(m.slug)}'})` ;}
+    const pos = m.positionSec||0;
+    const posLabel = pos>0 ? `<span class="hist-pos">▶ ${fmtSec(pos)}</span>` : '';
+    return `<div class="card hist-card" onclick="${oc}">
+      <div class="c-poster"><img src="${po}" loading="lazy" onerror="this.src='${PH()}'">
+      <div class="c-ov"><div class="c-play" onclick="event.stopPropagation();${pc}">▶</div></div>
+      <div class="c-stt">${idx+1}</div>
+      </div>
+      <div class="c-info">
+        <div class="c-title">${t}</div>
+        <div class="c-sub">${y} ${srcTag(m)} ${posLabel}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── Lịch sử nhạc card (with progress bar)
+  function nhCard(t, idx){
+    const title=esc(t.title||'?'), artist=esc(t.artist||''), art=t.art||'';
+    const dur=t.dur||0, pos=t.positionSec||0;
+    const pct=dur>0?Math.min(100,Math.round(pos/dur*100)):0;
+    const durLabel=dur?fmtSec(dur):'';
+    const posLabel=pos>0?fmtSec(pos):'';
+    return `<div class="wl-music-card nh-hist-card" onclick="go('nhac')">
+      <div class="nh-stt">${idx+1}</div>
+      <div class="wlm-art">
+        <img src="${art}" alt="" onerror="this.src='${PH()}'">
+        <div class="wlm-art-ov">🎵</div>
+      </div>
+      <div class="wlm-info">
+        <div class="wlm-title">${title}</div>
+        <div class="wlm-artist">${artist}</div>
+        ${pos>0?`<div class="nh-prog-wrap"><div class="nh-prog-bar" style="width:${pct}%"></div></div><div class="nh-time-row"><span>${posLabel}</span><span>${durLabel}</span></div>`:''}
+      </div>
+      <div class="wlm-dur">${durLabel}</div>
+    </div>`;
+  }
+
   // Load liked music tracks
   const likedMusic = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
   function mCard(t){
@@ -939,26 +1029,77 @@ function pgWatchlist(){
       <div class="wlm-dur">${t.dur?Math.floor(t.dur/60)+':'+(t.dur%60).toString().padStart(2,'0'):''}</div>
     </div>`;
   }
+
+  // ── Pagination helpers
+  function renderPager(tabId, total, curPage){
+    const totalPages = Math.ceil(total/PER_PAGE);
+    if(totalPages<=1) return '';
+    let btns='';
+    for(let i=1;i<=totalPages;i++){
+      btns+=`<button class="pg-btn${i===curPage?' on':''}" onclick="wlGoPage('${tabId}',${i})">${i}</button>`;
+    }
+    return `<div class="pg-row">${btns}</div>`;
+  }
+
+  function renderWlTab(items, cardFn){
+    if(!items.length) return null;
+    return items.map((m,i)=>cardFn(m,i));
+  }
+
+  // Page state
+  const pgState = { wl:1, hi:1, nh:1 };
+
+  function renderTabContent(tab){
+    const PAGE = PER_PAGE;
+    if(tab==='wl'){
+      const p=pgState.wl, items=S.wl.slice((p-1)*PAGE, p*PAGE);
+      if(!S.wl.length) return `<div class="empty-state"><div class="ico">🎬</div><h3>Chưa có yêu thích</h3><p>Bấm ❤️ để lưu phim.</p><button class="btn btn-red" onclick="go('home')" style="margin-top:13px">Khám phá</button></div>`;
+      return `<div class="grid">${items.map((m,i)=>wCard(m,(p-1)*PAGE+i)).join('')}</div>${renderPager('wl',S.wl.length,p)}`;
+    }
+    if(tab==='hi'){
+      const p=pgState.hi, items=S.hist.slice((p-1)*PAGE, p*PAGE);
+      if(!S.hist.length) return `<div class="empty-state"><div class="ico">🕑</div><h3>Chưa có lịch sử xem</h3><p>Xem phim để xuất hiện ở đây.</p></div>`;
+      return `<div class="grid">${items.map((m,i)=>hCard(m,(p-1)*PAGE+i)).join('')}</div>${renderPager('hi',S.hist.length,p)}`;
+    }
+    if(tab==='nh'){
+      const p=pgState.nh, items=S.nhacHist.slice((p-1)*PAGE, p*PAGE);
+      if(!S.nhacHist.length) return `<div class="empty-state"><div class="ico">🎵</div><h3>Chưa có lịch sử nhạc</h3><p>Nghe nhạc để xuất hiện ở đây.</p><button class="btn btn-red" onclick="go('nhac')" style="margin-top:13px">Nghe nhạc</button></div>`;
+      return `<div class="wl-music-list">${items.map((t,i)=>nhCard(t,(p-1)*PAGE+i)).join('')}</div>${renderPager('nh',S.nhacHist.length,p)}`;
+    }
+    if(tab==='mu'){
+      if(!likedMusic.length) return `<div class="empty-state"><div class="ico">🎵</div><h3>Chưa có nhạc yêu thích</h3><p>Bấm ❤️ khi nghe nhạc để lưu vào đây.</p><button class="btn btn-red" onclick="go('nhac')" style="margin-top:13px">Nghe nhạc</button></div>`;
+      return `<div class="wl-music-list">${likedMusic.map(mCard).join('')}</div>`;
+    }
+    return '';
+  }
+
   app.innerHTML=renderNav()+`<div class="wl-page page">
     <h1>Thư viện của tôi</h1>
-    <p style="font-size:13px;color:var(--mu)">Phim yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 DZITube · 🎵 Nhạc</p>
-    <div class="wl-tabs">
-      <button class="wl-tab on" id="wt1" onclick="swWL('wl')">❤️ Phim (${S.wl.length})</button>
-      <button class="wl-tab" id="wt2" onclick="swWL('hi')">🕑 Lịch sử (${S.hist.length})</button>
-      <button class="wl-tab" id="wt3" onclick="swWL('mu')">🎵 Nhạc (${likedMusic.length})</button>
+    <p style="font-size:13px;color:var(--mu)">Yêu thích & lịch sử — 🇻🇳 Phim Việt · 🎌 Anime · 🔴 DZITube · 🎵 Nhạc</p>
+    <div class="wl-tabs wl-tabs-5">
+      <button class="wl-tab on" id="wt1" onclick="swWL('wl')">❤️ Yêu thích (${S.wl.length})</button>
+      <button class="wl-tab" id="wt2" onclick="swWL('hi')">🎬 L.Sử Phim (${S.hist.length})</button>
+      <button class="wl-tab" id="wt3" onclick="swWL('nh')">🎵 L.Sử Nhạc (${S.nhacHist.length})</button>
+      <button class="wl-tab" id="wt4" onclick="swWL('mu')">❤️ Nhạc (${likedMusic.length})</button>
     </div>
-    <div id="wtc1">${S.wl.length?`<div class="grid">${S.wl.map(wCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🎬</div><h3>Chưa có yêu thích</h3><p>Bấm ❤️ để lưu phim.</p><button class="btn btn-red" onclick="go('home')" style="margin-top:13px">Khám phá</button></div>`}</div>
-    <div id="wtc2" style="display:none">${S.hist.length?`<div class="grid">${S.hist.map(wCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🕑</div><h3>Chưa có lịch sử</h3><p>Xem phim để xuất hiện ở đây.</p></div>`}</div>
-    <div id="wtc3" style="display:none">${likedMusic.length?`<div class="wl-music-list">${likedMusic.map(mCard).join('')}</div>`:`<div class="empty-state"><div class="ico">🎵</div><h3>Chưa có nhạc yêu thích</h3><p>Bấm ❤️ khi nghe nhạc để lưu vào đây.</p><button class="btn btn-red" onclick="go('nhac')" style="margin-top:13px">Nghe nhạc</button></div>`}</div>
+    <div id="wtc1">${renderTabContent('wl')}</div>
+    <div id="wtc2" style="display:none">${renderTabContent('hi')}</div>
+    <div id="wtc3" style="display:none">${renderTabContent('nh')}</div>
+    <div id="wtc4" style="display:none">${renderTabContent('mu')}</div>
   </div>`;
+
   window.swWL=t=>{
-    document.getElementById('wtc1').style.display=t==='wl'?'':'none';
-    document.getElementById('wtc2').style.display=t==='hi'?'':'none';
-    document.getElementById('wtc3').style.display=t==='mu'?'':'none';
-    document.getElementById('wt1').className='wl-tab'+(t==='wl'?' on':'');
-    document.getElementById('wt2').className='wl-tab'+(t==='hi'?' on':'');
-    document.getElementById('wt3').className='wl-tab'+(t==='mu'?' on':'');
+    ['wtc1','wtc2','wtc3','wtc4'].forEach((id,i)=>{ document.getElementById(id).style.display=(['wl','hi','nh','mu'][i]===t)?'':'none'; });
+    ['wt1','wt2','wt3','wt4'].forEach((id,i)=>{ document.getElementById(id).className='wl-tab'+(['wl','hi','nh','mu'][i]===t?' on':''); });
   };
+
+  window.wlGoPage = function(tab, page){
+    pgState[tab]=page;
+    const idxMap={wl:'wtc1',hi:'wtc2',nh:'wtc3',mu:'wtc4'};
+    const el=document.getElementById(idxMap[tab]);
+    if(el){ el.innerHTML=renderTabContent(tab); window.scrollTo({top:0,behavior:'smooth'}); }
+  };
+
   setupNavScroll();
 }
 

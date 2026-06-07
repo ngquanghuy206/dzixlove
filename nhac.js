@@ -410,8 +410,22 @@ async function zLoadPlay(track){
     });
     audio.addEventListener('waiting', ()=>{ if(ov) ov.style.display='flex'; });
 
+    // Restore saved position if available (only if > 5s and not near end)
+    const savedEntry = S.nhacHist && S.nhacHist.find(x=>x.id===String(track.id));
+    const savedPos = savedEntry && savedEntry.positionSec > 5 ? savedEntry.positionSec : 0;
+
     await audio.play();
+    ZMP._lastHistSave = null;
     ZMP.playing = true;
+
+    // Seek to saved position after playback starts
+    if(savedPos && audio.duration && savedPos < audio.duration - 10){
+      audio.currentTime = savedPos;
+    } else if(savedPos){
+      // Try seeking once metadata is loaded
+      const trySeek = ()=>{ if(audio.duration && savedPos < audio.duration - 10) audio.currentTime = savedPos; };
+      audio.addEventListener('loadedmetadata', trySeek, {once:true});
+    }
 
     // Add spinning ngay sau play, không chờ canplay (iOS Safari không fire canplay kịp)
     if(disc){ disc.classList.add('spinning'); disc.classList.remove('paused'); }
@@ -443,6 +457,12 @@ function zOnTime(){
   const bf=document.getElementById('zbt-fill'); if(bf) bf.style.width=pct+'%';
   const bc=document.getElementById('zbt-cur'); if(bc) bc.textContent=fmtT(cur);
   const bd=document.getElementById('zbt-dur'); if(bd) bd.textContent=fmtT(dur);
+  // Save position to music history every 5 seconds
+  if(!ZMP._lastHistSave || cur - ZMP._lastHistSave >= 5){
+    ZMP._lastHistSave = cur;
+    const track = ZMP.results[ZMP.curIdx];
+    if(track && window.addNhacHist) addNhacHist({...track, dur: dur||track.dur}, cur);
+  }
 }
 
 function zOnEnded(){
