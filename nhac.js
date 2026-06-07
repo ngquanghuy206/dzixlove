@@ -614,3 +614,39 @@ document.addEventListener('keydown', function(e){
       break;
   }
 });
+
+// ── Touch fix cho slider trên iOS/Android ────────────────
+// Safari iOS không trigger oninput đúng khi touchmove trên <input type=range>
+// Fix: dùng pointermove / touchmove để update thủ công
+(function(){
+  function fixSlider(sel, onChangeFn){
+    document.addEventListener('pointerdown', function(e){
+      const el = e.target.closest(sel);
+      if(!el) return;
+      function onMove(ev){
+        const rect = el.getBoundingClientRect();
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const val = parseFloat(el.min||0) + pct * (parseFloat(el.max||1) - parseFloat(el.min||0));
+        el.value = val;
+        onChangeFn(val, el);
+      }
+      function onUp(){ document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp); }
+      document.addEventListener('pointermove', onMove);
+      document.addEventListener('pointerup', onUp);
+    }, {passive: true});
+  }
+
+  // Volume nhạc
+  fixSlider('.zvol-sl', function(val){ zSetVol(val); });
+  // Volume bottom bar
+  fixSlider('.zbt-vol-sl', function(val){ zSetVol(val); });
+  // Volume YT
+  fixSlider('.yt-vol-sl', function(val){ if(window.ytVol) ytVol(Math.round(val)); });
+  // Seek bar nhạc (zpb) — dùng click handler gốc, thêm touch
+  fixSlider('.zmp-prog-bar', function(val, el){
+    if(!ZMP.audio) return;
+    const pct = (val - parseFloat(el.min||0)) / (parseFloat(el.max||1) - parseFloat(el.min||0));
+    ZMP.audio.currentTime = pct * (ZMP.audio.duration||0);
+  });
+})();

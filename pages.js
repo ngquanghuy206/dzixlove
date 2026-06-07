@@ -863,10 +863,15 @@ async function pgPlayYT(){
       </div>
     </div>
     <div class="player-info">
-      <div class="player-title">🔴 ${esc(videoTitle)}</div>
-      <div class="player-meta">${esc(videoAuthor)}${videoViews?' · '+esc(videoViews):''}</div>
-      <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
-        <button class="btn btn-ghost" onclick="go('cat',{cat:'yt'})">🔍 Tìm video khác</button>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="flex:1;min-width:0">
+          <div class="player-title">🔴 ${esc(videoTitle)}</div>
+          <div class="player-meta">${esc(videoAuthor)}${videoViews?' · '+esc(videoViews):''} · <span style="color:var(--yt);font-weight:600">DZITube</span></div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;flex-shrink:0">
+          <button class="fav-btn${inWL('yt_'+id)?' on':''}" id="fav-btn" onclick='toggleWL(${JSON.stringify({uid:"yt_"+id,name:videoTitle,thumb:thumb,year:"",src:"yt",ytId:id})})'>${inWL('yt_'+id)?'❤️':'🤍'}</button>
+          <button class="btn btn-ghost" onclick="go('cat',{cat:'yt'})">🔍 Tìm video khác</button>
+        </div>
       </div>
     </div>
     ${renderFooter()}
@@ -1235,7 +1240,8 @@ function pgWatchlist(){
 // ═══════════════════════════════════════
 //  YT IFrame API — custom controls
 // ═══════════════════════════════════════
-let _ytPlayer = null, _ytTimer = null;
+let _ytPlayer = null, _ytTimer = null, _ytHideTimer = null, _ytCtrlVisible = true;
+let _ytVolume = 100; // track volume locally vì setVolume cần player ready
 
 function fmtYTTime(s){
   s = Math.floor(s||0);
@@ -1243,67 +1249,116 @@ function fmtYTTime(s){
   return m+':'+(sec<10?'0':'')+sec;
 }
 
+// ── Auto-hide controls ─────────────────────────────────
+function ytShowCtrl(){
+  const ctrl = document.getElementById('yt-ctrl');
+  const back = document.querySelector('.yt-back-btn');
+  _ytCtrlVisible = true;
+  if(ctrl){ ctrl.style.opacity='1'; ctrl.style.pointerEvents='auto'; }
+  if(back){ back.style.opacity='1'; }
+  clearTimeout(_ytHideTimer);
+  // Tự ẩn sau 3s nếu đang play
+  if(_ytPlayer){
+    try{
+      const s = _ytPlayer.getPlayerState();
+      if(s===1){ // đang play
+        _ytHideTimer = setTimeout(ytHideCtrl, 3000);
+      }
+    }catch(e){}
+  }
+}
+
+function ytHideCtrl(){
+  const ctrl = document.getElementById('yt-ctrl');
+  const back = document.querySelector('.yt-back-btn');
+  _ytCtrlVisible = false;
+  if(ctrl){ ctrl.style.opacity='0'; ctrl.style.pointerEvents='none'; }
+  if(back){ back.style.opacity='0'; }
+}
+
+function ytToggleCtrl(){
+  if(_ytCtrlVisible) ytHideCtrl();
+  else ytShowCtrl();
+}
+
+// ── Update UI ──────────────────────────────────────────
 function ytUpdateUI(){
   if(!_ytPlayer || typeof _ytPlayer.getCurrentTime !== 'function') return;
   try {
     const cur = _ytPlayer.getCurrentTime()||0;
     const dur = _ytPlayer.getDuration()||0;
     const pct = dur ? (cur/dur*100) : 0;
-    const el = id => document.getElementById(id);
-    if(el('yt-cur')) el('yt-cur').textContent = fmtYTTime(cur);
-    if(el('yt-dur')) el('yt-dur').textContent = fmtYTTime(dur);
-    if(el('yt-prog-fill')) el('yt-prog-fill').style.width = pct+'%';
-    if(el('yt-prog-thumb')) el('yt-prog-thumb').style.left = pct+'%';
+    const $ = id => document.getElementById(id);
+    if($('yt-cur')) $('yt-cur').textContent = fmtYTTime(cur);
+    if($('yt-dur')) $('yt-dur').textContent = fmtYTTime(dur);
+    if($('yt-prog-fill')) $('yt-prog-fill').style.width = pct+'%';
+    if($('yt-prog-thumb')) $('yt-prog-thumb').style.left = pct+'%';
     const state = _ytPlayer.getPlayerState();
-    const icon = el('yt-play-icon');
+    const icon = $('yt-play-icon');
     if(icon){
-      // 1=playing, 2=paused
       icon.innerHTML = state===1
         ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
         : '<path d="M8 5v14l11-7z"/>';
     }
+    // Volume slider sync
+    const volEl = $('yt-vol');
+    if(volEl) volEl.value = _ytVolume;
   } catch(e){}
 }
 
+// ── Controls ───────────────────────────────────────────
 window.ytToggle = function(){
   if(!_ytPlayer) return;
+  ytShowCtrl();
   try {
     const s = _ytPlayer.getPlayerState();
-    if(s===1) _ytPlayer.pauseVideo(); else _ytPlayer.playVideo();
+    if(s===1){ _ytPlayer.pauseVideo(); clearTimeout(_ytHideTimer); ytShowCtrl(); }
+    else { _ytPlayer.playVideo(); }
   } catch(e){}
 };
 
 window.ytSkip = function(sec){
   if(!_ytPlayer) return;
+  ytShowCtrl();
   try { _ytPlayer.seekTo((_ytPlayer.getCurrentTime()||0)+sec, true); } catch(e){}
 };
 
 window.ytSeek = function(e){
   if(!_ytPlayer) return;
+  ytShowCtrl();
   try {
     const bar = document.getElementById('yt-prog');
     if(!bar) return;
     const r = bar.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - r.left)/r.width));
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const pct = Math.max(0, Math.min(1, (clientX - r.left)/r.width));
     _ytPlayer.seekTo((_ytPlayer.getDuration()||0)*pct, true);
   } catch(e){}
 };
 
+// FIX: ytVol nhận 0-100, gọi setVolume đúng cách
 window.ytVol = function(v){
+  _ytVolume = Math.round(parseFloat(v));
+  ytShowCtrl();
   if(!_ytPlayer) return;
-  try { _ytPlayer.setVolume(parseInt(v)); } catch(e){}
+  try { _ytPlayer.setVolume(_ytVolume); } catch(e){}
 };
 
 window.ytFullscreen = function(){
+  ytShowCtrl();
   const outer = document.querySelector('.yt-player-outer');
   if(!outer) return;
   if(document.fullscreenElement){ document.exitFullscreen(); }
-  else { outer.requestFullscreen && outer.requestFullscreen(); }
+  else if(outer.requestFullscreen){ outer.requestFullscreen(); }
+  else if(outer.webkitRequestFullscreen){ outer.webkitRequestFullscreen(); } // iOS Safari
 };
 
+// ── Init player ────────────────────────────────────────
 window.initYTPlayer = function(videoId){
   clearInterval(_ytTimer);
+  clearTimeout(_ytHideTimer);
   _ytPlayer = null;
+  _ytVolume = 100;
 
   function createPlayer(){
     if(!window.YT || !window.YT.Player){ setTimeout(createPlayer, 200); return; }
@@ -1313,13 +1368,59 @@ window.initYTPlayer = function(videoId){
       videoId: videoId,
       playerVars: { autoplay:1, rel:0, modestbranding:1, iv_load_policy:3, controls:0, disablekb:0, fs:0, playsinline:1 },
       events: {
-        onReady: function(e){ e.target.playVideo(); startYTTimer(); },
-        onStateChange: function(){ ytUpdateUI(); }
+        onReady: function(e){
+          e.target.playVideo();
+          e.target.setVolume(100);
+          startYTTimer();
+          // Bắt đầu auto-hide sau 3s
+          _ytHideTimer = setTimeout(ytHideCtrl, 3000);
+          // Setup touch/click trên player để show controls
+          const outer = document.querySelector('.yt-player-outer');
+          if(outer){
+            outer.addEventListener('click', ytToggleCtrl);
+            outer.addEventListener('touchend', function(ev){
+              // Chỉ toggle nếu không phải tap vào button
+              if(ev.target.closest('.yt-ctrl,.yt-back-btn')) return;
+              ytToggleCtrl();
+            }, {passive:true});
+          }
+          // Setup volume slider với pointer events (fix mobile)
+          const volSl = document.getElementById('yt-vol');
+          if(volSl){
+            volSl.addEventListener('input', function(){ ytVol(this.value); });
+            let _dragging = false;
+            volSl.addEventListener('pointerdown', function(){ _dragging=true; ytShowCtrl(); });
+            volSl.addEventListener('pointermove', function(e){
+              if(!_dragging) return;
+              ytShowCtrl();
+              ytVol(this.value);
+            });
+            volSl.addEventListener('pointerup', function(){ _dragging=false; ytVol(this.value); });
+          }
+          // Setup seek bar touch
+          const progBar = document.getElementById('yt-prog');
+          if(progBar){
+            function seekFromEvent(ev){
+              const r = progBar.getBoundingClientRect();
+              const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+              const pct = Math.max(0, Math.min(1,(cx-r.left)/r.width));
+              if(_ytPlayer) try{ _ytPlayer.seekTo((_ytPlayer.getDuration()||0)*pct, true); }catch(e){}
+              ytShowCtrl();
+            }
+            progBar.addEventListener('touchstart', seekFromEvent, {passive:true});
+            progBar.addEventListener('touchmove', seekFromEvent, {passive:true});
+          }
+        },
+        onStateChange: function(e){
+          ytUpdateUI();
+          // Pause → giữ controls hiện; Play → bắt đầu đếm ẩn
+          if(e.data===1){ _ytHideTimer = setTimeout(ytHideCtrl, 3000); }
+          else { clearTimeout(_ytHideTimer); ytShowCtrl(); }
+        }
       }
     });
   }
 
-  // Load YT API nếu chưa có
   if(!window.YT){
     window.onYouTubeIframeAPIReady = createPlayer;
     if(!document.getElementById('yt-api-script')){

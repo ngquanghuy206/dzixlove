@@ -805,6 +805,8 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 /* Progress */
 .zmp-prog { width: 100%; max-width: 380px; }
 .zmp-prog-bar {
+  touch-action: none;
+  padding: 10px 0; margin: -10px 0; box-sizing: content-box;
   height: 4px; background: rgba(255,255,255,.1); border-radius: 4px;
   cursor: pointer; position: relative; overflow: visible;
 }
@@ -854,11 +856,17 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 .zvol-icon { font-size: 16px; cursor: pointer; flex-shrink: 0; color: rgba(255,255,255,.5); }
 .zvol-sl {
   flex: 1; -webkit-appearance: none; appearance: none;
-  height: 3px; border-radius: 3px; background: rgba(255,255,255,.15); outline: none; cursor: pointer;
+  height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+  touch-action: none; min-height: 20px; padding: 8px 0; box-sizing: content-box;
 }
 .zvol-sl::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 12px; height: 12px;
+  -webkit-appearance: none; width: 18px; height: 18px;
   border-radius: 50%; background: #fff; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.zvol-sl::-moz-range-thumb {
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  border: none; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4);
 }
 
 /* Loading overlay */
@@ -963,10 +971,16 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
 .zbt-vol-icon { font-size: 13px; color: rgba(255,255,255,.4); }
 .zbt-vol-sl {
   width: 70px; -webkit-appearance: none; appearance: none;
-  height: 3px; border-radius: 3px; background: rgba(255,255,255,.15); outline: none; cursor: pointer;
+  height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+  touch-action: none; min-height: 20px; padding: 8px 0; box-sizing: content-box;
 }
 .zbt-vol-sl::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #fff; cursor: pointer;
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.zbt-vol-sl::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  border: none; cursor: pointer;
 }
 
 /* ══ Mobile: search view by default, player hidden until track plays ══ */
@@ -1495,6 +1509,7 @@ body.has-player { padding-bottom: 72px; }
   background: transparent;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  transition: opacity .3s ease;
 }
 /* Custom controls bar */
 .yt-ctrl {
@@ -1506,6 +1521,7 @@ body.has-player { padding-bottom: 72px; }
   display: flex;
   flex-direction: column;
   gap: 6px;
+  transition: opacity .3s ease;
 }
 .yt-prog-wrap {
   display: flex;
@@ -1525,6 +1541,8 @@ body.has-player { padding-bottom: 72px; }
   border-radius: 2px;
   position: relative;
   cursor: pointer;
+  padding: 10px 0; margin: -10px 0; box-sizing: content-box;
+  touch-action: none;
 }
 .yt-prog-fill {
   position: absolute;
@@ -1566,9 +1584,23 @@ body.has-player { padding-bottom: 72px; }
   gap: 5px;
   color: rgba(255,255,255,.8);
   margin-left: 2px;
+  min-height: 36px;
 }
 .yt-vol-sl {
-  width: 70px;
-  accent-color: var(--primary, #4f7cff);
-  cursor: pointer;
+  width: 80px; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 4px; background: rgba(255,255,255,.2); outline: none; cursor: pointer;
+  accent-color: var(--primary, #4f7cff); touch-action: none;
+  min-height: 20px; padding: 8px 0; box-sizing: content-box;
+}
+.yt-vol-sl::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.yt-vol-sl::-webkit-slider-runnable-track {
+  background: rgba(79,124,255,.4); border-radius: 4px; height: 4px;
+}
+.yt-vol-sl:focus { outline: none; }
+.yt-vol-sl::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  border: none; cursor: pointer;
 }
