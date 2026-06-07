@@ -47,30 +47,18 @@ function pipShow(src, title){
   const tl  = document.getElementById('dzi-pip-title');
   if(!pip || !fr) return;
 
-  // Build src with autoplay=1 and muted=1 (required for browser autoplay policy)
+  // Build src with autoplay=1
   let pipSrc = src;
   try {
     const u = new URL(src);
     u.searchParams.set('autoplay','1');
-    u.searchParams.set('muted','1');
-    u.searchParams.set('mute','1');
     pipSrc = u.toString();
   } catch(e){ pipSrc = src; }
 
   // Always force-reload iframe so video actually plays
   // (browser suspends iframes when navigating away — must reset src)
   fr.src = 'about:blank';
-  setTimeout(()=>{
-    fr.src = pipSrc;
-    // After iframe loads, try to trigger autoplay via postMessage
-    const tryPlay = () => {
-      try {
-        fr.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        fr.contentWindow.postMessage({type:'play'}, '*');
-      } catch(e){}
-    };
-    fr.onload = () => { setTimeout(tryPlay, 500); };
-  }, 50);
+  setTimeout(()=>{ fr.src = pipSrc; }, 50);
 
   if(tl) tl.textContent = title || 'Đang xem...';
   pip.classList.add('show');
@@ -112,11 +100,10 @@ function pipShowControls(){
   _pipHideT = setTimeout(()=>{ pip.classList.remove('pip-show-ctrl'); }, 3000);
 }
 
-// Tap handler on shield: tap once → go back to movie page
+// Tap handler on shield: show controls (shield then deactivates so iframe gets taps)
 window.pipHandleTap = function(e){
   if(e.target.closest('.pip-btn')) return;
-  // Single tap → navigate back to player page
-  pipGoBack();
+  pipShowControls();
 };
 
 function initPipDrag(){

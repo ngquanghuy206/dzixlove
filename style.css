@@ -1466,17 +1466,15 @@ body.has-player { padding-bottom: 72px; }
 }
 
 #dzi-pip-frame {
-  /* Scale up and crop all sides to hide play button, lock icon, and bottom controls */
+  /* Scale up to crop out play button and lock icon from embed UI */
   position: absolute;
-  left: -15%;
-  right: -15%;
-  top: -20%;
-  width: 130%;
-  height: 180%;
+  left: -20%;
+  top: -25%;
+  width: 140%;
+  height: 190%;
   border: none;
   display: block;
   pointer-events: auto;
-  transform-origin: center center;
 }
 
 /* Controls overlay — hidden by default, shown on tap/hover, auto-hide after 3s */
@@ -1533,8 +1531,10 @@ body.has-player { padding-bottom: 72px; }
   /* Active when controls hidden — intercepts taps */
   pointer-events: auto;
 }
-/* When controls are showing: shield stays active for tap-to-navigate */
-/* #dzi-pip.pip-show-ctrl #dzi-pip-shield removed — always intercept taps */
+/* When controls are showing: shield deactivates so iframe gets taps (play/pause) */
+#dzi-pip.pip-show-ctrl #dzi-pip-shield {
+  pointer-events: none;
+}
 
 /* Close button */
 .pip-btn {
