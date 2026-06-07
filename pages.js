@@ -823,11 +823,11 @@ async function pgDZITube(){
     if(!items||!items.length){ grid.innerHTML='<div style="color:var(--mu);padding:20px">Không load được trending.</div>'; return; }
     grid.innerHTML=items.map(v=>{
       const thumb=(v.videoThumbnails||[]).find(t=>t.quality==='medium')||v.videoThumbnails?.[0]||{};
-      return `<div class="card" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
-        <div class="thumb-wrap"><img class="thumb" src="${esc(thumb.url||'')}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"></div>
-        <div class="card-info">
-          <div class="card-title">${esc(v.title||'')}</div>
-          <div class="card-meta"><span class="tag yt">DZITube</span>${esc(v.author||'')}</div>
+      return `<div class="yt-card" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
+        <div class="yt-thumb"><img src="${esc(thumb.url||'')}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"></div>
+        <div class="yt-info">
+          <div class="yt-title">${esc(v.title||'')}</div>
+          <div class="yt-meta"><span class="tag yt">DZITube</span>${esc(v.author||'')}</div>
         </div>
       </div>`;
     }).join('');
