@@ -163,15 +163,6 @@ function renderNav(){
       </a></li>
     </ul>
 
-    <!-- NHIỆM VỤ (ngay dưới Trang chủ) -->
-    <ul class="sb-icon-links">
-      <li><a class="${p==='missions'?'on':''}" onclick="go('missions');closeSidebar()">
-        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
-      </a></li>
-    </ul>
-
     <div class="sb-divider"></div>
 
     <!-- NHẠC LINKS -->
@@ -240,6 +231,23 @@ function renderNav(){
 
     <div class="sb-divider"></div>
 
+    <!-- TÀI KHOẢN -->
+    <div class="sb-section-title">TÀI KHOẢN</div>
+    <ul class="sb-icon-links">
+      <li><a onclick="openAccountModal();closeSidebar()" style="cursor:pointer">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#4f7cff)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>Thông tin tài khoản
+      </a></li>
+      <li><a onclick="go('missions');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
     <!-- LỊCH SỬ & YÊU THÍCH -->
     <div class="sb-section-title">LỊCH SỬ</div>
     <ul class="sb-icon-links">
@@ -293,8 +301,6 @@ function renderFooter(){
           <li><a onclick="go('cat',{cat:'phim-moi'})">Phim mới</a></li>
           <li><a onclick="go('cat',{cat:'phim-le'})">Phim lẻ</a></li>
           <li><a onclick="go('cat',{cat:'phim-bo'})">Phim bộ</a></li>
-          <li><a onclick="go('lt')" style="color:var(--gold)">🔊 Lồng tiếng</a></li>
-          <li><a onclick="go('cat',{cat:'hoat-hinh'})">Hoạt hình</a></li>
         </ul></div>
         <div class="ft-col"><h4>Anime</h4><ul>
           <li><a onclick="go('cat',{cat:'anime'})">Top Anime</a></li>
@@ -306,10 +312,6 @@ function renderFooter(){
         </ul></div>
         <div class="ft-col"><h4>🎵 Nhạc</h4><ul>
           <li><a onclick="go('nhac')">Nghe Nhạc</a></li>
-        </ul></div>
-        <div class="ft-col"><h4>Tài khoản</h4><ul>
-          <li><a onclick="go('watchlist')">Yêu thích</a></li>
-          <li><a onclick="go('watchlist')">Lịch sử xem</a></li>
         </ul></div>
       </div>
     </div>

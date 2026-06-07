@@ -5,8 +5,9 @@ function pgHome(){
   const app=document.getElementById('app');
   const ms = (window.DZI_USER && window.initMissionState) ? initMissionState(DZI_USER.username) : null;
   const doneCnt = ms ? ms.missions.filter(m=>m.done).length : 0;
-  const lv = ms ? calcLevel(ms.totalExp) : 1;
-  const lvColor = ms ? getLvColor(lv) : '#4f7cff';
+  const isAdmin = window.DZI_ADMIN;
+  const lv = isAdmin ? 30 : (ms ? calcLevel(ms.totalExp) : 1);
+  const lvColor = isAdmin ? '#ff1744' : (ms ? getLvColor(lv) : '#4f7cff');
   const trustCount = window.DZI_TRUST_COUNT || parseInt(localStorage.getItem('dzi_trust_count')||'0') || 1247;
   app.innerHTML = renderNav() + `
   <div class="page" id="hp-intro">
@@ -18,7 +19,7 @@ function pgHome(){
         <div class="intro-avatar-wrap">
           <div class="intro-avatar-ring"></div>
           <div class="intro-avatar">
-            <img src="anh.jpg" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>
+            <img src="anh.jpg" alt="DZI" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=font-size:36px;line-height:1>🎵</span>'"/>
           </div>
         </div>
         <div class="intro-tag-line">
@@ -1026,9 +1027,6 @@ async function pgDZITubeShort(){
       </div>
     </div>
 
-    <!-- Progress dots -->
-    <div id="short-dots" style="position:absolute;bottom:100px;left:calc(50% - 40px);transform:translateX(-50%);z-index:15;display:flex;gap:5px;pointer-events:none"></div>
-
     <!-- Loading overlay -->
     <div id="short-loading-overlay" style="position:absolute;inset:0;z-index:70;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
       <div style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#ff0050;animation:spin .8s linear infinite"></div>
@@ -1037,7 +1035,9 @@ async function pgDZITubeShort(){
 
     <style>
       @keyframes spin{to{transform:rotate(360deg)}}
-      #short-yt-player iframe{width:100vw!important;height:100vh!important;pointer-events:none}
+      #short-yt-player { width: 100vw !important; height: 100vh !important; }
+      #short-yt-player iframe { width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1; }
+      #short-yt-wrap > div:not(#short-yt-player) { display: none !important; }
     </style>
   </div>`;
 
@@ -1116,8 +1116,10 @@ function shortInitYT(){
     // Make iframe fill screen
     const iframe=el.querySelector('iframe');
     if(iframe){
-      iframe.style.cssText='width:100vw!important;height:100vh!important;position:fixed;top:0;left:0;pointer-events:none';
+      iframe.style.cssText='width:100vw!important;height:100vh!important;position:fixed;top:0;left:0;pointer-events:none;z-index:1';
     }
+    // Hide any extra iframes (old player)
+    document.querySelectorAll('#short-yt-wrap iframe').forEach((f,i)=>{ if(i>0) f.style.display='none'; });
   }
 
   if(!window.YT){
@@ -1155,7 +1157,7 @@ window.shortPlayIdx=function(idx){
   if(authorEl) authorEl.textContent=v.author||'';
 
   // Update dots
-  shortUpdateDots();
+  // shortUpdateDots removed
 
   // Hide loading overlay once we start playing
   const overlay=document.getElementById('short-loading-overlay');
@@ -1211,17 +1213,6 @@ window.shortTapToggle=function(){
 };
 
 // ── Dots indicator ─────────────────────
-function shortUpdateDots(){
-  const dots=document.getElementById('short-dots');
-  if(!dots||!_shortVideos.length) return;
-  const total=Math.min(_shortVideos.length,7);
-  const start=Math.max(0,_shortIdx-3);
-  dots.innerHTML=Array.from({length:total},(_,i)=>{
-    const active=start+i===_shortIdx;
-    return `<div style="width:${active?20:6}px;height:6px;border-radius:3px;background:${active?'#ff0050':'rgba(255,255,255,.4)'};transition:all .2s"></div>`;
-  }).join('');
-}
-
 // ── Swipe gesture ──────────────────────
 function shortSetupSwipe(){
   const page=document.getElementById('short-page');

@@ -199,6 +199,28 @@ window.missionProgress = function(type, amount){
   saveMissionState(username, state);
 };
 
+// ── Nhận EXP thủ công ──
+window.claimMissionExp = function(idx){
+  const username = window.DZI_USER ? DZI_USER.username : null;
+  if(!username) return;
+  const state = initMissionState(username);
+  const m = state.missions[idx];
+  if(!m || !m.done || m.claimed) return;
+  m.claimed = true;
+  state.totalExp += m.exp;
+  const newLv = calcLevel(state.totalExp);
+  if(newLv > state.level){
+    state.level = newLv;
+    if(window.sfxLevelUp) sfxLevelUp();
+    setTimeout(()=> showLvUpEffect(newLv), 400);
+  }
+  saveMissionState(username, state);
+  if(window.sfxMissionDone) sfxMissionDone();
+  showToast('🎉 Đã nhận +' + m.exp + ' EXP!');
+  // Re-render trang missions
+  if(window.pgMissions) pgMissions();
+};
+
 // ── Hiệu ứng lên level ──
 function showLvUpEffect(lv){
   const el = document.createElement('div');
@@ -313,8 +335,12 @@ window.pgMissions = function(){
               </div>` : ''}
             </div>
             <div style="text-align:right;flex-shrink:0">
-              <div style="font-size:14px;font-weight:900;color:${m.done?'rgba(34,197,94,.6)':'#fbbf24'}">+${m.exp}</div>
-              <div style="font-size:10px;color:rgba(232,238,255,.35)">EXP</div>
+              ${m.done && !m.claimed
+                ? '<button onclick="claimMissionExp(' + i + ')" style="background:linear-gradient(135deg,#22c55e,#16a34a);border:none;border-radius:10px;padding:6px 10px;color:#fff;font-size:12px;font-weight:800;cursor:pointer">Nhận<br>+' + m.exp + ' EXP</button>'
+                : m.claimed
+                  ? '<div style="font-size:11px;font-weight:700;color:rgba(34,197,94,.6)">✅ Đã nhận +' + m.exp + ' EXP</div>'
+                  : '<div style="font-size:14px;font-weight:900;color:#fbbf24">+' + m.exp + '</div><div style="font-size:10px;color:rgba(232,238,255,.35)">EXP</div>'
+              }
             </div>
           </div>
         </div>`;
