@@ -125,11 +125,24 @@ window.go = function(page, opts){
     const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
     if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
       PIP.src = liveIframe.src;
+      // Move live iframe into PiP BEFORE render() destroys #app — video keeps playing
+      const pipVideo = document.getElementById('dzi-pip-video');
+      const oldFr = document.getElementById('dzi-pip-frame');
+      if(pipVideo){
+        liveIframe.id = 'dzi-pip-frame';
+        liveIframe.style.cssText = 'position:absolute;left:-20%;top:-25%;width:140%;height:190%;border:none;display:block;pointer-events:auto;';
+        if(oldFr && oldFr !== liveIframe) oldFr.remove();
+        pipVideo.insertBefore(liveIframe, pipVideo.firstChild);
+      }
     }
     if(PIP.src){
       PIP.fromPage = S.page;
       PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId, epIdx: S.epIdx, svIdx: S.svIdx };
-      pipShow(PIP.src, PIP.title || document.querySelector('.player-title')?.textContent || 'Đang xem...');
+      const tl = document.getElementById('dzi-pip-title');
+      if(tl) tl.textContent = PIP.title || document.querySelector('.player-title')?.textContent || 'Đang xem...';
+      const pip = document.getElementById('dzi-pip');
+      if(pip) pip.classList.add('show');
+      PIP.active = true;
     }
   }
 
