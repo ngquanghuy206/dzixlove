@@ -134,7 +134,40 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(400).json({ ok: false, error: 'type không hợp lệ. Dùng: search | trending | detail' });
+    // ── 4. SHORTS ──────────────────────────────────
+    if (type === 'shorts') {
+      const keyword = q.trim() || '#shorts';
+      const params = new URLSearchParams({
+        part: 'snippet',
+        q: keyword + ' #shorts',
+        type: 'video',
+        maxResults: '20',
+        regionCode: 'VN',
+        videoDuration: 'short',   // < 4 phút = short clips
+        key: YT_KEY,
+      });
+      if (pageToken) params.set('pageToken', pageToken);
+      const r = await fetch(`${BASE}/search?${params}`);
+      const d = await r.json();
+      if (!r.ok) { res.status(r.status).json({ ok: false, error: d.error?.message || 'YT error' }); return; }
+      const items = (d.items || []).map(item => {
+        const vid = item.id?.videoId || '';
+        const sn  = item.snippet || {};
+        return {
+          videoId: vid,
+          title:   sn.title || '',
+          author:  sn.channelTitle || '',
+          videoThumbnails: [
+            { quality: 'medium', url: sn.thumbnails?.medium?.url || sn.thumbnails?.default?.url || '' },
+            { quality: 'high',   url: sn.thumbnails?.high?.url || '' },
+          ],
+        };
+      });
+      res.json({ items, nextPageToken: d.nextPageToken || null });
+      return;
+    }
+
+    res.status(400).json({ ok: false, error: 'type không hợp lệ. Dùng: search | trending | detail | shorts' });
 
   } catch (e) {
     res.status(502).json({ ok: false, error: e.message });
