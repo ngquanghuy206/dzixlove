@@ -3,12 +3,10 @@
 // ═══════════════════════════════════════
 const S = {
   page: 'home',
-  // navigation data
   slug: null, malId: null, ytId: null,
   q: '', src: 'all',
   cat: '', ltTab: 'bo-lt',
   epIdx: 0, svIdx: 0, epNum: 1, dub: 0,
-  // user data
   wl: JSON.parse(localStorage.getItem('lp_wl')||'[]'),
   hist: JSON.parse(localStorage.getItem('lp_h')||'[]'),
 };
@@ -47,30 +45,16 @@ function pipShow(src, title){
   const tl  = document.getElementById('dzi-pip-title');
   if(!pip || !fr) return;
 
-  // Build src with autoplay=1 and muted=1 (required for browser autoplay policy)
+  // Build src with autoplay=1
   let pipSrc = src;
   try {
     const u = new URL(src);
     u.searchParams.set('autoplay','1');
-    u.searchParams.set('muted','1');
-    u.searchParams.set('mute','1');
     pipSrc = u.toString();
   } catch(e){ pipSrc = src; }
 
-  // Always force-reload iframe so video actually plays
-  // (browser suspends iframes when navigating away — must reset src)
   fr.src = 'about:blank';
-  setTimeout(()=>{
-    fr.src = pipSrc;
-    // After iframe loads, try to trigger autoplay via postMessage
-    const tryPlay = () => {
-      try {
-        fr.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-        fr.contentWindow.postMessage({type:'play'}, '*');
-      } catch(e){}
-    };
-    fr.onload = () => { setTimeout(tryPlay, 500); };
-  }, 50);
+  setTimeout(()=>{ fr.src = pipSrc; }, 50);
 
   if(tl) tl.textContent = title || 'Đang xem...';
   pip.classList.add('show');
@@ -84,61 +68,45 @@ window.pipClose = function(){
   const fr  = document.getElementById('dzi-pip-frame');
   if(pip) pip.classList.remove('show');
   PIP.active = false; PIP.src = ''; PIP.title = '';
-  // Delay blanking so iframe keeps playing briefly while navigating
   setTimeout(()=>{ if(!PIP.active && fr) fr.src = 'about:blank'; }, 500);
 };
 
 window.pipGoBack = function(){
-  // Navigate back to player page
   if(PIP.fromPage){
     const p = PIP.fromPage, o = PIP.fromOpts;
     PIP.fromPage = null;
-    // Hide PiP visually first
     const pip = document.getElementById('dzi-pip');
     if(pip) pip.classList.remove('show');
     PIP.active = false;
-    // go() is defined later in router.js, use setTimeout to be safe
+    const fr = document.getElementById('dzi-pip-frame');
+    if(fr) fr.src = 'about:blank';
     setTimeout(()=>{ if(window.go) window.go(p, o); }, 0);
   }
 };
 
-// Draggable PiP + auto-hide controls — init after DOM ready
-let _pipHideT = null;
-function pipShowControls(){
-  const pip = document.getElementById('dzi-pip');
-  if(!pip) return;
-  pip.classList.add('pip-show-ctrl');
-  clearTimeout(_pipHideT);
-  _pipHideT = setTimeout(()=>{ pip.classList.remove('pip-show-ctrl'); }, 3000);
-}
-
-// Tap handler on shield: tap once → go back to movie page
-window.pipHandleTap = function(e){
-  if(e.target.closest('.pip-btn')) return;
-  // Single tap → navigate back to player page
-  pipGoBack();
-};
-
+// Draggable PiP — tap once = go back to movie, drag = move
 function initPipDrag(){
   const pip = document.getElementById('dzi-pip');
   if(!pip) return;
-  let ox=0,oy=0,startX=0,startY=0,dragging=false,moved=false;
+  let ox=0,oy=0,startX=0,startY=0,moved=false;
 
   pip.addEventListener('pointerdown', e=>{
     if(e.target.closest('.pip-btn')) return;
-    dragging=true; moved=false;
+    moved=false;
     pip.setPointerCapture(e.pointerId);
     startX=e.clientX-ox; startY=e.clientY-oy;
   });
   pip.addEventListener('pointermove', e=>{
-    if(!dragging) return;
     const nx=e.clientX-startX, ny=e.clientY-startY;
-    if(Math.abs(nx-ox)>4||Math.abs(ny-oy)>4) moved=true;
+    if(Math.abs(nx-ox)>6||Math.abs(ny-oy)>6) moved=true;
     ox=nx; oy=ny;
     pip.style.transform=`translate(${ox}px,${oy}px)`;
   });
   pip.addEventListener('pointerup', e=>{
-    dragging=false;
+    if(!moved && !e.target.closest('.pip-btn')){
+      // Single tap = navigate back to movie
+      pipGoBack();
+    }
   });
 }
 
@@ -153,9 +121,7 @@ const PLAYER_PAGES = new Set(['play-kk','play-ani','play-yt']);
 window.go = function(page, opts){
   opts = opts||{};
 
-  // If currently on player page → activate PiP before navigating away
   if(PLAYER_PAGES.has(S.page) && !PLAYER_PAGES.has(page)){
-    // Grab the live iframe src directly from DOM
     const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
     if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
       PIP.src = liveIframe.src;
@@ -167,7 +133,6 @@ window.go = function(page, opts){
     }
   }
 
-  // If navigating TO a player page → close PiP
   if(PLAYER_PAGES.has(page)){
     pipClose();
   }
@@ -179,7 +144,6 @@ window.go = function(page, opts){
   render();
 };
 
-// Intercept browser back button
 window.addEventListener('popstate', function(e){
   if(PLAYER_PAGES.has(S.page)){
     const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
@@ -189,16 +153,14 @@ window.addEventListener('popstate', function(e){
       PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId };
       pipShow(PIP.src, PIP.title || 'Đang xem...');
     }
-    // Navigate back to previous non-player page
     S.page = 'home';
     setTimeout(()=>{ if(window.render) window.render(); }, 0);
   }
 });
-// Push state when entering player so back button fires popstate
+
 const _origRender = window.render;
 window.render = function(){
   if(PLAYER_PAGES.has(S.page)){
-    // Store current "from" page so back buttons can navigate correctly
     const prevState = history.state || {};
     history.pushState({ page: S.page, from: prevState.page || 'home', fromOpts: prevState.fromOpts || {} }, '', location.href);
   }

@@ -1533,8 +1533,10 @@ body.has-player { padding-bottom: 72px; }
   /* Active when controls hidden — intercepts taps */
   pointer-events: auto;
 }
-/* When controls are showing: shield stays active for tap-to-navigate */
-/* #dzi-pip.pip-show-ctrl #dzi-pip-shield removed — always intercept taps */
+/* When controls are showing: shield deactivates so iframe gets taps (play/pause) */
+#dzi-pip.pip-show-ctrl #dzi-pip-shield {
+  pointer-events: none;
+}
 
 /* Close button */
 .pip-btn {
