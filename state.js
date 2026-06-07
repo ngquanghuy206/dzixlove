@@ -23,6 +23,7 @@ window.toggleWL = function(raw){
     if(window.missionProgress) missionProgress('favorite');
   }
   localStorage.setItem('lp_wl', JSON.stringify(S.wl));
+  if(typeof scheduleSync!=='undefined') scheduleSync();
   const fb = document.getElementById('fav-btn');
   if(fb){ const on=inWL(k); fb.className='fav-btn'+(on?' on':''); fb.textContent=on?'❤️':'🤍'; }
 };
@@ -33,11 +34,13 @@ function addHist(m){
   m.addedAt = Date.now();
   S.hist = [m, ...S.hist.filter(x=>x.uid!==m.uid)].slice(0,200);
   localStorage.setItem('lp_h', JSON.stringify(S.hist));
+  if(typeof scheduleSync!=='undefined') scheduleSync();
 }
 
 window.updateHistPos = function(uid, positionSec){
   const entry = S.hist.find(x=>x.uid===uid);
-  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_h', JSON.stringify(S.hist)); }
+  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_h', JSON.stringify(S.hist));
+  if(typeof scheduleSync!=='undefined') scheduleSync(); }
 };
 
 window.addNhacHist = function(track, positionSec){
@@ -53,11 +56,13 @@ window.addNhacHist = function(track, positionSec){
   };
   S.nhacHist = [entry, ...S.nhacHist.filter(x=>x.id!==entry.id)].slice(0,200);
   localStorage.setItem('lp_nh', JSON.stringify(S.nhacHist));
+  if(typeof scheduleSync!=='undefined') scheduleSync();
 };
 
 window.updateNhacHistPos = function(id, positionSec){
   const entry = S.nhacHist.find(x=>x.id===String(id));
-  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_nh', JSON.stringify(S.nhacHist)); }
+  if(entry){ entry.positionSec=Math.floor(positionSec); localStorage.setItem('lp_nh', JSON.stringify(S.nhacHist));
+  if(typeof scheduleSync!=='undefined') scheduleSync(); }
 };
 
 let _toast;
@@ -110,3 +115,20 @@ window.addEventListener('popstate', function(e){
     if(_origRender) _origRender();
   };
 })();
+
+// ── Auto-sync to MongoDB after state changes ──
+let _syncTimer = null;
+function scheduleSync() {
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(async () => {
+    if(!window.DZI_TOKEN || !window.dziSyncData) return;
+    await dziSyncData({
+      watchlist:  S.wl,
+      history:    S.hist,
+      nhacHist:   S.nhacHist,
+    });
+  }, 2000); // debounce 2s
+}
+
+// Patch existing save calls to also sync
+const _origSetWL = window.toggleWL;

@@ -98,6 +98,11 @@ function loadMissionState(username){
 // ── Save state vào localStorage ──
 function saveMissionState(username, state){
   localStorage.setItem('dzi_missions_' + (username||'guest'), JSON.stringify(state));
+  // Sync to MongoDB
+  if(window.DZI_TOKEN && window.dziSyncData && username && username!=='guest'){
+    clearTimeout(window._missionSyncTimer);
+    window._missionSyncTimer = setTimeout(()=>dziSyncData({missions: state}), 1500);
+  }
 }
 
 // ── Khởi tạo state nhiệm vụ hôm nay ──
