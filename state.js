@@ -66,101 +66,6 @@ function showToast(msg){
   _toast = setTimeout(()=>{ el.style.display='none'; }, 2600);
 }
 
-// ── PiP state ───────────────────────────
-const PIP = { active: false, src: '', title: '', fromPage: null, fromOpts: {} };
-
-function pipShow(src, title){
-  const pip = document.getElementById('dzi-pip');
-  const fr  = document.getElementById('dzi-pip-frame');
-  const tl  = document.getElementById('dzi-pip-title');
-  if(!pip || !fr) return;
-
-  // Build src with autoplay=1
-  let pipSrc = src;
-  try {
-    const u = new URL(src);
-    u.searchParams.set('autoplay','1');
-    pipSrc = u.toString();
-  } catch(e){ pipSrc = src; }
-
-  fr.src = 'about:blank';
-  setTimeout(()=>{ fr.src = pipSrc; }, 50);
-
-  if(tl) tl.textContent = title || 'Đang xem...';
-  pip.classList.add('show');
-  PIP.active = true;
-  PIP.src = src;
-  PIP.title = title;
-}
-
-window.pipClose = function(){
-  const pip = document.getElementById('dzi-pip');
-  const fr  = document.getElementById('dzi-pip-frame');
-  if(pip) pip.classList.remove('show');
-  PIP.active = false; PIP.src = ''; PIP.title = '';
-  setTimeout(()=>{ if(!PIP.active && fr) fr.src = 'about:blank'; }, 500);
-};
-
-window.pipGoBack = function(){
-  if(PIP.fromPage){
-    const p = PIP.fromPage, o = PIP.fromOpts;
-    PIP.fromPage = null;
-    const pip = document.getElementById('dzi-pip');
-    if(pip) pip.classList.remove('show');
-    PIP.active = false;
-    const fr = document.getElementById('dzi-pip-frame');
-    if(fr) fr.src = 'about:blank';
-    setTimeout(()=>{ if(window.go) window.go(p, o); }, 0);
-  }
-};
-
-// Draggable PiP — tap once = go back to movie, drag = move
-function initPipDrag(){
-  const pip = document.getElementById('dzi-pip');
-  if(!pip) return;
-  let ox=0,oy=0,startX=0,startY=0,moved=false;
-  const dropZone = document.getElementById('pip-drop-zone');
-
-  function isOverDropZone(e){
-    if(!dropZone) return false;
-    const r = dropZone.getBoundingClientRect();
-    return e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom;
-  }
-
-  pip.addEventListener('pointerdown', e=>{
-    if(e.target.closest('.pip-btn') || e.target.closest('#dzi-pip-play-btn')) return;
-    moved=false;
-    pip.setPointerCapture(e.pointerId);
-    startX=e.clientX-ox; startY=e.clientY-oy;
-  });
-  pip.addEventListener('pointermove', e=>{
-    const nx=e.clientX-startX, ny=e.clientY-startY;
-    if(Math.abs(nx-ox)>6||Math.abs(ny-oy)>6) moved=true;
-    ox=nx; oy=ny;
-    pip.style.transform=`translate(${ox}px,${oy}px)`;
-    // Show/hide drop zone
-    if(moved && dropZone){
-      dropZone.classList.add('active');
-      if(isOverDropZone(e)) dropZone.classList.add('over');
-      else dropZone.classList.remove('over');
-    }
-  });
-  pip.addEventListener('pointerup', e=>{
-    if(dropZone){ dropZone.classList.remove('active','over'); }
-    if(moved && isOverDropZone(e)){
-      // Kéo vào drop zone = đóng PIP
-      ox=0; oy=0;
-      pip.style.transform='translate(0px,0px)';
-      pipClose();
-      return;
-    }
-    if(!moved && !e.target.closest('.pip-btn') && !e.target.closest('#dzi-pip-play-btn')){
-      // Single tap = navigate back to movie
-      pipGoBack();
-    }
-    if(moved){ ox=0; oy=0; pip.style.transform='translate(0px,0px)'; moved=false; }
-  });
-}
 
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', initPipDrag);
@@ -173,33 +78,7 @@ const PLAYER_PAGES = new Set(['play-kk','play-ani','play-yt']);
 window.go = function(page, opts){
   opts = opts||{};
 
-  if(PLAYER_PAGES.has(S.page) && !PLAYER_PAGES.has(page)){
-    const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
-    if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
-      PIP.src = liveIframe.src;
-      // Move live iframe into PiP BEFORE render() destroys #app — video keeps playing
-      const pipVideo = document.getElementById('dzi-pip-video');
-      const oldFr = document.getElementById('dzi-pip-frame');
-      if(pipVideo){
-        liveIframe.id = 'dzi-pip-frame';
-        liveIframe.style.cssText = 'position:absolute;left:-20%;top:-25%;width:140%;height:190%;border:none;display:block;pointer-events:auto;';
-        if(oldFr && oldFr !== liveIframe) oldFr.remove();
-        pipVideo.insertBefore(liveIframe, pipVideo.firstChild);
-      }
-    }
-    if(PIP.src){
-      PIP.fromPage = S.page;
-      PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId, epIdx: S.epIdx, svIdx: S.svIdx };
-      const tl = document.getElementById('dzi-pip-title');
-      if(tl) tl.textContent = PIP.title || document.querySelector('.player-title')?.textContent || 'Đang xem...';
-      const pip = document.getElementById('dzi-pip');
-      if(pip) pip.classList.add('show');
-      PIP.active = true;
-    }
-  }
-
   if(PLAYER_PAGES.has(page)){
-    pipClose();
     // Clear watch position timer when entering player
     window._watchTimer && clearInterval(window._watchTimer);
   }
@@ -213,13 +92,6 @@ window.go = function(page, opts){
 
 window.addEventListener('popstate', function(e){
   if(PLAYER_PAGES.has(S.page)){
-    const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
-    if(liveIframe && liveIframe.src && liveIframe.src !== 'about:blank'){
-      PIP.src = liveIframe.src;
-      PIP.fromPage = S.page;
-      PIP.fromOpts = { slug: S.slug, malId: S.malId, ytId: S.ytId };
-      pipShow(PIP.src, PIP.title || 'Đang xem...');
-    }
     S.page = 'home';
     setTimeout(()=>{ if(window.render) window.render(); }, 0);
   }

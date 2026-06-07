@@ -686,7 +686,7 @@ async function pgPlayKK(){
   if(embed){
     const embedUrl = (()=>{ try{ const u=new URL(embed); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return embed; }})();
     playerHTML=`<iframe src="${esc(embedUrl)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
-    PIP.src = embedUrl; PIP.title = movie.name || S.slug;
+
   } else if(m3u8){
     playerHTML=`<video id="hls-v" controls autoplay style="position:absolute;inset:0;width:100%;height:100%"></video>`;
   } else {
@@ -761,7 +761,7 @@ async function pgPlayAni(){
 
     const aniEmbedSrcRaw = vsAnime(id,epn,dub);
     const aniEmbedSrc = (()=>{ try{ const u=new URL(aniEmbedSrcRaw); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return aniEmbedSrcRaw; }})();
-    PIP.src = aniEmbedSrc; PIP.title = anime&&anime.title||'Anime';
+
     app.innerHTML=renderNav()+`<div class="player-page page">
       <div class="player-wrap" style="position:relative">
         <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
@@ -801,35 +801,62 @@ async function pgPlayAni(){
 }
 
 // ═══════════════════════════════════════
-//  PLAYER — YouTube
+//  PLAYER — YouTube (dùng YT IFrame API để custom controls)
 // ═══════════════════════════════════════
 async function pgPlayYT(){
   const app=document.getElementById('app');
   const id=S.ytId||'';
   if(!id){ go('home'); return; }
-  const embed=`https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&controls=1`;
-  PIP.src = embed; PIP.title = 'DZITube Video';
   const thumb=`https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
-  // Try fetch real title from /api/youtube?type=detail
-  let videoTitle = 'DZITube Video', videoAuthor = '', videoViews = '';
+  let videoTitle='DZITube Video', videoAuthor='', videoViews='';
   try{
-    const det = await ytDetail(id);
-    if(det && det.title){ videoTitle=det.title; videoAuthor=det.author||''; videoViews=det.viewCount?fmtNum(parseInt(det.viewCount))+' lượt xem':''; PIP.title=det.title; }
+    const det=await ytDetail(id);
+    if(det&&det.title){ videoTitle=det.title; videoAuthor=det.author||''; videoViews=det.viewCount?fmtNum(parseInt(det.viewCount))+' lượt xem':''; }
   }catch(e){}
 
   addHist({uid:'yt_'+id,name:videoTitle||('DZITube: '+id),thumb:thumb,year:'',src:'yt',ytId:id});
-  // Track watch position by elapsed time
   const _yhUid='yt_'+id, _ypPos=(S.hist.find(x=>x.uid===_yhUid)||{}).positionSec||0;
   let _ywStart=Date.now(), _ywPos=_ypPos;
   window._watchTimer&&clearInterval(window._watchTimer);
   window._watchTimer=setInterval(()=>{ _ywPos=_ypPos+Math.round((Date.now()-_ywStart)/1000); if(window.updateHistPos)updateHistPos(_yhUid,_ywPos); },5000);
+
   app.innerHTML=renderNav()+`<div class="player-page page">
-    <div class="player-wrap" style="position:relative">
-      <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent">
+    <div class="yt-player-outer">
+      <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" class="yt-back-btn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 1px 3px rgba(0,0,0,.8))"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <iframe src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
+      <!-- YT IFrame API target -->
+      <div id="yt-api-player"></div>
+      <!-- Custom controls -->
+      <div class="yt-ctrl" id="yt-ctrl">
+        <div class="yt-prog-wrap">
+          <span class="yt-time" id="yt-cur">0:00</span>
+          <div class="yt-prog" id="yt-prog" onclick="ytSeek(event)">
+            <div class="yt-prog-fill" id="yt-prog-fill"></div>
+            <div class="yt-prog-thumb" id="yt-prog-thumb"></div>
+          </div>
+          <span class="yt-time" id="yt-dur">0:00</span>
+        </div>
+        <div class="yt-btns">
+          <button class="yt-btn" onclick="ytSkip(-10)" title="-10s">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/><text x="12" y="14" text-anchor="middle" font-size="6" fill="currentColor">10</text></svg>
+          </button>
+          <button class="yt-btn yt-play-btn" id="yt-play-btn" onclick="ytToggle()">
+            <svg id="yt-play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="yt-btn" onclick="ytSkip(10)" title="+10s">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/><text x="12" y="14" text-anchor="middle" font-size="6" fill="currentColor">10</text></svg>
+          </button>
+          <div class="yt-vol-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <input type="range" class="yt-vol-sl" id="yt-vol" min="0" max="100" value="100" oninput="ytVol(this.value)">
+          </div>
+          <button class="yt-btn yt-fs-btn" onclick="ytFullscreen()" title="Fullscreen">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          </button>
+        </div>
+      </div>
     </div>
     <div class="player-info">
       <div class="player-title">🔴 ${esc(videoTitle)}</div>
@@ -841,6 +868,7 @@ async function pgPlayYT(){
     ${renderFooter()}
   </div>`;
   setupNavScroll();
+  initYTPlayer('${id}');
 }
 
 // ═══════════════════════════════════════
@@ -1199,3 +1227,109 @@ function pgWatchlist(){
     setTimeout(()=>{ playing=false; prog=0; curIdx=0; updateUI(); }, 50);
   };
 })();
+
+// ═══════════════════════════════════════
+//  YT IFrame API — custom controls
+// ═══════════════════════════════════════
+let _ytPlayer = null, _ytTimer = null;
+
+function fmtYTTime(s){
+  s = Math.floor(s||0);
+  const m = Math.floor(s/60), sec = s%60;
+  return m+':'+(sec<10?'0':'')+sec;
+}
+
+function ytUpdateUI(){
+  if(!_ytPlayer || typeof _ytPlayer.getCurrentTime !== 'function') return;
+  try {
+    const cur = _ytPlayer.getCurrentTime()||0;
+    const dur = _ytPlayer.getDuration()||0;
+    const pct = dur ? (cur/dur*100) : 0;
+    const el = id => document.getElementById(id);
+    if(el('yt-cur')) el('yt-cur').textContent = fmtYTTime(cur);
+    if(el('yt-dur')) el('yt-dur').textContent = fmtYTTime(dur);
+    if(el('yt-prog-fill')) el('yt-prog-fill').style.width = pct+'%';
+    if(el('yt-prog-thumb')) el('yt-prog-thumb').style.left = pct+'%';
+    const state = _ytPlayer.getPlayerState();
+    const icon = el('yt-play-icon');
+    if(icon){
+      // 1=playing, 2=paused
+      icon.innerHTML = state===1
+        ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+    }
+  } catch(e){}
+}
+
+window.ytToggle = function(){
+  if(!_ytPlayer) return;
+  try {
+    const s = _ytPlayer.getPlayerState();
+    if(s===1) _ytPlayer.pauseVideo(); else _ytPlayer.playVideo();
+  } catch(e){}
+};
+
+window.ytSkip = function(sec){
+  if(!_ytPlayer) return;
+  try { _ytPlayer.seekTo((_ytPlayer.getCurrentTime()||0)+sec, true); } catch(e){}
+};
+
+window.ytSeek = function(e){
+  if(!_ytPlayer) return;
+  try {
+    const bar = document.getElementById('yt-prog');
+    if(!bar) return;
+    const r = bar.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - r.left)/r.width));
+    _ytPlayer.seekTo((_ytPlayer.getDuration()||0)*pct, true);
+  } catch(e){}
+};
+
+window.ytVol = function(v){
+  if(!_ytPlayer) return;
+  try { _ytPlayer.setVolume(parseInt(v)); } catch(e){}
+};
+
+window.ytFullscreen = function(){
+  const outer = document.querySelector('.yt-player-outer');
+  if(!outer) return;
+  if(document.fullscreenElement){ document.exitFullscreen(); }
+  else { outer.requestFullscreen && outer.requestFullscreen(); }
+};
+
+window.initYTPlayer = function(videoId){
+  clearInterval(_ytTimer);
+  _ytPlayer = null;
+
+  function createPlayer(){
+    if(!window.YT || !window.YT.Player){ setTimeout(createPlayer, 200); return; }
+    const el = document.getElementById('yt-api-player');
+    if(!el) return;
+    _ytPlayer = new YT.Player('yt-api-player', {
+      videoId: videoId,
+      playerVars: { autoplay:1, rel:0, modestbranding:1, iv_load_policy:3, controls:0, disablekb:0, fs:0, playsinline:1 },
+      events: {
+        onReady: function(e){ e.target.playVideo(); startYTTimer(); },
+        onStateChange: function(){ ytUpdateUI(); }
+      }
+    });
+  }
+
+  // Load YT API nếu chưa có
+  if(!window.YT){
+    window.onYouTubeIframeAPIReady = createPlayer;
+    if(!document.getElementById('yt-api-script')){
+      const s = document.createElement('script');
+      s.id = 'yt-api-script';
+      s.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(s);
+    }
+  } else {
+    createPlayer();
+  }
+};
+
+function startYTTimer(){
+  clearInterval(_ytTimer);
+  _ytTimer = setInterval(ytUpdateUI, 500);
+}

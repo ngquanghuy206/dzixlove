@@ -215,11 +215,8 @@ img{display:block}
 
 /* PLAYER */
 .player-page{padding-top:var(--nh);min-height:100vh}
-.player-wrap{position:relative;background:#000;width:100%;aspect-ratio:16/9;max-height:calc(100vh - var(--nh) - 130px)}
+.player-wrap{position:relative;background:#000;width:100%;aspect-ratio:16/9;max-height:min(56vw, calc(100vh - var(--nh) - 220px))}
 .player-wrap iframe,.player-wrap video{position:absolute;inset:0;width:100%;height:100%;border:none}
-/* YT player: crop iframe để ẩn logo, controls bar, ads overlay */
-.yt-wrap{overflow:hidden}
-.yt-iframe-crop{position:absolute;left:-5%;top:-13%;width:110%;height:135%;border:none;display:block}
 .player-info{padding:12px clamp(10px,3vw,48px)}
 .player-title{font-family:"Orbitron",sans-serif;font-size:18px;margin-bottom:4px;letter-spacing:1px}
 .player-meta{font-size:12px;color:var(--mu);margin-bottom:10px}
@@ -1464,167 +1461,114 @@ body.has-player { padding-bottom: 72px; }
    PICTURE-IN-PICTURE FLOATING PLAYER
 ═══════════════════════════════════════ */
 /* ── PiP floating player ── */
-#dzi-pip {
-  display: none;
-  position: fixed;
-  bottom: 80px;
-  right: 12px;
-  width: 300px;
-  z-index: 900;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 12px 40px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.1);
-  background: #000;
-  cursor: move;
-  user-select: none;
-  touch-action: none;
-  /* needed so absolute children (controls) are relative to this */
-  isolation: isolate;
-}
-#dzi-pip.show { display: block; }
 
-#dzi-pip-video {
+
+@media(max-width:750px){
+}
+
+/* ══════════════════════════════════════════════════════════
+   YT CUSTOM PLAYER
+══════════════════════════════════════════════════════════ */
+.yt-player-outer {
+  position: relative;
+  background: #000;
   width: 100%;
   aspect-ratio: 16/9;
-  position: relative;
-  display: block;
-  cursor: pointer;
-  background: #000;
+  max-height: calc(100vh - var(--nh) - 130px);
   overflow: hidden;
 }
-
-#dzi-pip-frame {
-  /* Scale up and crop all sides to hide play button, lock icon, bottom controls, YT logo */
-  position: absolute;
-  left: -15%;
-  top: -25%;
-  width: 130%;
-  height: 195%;
-  border: none;
-  display: block;
-  pointer-events: auto;
-  transform-origin: center center;
-}
-
-/* Controls overlay — hidden by default, shown on tap/hover, auto-hide after 3s */
-#dzi-pip-controls {
+.yt-player-outer #yt-api-player,
+.yt-player-outer iframe {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.yt-back-btn {
+  position: absolute;
+  top: 10px; left: 10px;
+  z-index: 20;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Custom controls bar */
+.yt-ctrl {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 15;
+  padding: 6px 10px 8px;
+  background: linear-gradient(to top, rgba(0,0,0,.88) 60%, transparent);
   display: flex;
   flex-direction: column;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity .2s ease;
-  z-index: 2;
-}
-#dzi-pip.pip-show-ctrl #dzi-pip-controls,
-#dzi-pip:hover #dzi-pip-controls {
-  opacity: 1;
-  /* Keep pointer-events:none so taps fall through to pip-video */
-  pointer-events: none;
-}
-/* Only close button itself is clickable */
-#dzi-pip.pip-show-ctrl .pip-btn,
-#dzi-pip:hover .pip-btn {
-  pointer-events: auto;
-}
-
-/* Top bar: title + close */
-#dzi-pip-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px 6px 10px;
-  background: linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
   gap: 6px;
 }
-#dzi-pip-title {
+.yt-prog-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.yt-time {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(255,255,255,.9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: rgba(255,255,255,.85);
+  font-variant-numeric: tabular-nums;
+  min-width: 35px;
+}
+.yt-prog {
   flex: 1;
-}
-
-/* pip-video wrapper */
-#dzi-pip-video { cursor: pointer; position: relative; }
-
-/* Shield: transparent layer on top of iframe, catches taps to show controls */
-#dzi-pip-shield {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
+  height: 4px;
+  background: rgba(255,255,255,.25);
+  border-radius: 2px;
+  position: relative;
   cursor: pointer;
-  /* Active when controls hidden — intercepts taps */
-  pointer-events: auto;
 }
-/* When controls are showing: shield deactivates so iframe gets taps (play/pause) */
-#dzi-pip.pip-show-ctrl #dzi-pip-shield {
+.yt-prog-fill {
+  position: absolute;
+  left: 0; top: 0; height: 100%;
+  background: var(--primary, #4f7cff);
+  border-radius: 2px;
   pointer-events: none;
 }
-
-/* Close button */
-.pip-btn {
-  width: 28px; height: 28px;
+.yt-prog-thumb {
+  position: absolute;
+  top: 50%; transform: translate(-50%,-50%);
+  width: 12px; height: 12px;
   border-radius: 50%;
-  background: rgba(0,0,0,.45);
+  background: #fff;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+.yt-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.yt-btn {
+  background: transparent;
   border: none;
   color: rgba(255,255,255,.9);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 36px; height: 36px;
+  border-radius: 6px;
   transition: background .15s;
-  pointer-events: auto;
 }
-.pip-btn:hover { background: rgba(220,38,38,.8); }
-
-/* PIP play button ở giữa */
-#dzi-pip-play-btn {
-  display: none;
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px; height: 44px;
-  border-radius: 50%;
-  background: rgba(0,0,0,.6);
-  backdrop-filter: blur(4px);
-  color: #fff;
-  align-items: center; justify-content: center;
-  cursor: pointer;
-  pointer-events: auto;
-  z-index: 3;
-  transition: background .15s, transform .15s;
-}
-#dzi-pip-play-btn:hover { background: rgba(79,124,255,.8); transform: translate(-50%,-50%) scale(1.1); }
-#dzi-pip.pip-show-ctrl #dzi-pip-play-btn,
-#dzi-pip:hover #dzi-pip-play-btn { display: flex; }
-
-/* Drop zone đóng PIP */
-#pip-drop-zone {
-  display: none;
-  position: fixed;
-  bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 160px;
-  padding: 14px 0 20px;
-  flex-direction: column;
+.yt-btn:hover { background: rgba(255,255,255,.12); }
+.yt-play-btn { width: 42px; height: 42px; }
+.yt-fs-btn { margin-left: auto; }
+.yt-vol-wrap {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(220,38,38,.85);
-  border-radius: 20px 20px 0 0;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  z-index: 9999;
-  pointer-events: none;
-  backdrop-filter: blur(8px);
-  transition: background .15s, transform .15s;
+  gap: 5px;
+  color: rgba(255,255,255,.8);
+  margin-left: 2px;
 }
-#pip-drop-zone.active { display: flex; }
-#pip-drop-zone.over { background: rgba(220,38,38,1); transform: translateX(-50%) scale(1.05); }
-
-@media(max-width:750px){
-  #dzi-pip { width: 260px; bottom: 70px; }
+.yt-vol-sl {
+  width: 70px;
+  accent-color: var(--primary, #4f7cff);
+  cursor: pointer;
 }
