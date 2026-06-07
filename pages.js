@@ -7,7 +7,7 @@ function pgHome(){
   const doneCnt = ms ? ms.missions.filter(m=>m.done).length : 0;
   const lv = ms ? calcLevel(ms.totalExp) : 1;
   const lvColor = ms ? getLvColor(lv) : '#4f7cff';
-  const trustCount = window.DZI_TRUST_COUNT || 1247;
+  const trustCount = window.DZI_TRUST_COUNT || parseInt(localStorage.getItem('dzi_trust_count')||'0') || 1247;
   app.innerHTML = renderNav() + `
   <div class="page" id="hp-intro">
 

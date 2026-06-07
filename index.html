@@ -99,8 +99,8 @@
   <div class="dzi-auth-card">
     <!-- Logo -->
     <div style="text-align:center;margin-bottom:28px">
-      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#4f7cff,#7c3aed);margin-bottom:14px;box-shadow:0 8px 32px rgba(79,124,255,.4)">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;overflow:hidden;margin-bottom:14px;box-shadow:0 8px 32px rgba(79,124,255,.4);border:2px solid rgba(79,124,255,.5)">
+        <img src="avt.JPG" alt="DZI" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.innerHTML='<span style=font-size:32px>🎵</span>'">
       </div>
       <div id="dzi-title-login" style="font-size:26px;font-weight:800;color:#e8eeff;letter-spacing:-.5px">Chào mừng trở lại</div>
       <div id="dzi-title-register" style="font-size:26px;font-weight:800;color:#e8eeff;letter-spacing:-.5px;display:none">Tạo tài khoản</div>
@@ -164,7 +164,7 @@
           </div>
           <div>
             <div class="dzi-field-label">Gmail</div>
-            <input class="dzi-input" id="dzi-reg-email" type="email" placeholder="example@gmail.com"
+            <input class="dzi-input" id="dzi-reg-email" type="text" inputmode="email" placeholder="example@gmail.com"
               onkeydown="if(event.key==='Enter')doRegisterSendOtp()">
           </div>
           <div class="dzi-auth-err" id="dzi-reg-err"></div>
@@ -195,10 +195,6 @@
       Đã có tài khoản? <span onclick="switchAuthTab('login')" style="color:#4f7cff;font-weight:700;cursor:pointer">Đăng nhập</span>
     </div>
 
-    <!-- Skip -->
-    <div style="text-align:center;margin-top:12px">
-      <span onclick="document.getElementById('dzi-auth-screen').style.display='none';document.getElementById('app').style.display=''" style="font-size:12px;color:rgba(232,238,255,.3);cursor:pointer">Tiếp tục không đăng nhập →</span>
-    </div>
   </div>
 </div>
 
@@ -210,7 +206,7 @@
     <div class="dzi-modal-title">🔑 Quên mật khẩu</div>
     <div id="dzi-forgot-step1">
       <div class="dzi-field-label">Gmail đã đăng ký</div>
-      <input class="dzi-input" id="dzi-forgot-email" type="email" placeholder="example@gmail.com"
+      <input class="dzi-input" id="dzi-forgot-email" type="text" inputmode="email" placeholder="example@gmail.com"
         onkeydown="if(event.key==='Enter')doForgotSend()" style="margin-bottom:10px">
       <div class="dzi-auth-err" id="dzi-forgot-err1"></div>
       <button class="dzi-auth-btn" id="dzi-forgot-btn1" onclick="doForgotSend()" style="margin-top:8px">📧 Gửi mã OTP</button>
@@ -316,6 +312,26 @@
 </div>
 
 <!-- SCRIPTS (load order matters) -->
+<!-- ADMIN STATS MODAL -->
+<div class="dzi-modal-overlay" id="dzi-admin-stats-modal" onclick="if(event.target===this)closeDziModal('dzi-admin-stats-modal')" style="display:none">
+  <div class="dzi-modal-box" style="max-width:380px;width:95%">
+    <button onclick="closeDziModal('dzi-admin-stats-modal')" style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,.35);border:none;color:#fff;font-size:18px;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2">✕</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:24px;margin-bottom:6px">📊</div>
+      <div style="font-size:20px;font-weight:800;color:#e8eeff">Chỉnh sửa số liệu</div>
+      <div style="font-size:12px;color:rgba(232,238,255,.4);margin-top:4px">Cập nhật số liệu hiển thị trên trang chủ</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <div class="dzi-field-label">👥 Số người dùng đã tin tưởng DZI</div>
+        <input class="dzi-input" id="admin-trust-count" type="number" min="0" placeholder="Ví dụ: 1247">
+      </div>
+      <div id="dzi-admin-stats-err" class="dzi-auth-err" style="display:none"></div>
+      <button class="dzi-auth-btn" onclick="saveAdminStats()" style="background:linear-gradient(135deg,#f97316,#dc2626)">💾 Lưu số liệu</button>
+    </div>
+  </div>
+</div>
+
 <script src="config.js?v=18"></script>
 <script src="api.js?v=18"></script>
 <script src="state.js?v=18"></script>

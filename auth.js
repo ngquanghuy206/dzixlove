@@ -133,7 +133,7 @@ window.doLogin = async function(){
 
 function saveSession(d){
   DZI_TOKEN = d.token;
-  DZI_USER  = { username: d.username, email: d.email||'', avatar: d.avatar||'', role: d.role||'user', joinDate: d.joinDate||'' };
+  DZI_USER  = { username: d.username, email: d.email||'', avatar: d.avatar||'', role: (d.is_admin||d.role==='admin') ? 'admin' : (d.role||'user'), joinDate: d.joinDate||'' };
   DZI_ADMIN = DZI_USER.role === 'admin';
   const store = _rememberMe ? localStorage : sessionStorage;
   store.setItem('dzi_token', DZI_TOKEN);
@@ -456,7 +456,60 @@ function showErr(el, msg){
 document.addEventListener('DOMContentLoaded', function(){
   // Build nav user button if not exists
   updateNavUser();
-  // If no session, show auth (opt-in mode — remove next 3 lines to make login optional)
-  // Uncomment below to require login:
-  // if(!DZI_USER) showAuthScreen();
+  // Require login before accessing app
+  if(!DZI_USER) showAuthScreen();
 });
+
+// ── ADMIN STATS MODAL ──
+window.openAdminStatsModal = function(){
+  if(!DZI_ADMIN){ dziToast('⛔ Chỉ admin mới được dùng chức năng này','#ef4444'); return; }
+  const cur = window.DZI_TRUST_COUNT || 1247;
+  const inp = document.getElementById('admin-trust-count');
+  if(inp) inp.value = cur;
+  const err = document.getElementById('dzi-admin-stats-err');
+  if(err){ err.textContent=''; err.style.display='none'; }
+  openDziModal('dzi-admin-stats-modal');
+};
+
+window.saveAdminStats = async function(){
+  if(!DZI_ADMIN) return;
+  const inp = document.getElementById('admin-trust-count');
+  const err = document.getElementById('dzi-admin-stats-err');
+  const val = parseInt(inp ? inp.value : '');
+  if(isNaN(val)||val<0){ if(err){err.textContent='Vui lòng nhập số hợp lệ';err.style.display='block';} return; }
+  // Save via API
+  try {
+    const r = await fetch('/api/admin/stats',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+DZI_TOKEN},
+      body:JSON.stringify({trust_count: val})
+    });
+    if(r.ok){
+      window.DZI_TRUST_COUNT = val;
+      localStorage.setItem('dzi_trust_count', val);
+      closeDziModal('dzi-admin-stats-modal');
+      dziToast('✅ Đã cập nhật số liệu: '+val.toLocaleString()+' người dùng','#10b981');
+      // Re-render home if on home page
+      if(window.S && window.S.page==='home' && window.pgHome) pgHome();
+    } else {
+      // Save locally even if API fails
+      window.DZI_TRUST_COUNT = val;
+      localStorage.setItem('dzi_trust_count', val);
+      closeDziModal('dzi-admin-stats-modal');
+      dziToast('✅ Đã lưu số liệu: '+val.toLocaleString()+' người dùng','#10b981');
+      if(window.S && window.S.page==='home' && window.pgHome) pgHome();
+    }
+  } catch(e){
+    window.DZI_TRUST_COUNT = val;
+    localStorage.setItem('dzi_trust_count', val);
+    closeDziModal('dzi-admin-stats-modal');
+    dziToast('✅ Đã lưu: '+val.toLocaleString()+' người dùng','#10b981');
+    if(window.S && window.S.page==='home' && window.pgHome) pgHome();
+  }
+};
+
+// Load saved trust count from localStorage on startup
+(function loadTrustCount(){
+  const saved = localStorage.getItem('dzi_trust_count');
+  if(saved) window.DZI_TRUST_COUNT = parseInt(saved);
+})();

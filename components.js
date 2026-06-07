@@ -247,7 +247,7 @@ function renderNav(){
 
     <div class="sb-divider"></div>
 
-    <!-- LIÊN HỆ ADMIN -->
+    <!-- ADMIN QUẢN LÝ -->\n    ${window.DZI_ADMIN ? `\n    <div class=\"sb-section-title\" style=\"color:#f97316\">👑 QUẢN LÝ</div>\n    <ul class=\"sb-icon-links\">\n      <li><a onclick=\"openAdminStatsModal();closeSidebar()\" style=\"cursor:pointer\">\n        <span class=\"sbi\" style=\"background:linear-gradient(135deg,#3d1a00,#f97316)\">\n          <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>\n        </span><span style=\"color:#f97316\">Chỉnh sửa số liệu</span>\n      </a></li>\n    </ul>\n    <div class=\"sb-divider\"></div>\n    ` : ''}\n\n    <!-- LIÊN HỆ ADMIN -->
     <div class="sb-section-title">LIÊN HỆ</div>
     <ul class="sb-icon-links">
       <li><a href="https://zalo.me/0993329535" target="_blank" rel="noopener">
