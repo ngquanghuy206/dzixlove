@@ -325,10 +325,10 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
   .search-box{width:135px}.search-box:focus-within{width:172px}
   .yt-card{width:175px}.yt-thumb{height:99px}
   /* 2 cột cân đối trên mobile */
-  .grid{grid-template-columns:repeat(2,1fr);gap:12px 8px}
-  .card{width:100%}
-  .c-poster{width:100%}
-  .c-poster img{width:100%;height:auto;aspect-ratio:2/3;object-fit:cover}
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px 8px}
+  .grid .card{width:100% !important;min-width:0;flex-shrink:1}
+  .grid .c-poster{width:100% !important;height:auto !important;aspect-ratio:2/3}
+  .grid .c-poster img{width:100%;height:100%;object-fit:cover}
 }
 @media(max-width:480px){.hero{height:68vh}.hcont{left:13px;right:13px}}
 
