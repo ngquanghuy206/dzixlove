@@ -119,9 +119,16 @@ function initPipDrag(){
   const pip = document.getElementById('dzi-pip');
   if(!pip) return;
   let ox=0,oy=0,startX=0,startY=0,moved=false;
+  const dropZone = document.getElementById('pip-drop-zone');
+
+  function isOverDropZone(e){
+    if(!dropZone) return false;
+    const r = dropZone.getBoundingClientRect();
+    return e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom;
+  }
 
   pip.addEventListener('pointerdown', e=>{
-    if(e.target.closest('.pip-btn')) return;
+    if(e.target.closest('.pip-btn') || e.target.closest('#dzi-pip-play-btn')) return;
     moved=false;
     pip.setPointerCapture(e.pointerId);
     startX=e.clientX-ox; startY=e.clientY-oy;
@@ -131,12 +138,27 @@ function initPipDrag(){
     if(Math.abs(nx-ox)>6||Math.abs(ny-oy)>6) moved=true;
     ox=nx; oy=ny;
     pip.style.transform=`translate(${ox}px,${oy}px)`;
+    // Show/hide drop zone
+    if(moved && dropZone){
+      dropZone.classList.add('active');
+      if(isOverDropZone(e)) dropZone.classList.add('over');
+      else dropZone.classList.remove('over');
+    }
   });
   pip.addEventListener('pointerup', e=>{
-    if(!moved && !e.target.closest('.pip-btn')){
+    if(dropZone){ dropZone.classList.remove('active','over'); }
+    if(moved && isOverDropZone(e)){
+      // Kéo vào drop zone = đóng PIP
+      ox=0; oy=0;
+      pip.style.transform='translate(0px,0px)';
+      pipClose();
+      return;
+    }
+    if(!moved && !e.target.closest('.pip-btn') && !e.target.closest('#dzi-pip-play-btn')){
       // Single tap = navigate back to movie
       pipGoBack();
     }
+    if(moved){ ox=0; oy=0; pip.style.transform='translate(0px,0px)'; moved=false; }
   });
 }
 

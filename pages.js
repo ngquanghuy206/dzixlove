@@ -826,17 +826,17 @@ async function pgPlayYT(){
   window._watchTimer=setInterval(()=>{ _ywPos=_ypPos+Math.round((Date.now()-_ywStart)/1000); if(window.updateHistPos)updateHistPos(_yhUid,_ywPos); },5000);
   app.innerHTML=renderNav()+`<div class="player-page page">
     <div class="player-wrap" style="position:relative">
-      <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+    <div class="player-wrap yt-wrap" style="position:relative;overflow:hidden">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
       <iframe src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
-    </div>
+      <iframe class="yt-iframe-crop" src="${esc(embed)}" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;fullscreen" allowfullscreen></iframe>
     <div class="player-info">
       <div class="player-title">🔴 ${esc(videoTitle)}</div>
       <div class="player-meta">${esc(videoAuthor)}${videoViews?' · '+esc(videoViews):''} · <span style="color:var(--yt);font-weight:600">YouTube</span></div>
-      <div style="display:flex;gap:9px;margin-top:12px;flex-wrap:wrap">
-        <a href="https://www.youtube.com/watch?v=${esc(id)}" target="_blank" class="btn btn-yt">🔴 Mở YouTube</a>
-        <button class="btn btn-ghost" onclick="go('cat',{cat:'yt'})">🔍 Tìm video khác</button>
+      <div class="player-meta">${esc(videoAuthor)}${videoViews?' · '+esc(videoViews):''}</div>
+
+
       </div>
     </div>
     ${renderFooter()}
