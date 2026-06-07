@@ -323,6 +323,9 @@ footer::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;back
   .det-body{flex-direction:column;gap:14px}
   .det-poster{width:120px;height:180px}
   .search-box{width:135px}.search-box:focus-within{width:172px}
+  .yt-grid{grid-template-columns:repeat(2,1fr);gap:10px 8px}
+  .yt-grid .yt-card{width:100% !important;min-width:0;flex-shrink:1}
+  .yt-grid .yt-thumb{height:auto;aspect-ratio:16/9}
   .yt-card{width:175px}.yt-thumb{height:99px}
   /* 2 cột cân đối trên mobile */
   .grid{grid-template-columns:repeat(2,1fr);gap:10px 8px}
