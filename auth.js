@@ -334,10 +334,8 @@ window.doLogout = function(){
   const tok = DZI_TOKEN;
   DZI_TOKEN=null; DZI_USER=null; DZI_ADMIN=false;
   ['dzi_token','dzi_user'].forEach(k=>{ localStorage.removeItem(k); sessionStorage.removeItem(k); });
-  closeDziModal('dzi-account-modal');
-  updateNavUser();
-  dziToast('👋 Đã đăng xuất','#5a6a8a');
   if(tok) fetch((window.API_BASE||'')+'/api/logout',{method:'POST',headers:{'Authorization':'Bearer '+tok}}).catch(()=>{});
+  location.reload();
 };
 
 // ── ACCOUNT MODAL ──
