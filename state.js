@@ -43,22 +43,35 @@ const PIP = { active: false, src: '', title: '', fromPage: null, fromOpts: {} };
 
 function pipShow(src, title){
   const pip = document.getElementById('dzi-pip');
-  const fr  = document.getElementById('dzi-pip-frame');
   const tl  = document.getElementById('dzi-pip-title');
-  if(!pip || !fr) return;
+  if(!pip) return;
 
-  // Build src with autoplay=1
-  let pipSrc = src;
-  try {
-    const u = new URL(src);
-    u.searchParams.set('autoplay','1');
-    pipSrc = u.toString();
-  } catch(e){ pipSrc = src; }
+  // Try to move the LIVE iframe directly into PiP so video keeps playing
+  const liveIframe = document.querySelector('.player-wrap iframe, .player-page iframe');
+  const pipVideo = document.getElementById('dzi-pip-video');
+  let fr = document.getElementById('dzi-pip-frame');
 
-  // Always force-reload iframe so video actually plays
-  // (browser suspends iframes when navigating away — must reset src)
-  fr.src = 'about:blank';
-  setTimeout(()=>{ fr.src = pipSrc; }, 50);
+  if(liveIframe && pipVideo && liveIframe.src && liveIframe.src !== 'about:blank'){
+    // Detach live iframe and put it in PiP — video keeps playing
+    liveIframe.id = 'dzi-pip-frame';
+    liveIframe.style.cssText = 'position:absolute;left:-20%;top:-25%;width:140%;height:190%;border:none;display:block;pointer-events:auto;';
+    if(fr && fr !== liveIframe) fr.remove();
+    pipVideo.insertBefore(liveIframe, pipVideo.firstChild);
+    fr = liveIframe;
+  } else {
+    // Fallback: reload with autoplay
+    if(!fr) return;
+    let pipSrc = src;
+    try {
+      const u = new URL(src);
+      u.searchParams.set('autoplay','1');
+      pipSrc = u.toString();
+    } catch(e){ pipSrc = src; }
+    if(fr.src !== pipSrc){
+      fr.src = 'about:blank';
+      setTimeout(()=>{ fr.src = pipSrc; }, 50);
+    }
+  }
 
   if(tl) tl.textContent = title || 'Đang xem...';
   pip.classList.add('show');
@@ -81,12 +94,30 @@ window.pipGoBack = function(){
   if(PIP.fromPage){
     const p = PIP.fromPage, o = PIP.fromOpts;
     PIP.fromPage = null;
-    // Hide PiP visually first
     const pip = document.getElementById('dzi-pip');
     if(pip) pip.classList.remove('show');
     PIP.active = false;
-    // go() is defined later in router.js, use setTimeout to be safe
-    setTimeout(()=>{ if(window.go) window.go(p, o); }, 0);
+    setTimeout(()=>{
+      if(window.go) window.go(p, o);
+      // Restore live iframe from PiP back into player-wrap so video keeps playing
+      setTimeout(()=>{
+        const pipFr = document.getElementById('dzi-pip-frame');
+        const wrap = document.querySelector('.player-wrap');
+        if(pipFr && wrap && pipFr.src && pipFr.src !== 'about:blank'){
+          pipFr.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:none;';
+          pipFr.id = '';
+          wrap.insertBefore(pipFr, wrap.firstChild);
+          // Put blank placeholder back in pip
+          const newFr = document.createElement('iframe');
+          newFr.id = 'dzi-pip-frame';
+          newFr.src = 'about:blank';
+          newFr.allow = 'autoplay;fullscreen;picture-in-picture';
+          newFr.allowFullscreen = true;
+          newFr.style.cssText = 'position:absolute;left:-20%;top:-25%;width:140%;height:190%;border:none;display:block;pointer-events:auto;';
+          document.getElementById('dzi-pip-video')?.insertBefore(newFr, document.getElementById('dzi-pip-video').firstChild);
+        }
+      }, 100);
+    }, 0);
   }
 };
 
