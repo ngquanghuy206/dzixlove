@@ -663,8 +663,9 @@ async function pgPlayKK(){
 
   let playerHTML;
   if(embed){
-    playerHTML=`<iframe src="${esc(embed)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
-    PIP.src = embed; PIP.title = movie.name || S.slug;
+    const embedAP1 = (()=>{ try{ const u=new URL(embed); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return embed; }})();
+    playerHTML=`<iframe src="${esc(embedAP1)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
+    PIP.src = embedAP1; PIP.title = movie.name || S.slug;
   } else if(m3u8){
     playerHTML=`<video id="hls-v" controls autoplay style="position:absolute;inset:0;width:100%;height:100%"></video>`;
   } else {
@@ -739,7 +740,7 @@ async function pgPlayAni(){
         <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <iframe id="ani-fr" src="${esc(aniEmbedSrc)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
+        <iframe id="ani-fr" src="${(()=>{ try{ const u=new URL(aniEmbedSrc); u.searchParams.set('autoplay','1'); return esc(u.toString()); }catch(e){ return esc(aniEmbedSrc); }})()" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
       </div>
       <div class="player-info">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
