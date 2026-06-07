@@ -133,6 +133,7 @@ window.doLogin = async function(){
     if(!r.ok) throw new Error(d.detail||'Sai tên đăng nhập hoặc mật khẩu');
     saveSession(d);
     hideAuthScreen();
+    if(window.render) window.render();
     if(window.sfxLogin) sfxLogin();
     dziToast('✅ Chào mừng trở lại, '+DZI_USER.username+'!','#10b981');
   } catch(e){ showErr(err, e.message); }
@@ -462,10 +463,13 @@ function showErr(el, msg){
 
 // ── Init: decide to show auth or app ──
 document.addEventListener('DOMContentLoaded', function(){
-  // Build nav user button if not exists
   updateNavUser();
-  // Require login before accessing app
-  if(!DZI_USER) showAuthScreen();
+  if(DZI_USER){
+    hideAuthScreen();
+    if(window.render) window.render();
+  } else {
+    showAuthScreen();
+  }
 });
 
 // ── ADMIN STATS MODAL ──

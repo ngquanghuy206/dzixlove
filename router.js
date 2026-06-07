@@ -30,4 +30,4 @@ function render(){
 // FIX: gán window.render TRƯỚC khi state.js IIFE đã wrap nó
 // Router load sau state.js, nên ghi đè lại đúng thứ tự
 window.render = render;
-render();
+// Không gọi render() ở đây — auth.js sẽ gọi sau khi xác nhận login
