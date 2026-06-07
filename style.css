@@ -1604,3 +1604,8 @@ body.has-player { padding-bottom: 72px; }
   width: 16px; height: 16px; border-radius: 50%; background: #fff;
   border: none; cursor: pointer;
 }
+
+/* DZITube Short YT Player */
+#short-yt-player { width: 100vw !important; height: 100vh !important; }
+#short-yt-player iframe { width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; pointer-events: none; }
+

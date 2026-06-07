@@ -840,50 +840,131 @@ async function pgDZITube(){
 // ═══════════════════════════════════════
 //  DZITUBE SHORT — TikTok-style shorts
 // ═══════════════════════════════════════
-let _shortVideos=[], _shortIdx=0, _shortPage=null, _shortLoading=false, _shortPlayer=null;
+// ═══════════════════════════════════════
+//  DZITUBE SHORT — TikTok style, YT IFrame API
+// ═══════════════════════════════════════
+let _shortVideos=[], _shortIdx=0, _shortPage=null, _shortLoading=false;
+let _shortYTPlayer=null, _shortYTAPIReady=false, _shortCurrentVid=null;
 
 async function pgDZITubeShort(){
   const app=document.getElementById('app');
   _shortVideos=[]; _shortIdx=0; _shortPage=null; _shortLoading=false;
+  _shortYTPlayer=null; _shortCurrentVid=null;
 
-  app.innerHTML=renderNav()+`
-  <div id="short-page" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:50;overflow:hidden;touch-action:pan-y">
-    <div id="short-header" style="position:absolute;top:0;left:0;right:0;z-index:60;padding:12px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);display:flex;align-items:center;gap:12px">
-      <button onclick="go('dzitube')" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px">
+  app.innerHTML=`
+  <div id="short-page" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:50;overflow:hidden">
+
+    <!-- Header -->
+    <div style="position:absolute;top:0;left:0;right:0;z-index:60;padding:14px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.75) 0%,transparent 100%);display:flex;align-items:center;gap:10px;pointer-events:none">
+      <button onclick="go('dzitube')" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;pointer-events:all">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <div style="color:#fff;font-weight:700;font-size:16px">🔴 DZITube Short</div>
+      <div style="color:#fff;font-weight:700;font-size:17px;letter-spacing:.5px;pointer-events:none">DZITube Short</div>
       <div style="flex:1"></div>
-      <div id="short-search-wrap" style="display:flex;align-items:center;gap:8px">
-        <input id="short-q" type="text" placeholder="Tìm shorts..." style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;width:140px;outline:none" onkeydown="if(event.key==='Enter')shortSearch()" placeholder="Tìm shorts..."/>
-        <button onclick="shortSearch()" style="background:#ff0050;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </button>
+      <button onclick="shortOpenSearch()" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px;pointer-events:all">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+
+    <!-- Search bar (hidden by default) -->
+    <div id="short-searchbar" style="position:absolute;top:0;left:0;right:0;z-index:65;background:rgba(0,0,0,.9);padding:12px 16px;display:none;align-items:center;gap:8px">
+      <button onclick="shortCloseSearch()" style="background:none;border:none;color:#fff;cursor:pointer">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <input id="short-q" type="text" placeholder="Tìm DZITube Short..." autocomplete="off"
+        style="flex:1;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:8px 16px;color:#fff;font-size:14px;outline:none"
+        onkeydown="if(event.key==='Enter'){shortSearch();shortCloseSearch()}"/>
+      <button onclick="shortSearch();shortCloseSearch()" style="background:#ff0050;border:none;border-radius:20px;padding:8px 16px;color:#fff;font-size:13px;font-weight:600;cursor:pointer">Tìm</button>
+    </div>
+
+    <!-- YT IFrame container (fullscreen, behind everything) -->
+    <div id="short-yt-wrap" style="position:absolute;inset:0;z-index:1">
+      <div id="short-yt-player"></div>
+    </div>
+
+    <!-- Tap overlay: tap center to pause/play -->
+    <div id="short-tap-overlay" style="position:absolute;inset:0;z-index:10" onclick="shortTapToggle()"></div>
+
+    <!-- Pause/Play flash icon -->
+    <div id="short-flash-icon" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none;opacity:0;transition:opacity .25s">
+      <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center">
+        <svg id="short-flash-svg" width="36" height="36" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
       </div>
     </div>
 
-    <div id="short-container" style="height:100%;width:100%;position:relative;overflow:hidden">
-      <div id="short-slide" style="width:100%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1)">
-        <!-- slides injected here -->
+    <!-- Bottom info -->
+    <div id="short-info" style="position:absolute;bottom:0;left:0;right:80px;z-index:15;padding:20px 16px 36px;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%);pointer-events:none">
+      <div id="short-title" style="color:#fff;font-weight:700;font-size:15px;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:6px"></div>
+      <div id="short-author" style="color:rgba(255,255,255,.75);font-size:13px;display:flex;align-items:center;gap:6px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#ff0050;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">▶</div>
+        <span id="short-author-text"></span>
       </div>
     </div>
 
-    <div id="short-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:55">
-      <div style="color:#fff;font-size:15px;opacity:.7">⏳ Đang tải shorts...</div>
+    <!-- Side actions (TikTok style) -->
+    <div style="position:absolute;bottom:40px;right:10px;z-index:15;display:flex;flex-direction:column;align-items:center;gap:22px">
+      <!-- Like (decorative) -->
+      <div style="text-align:center">
+        <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="shortLike(this)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div style="color:#fff;font-size:12px;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8)">Thích</div>
+      </div>
+      <!-- Open full player -->
+      <div style="text-align:center">
+        <div id="short-open-btn" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:all" onclick="shortOpenFull()">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+        </div>
+        <div style="color:#fff;font-size:12px;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8)">Mở rộng</div>
+      </div>
+      <!-- Next video -->
+      <div style="text-align:center">
+        <div style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="shortNext()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div style="color:#fff;font-size:12px;margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.8)">Tiếp</div>
+      </div>
     </div>
+
+    <!-- Progress dots -->
+    <div id="short-dots" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:5px;pointer-events:none"></div>
+
+    <!-- Loading overlay -->
+    <div id="short-loading-overlay" style="position:absolute;inset:0;z-index:70;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+      <div style="width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.15);border-top-color:#ff0050;animation:spin .8s linear infinite"></div>
+      <div style="color:rgba(255,255,255,.7);font-size:14px">Đang tải...</div>
+    </div>
+
+    <style>
+      @keyframes spin{to{transform:rotate(360deg)}}
+      #short-yt-player iframe{width:100vw!important;height:100vh!important;pointer-events:none}
+    </style>
   </div>`;
 
-  setupNavScroll();
+  // Load videos first
   await shortLoad('');
+  // Init YT API
+  shortInitYT();
+  // Swipe setup
   shortSetupSwipe();
 }
 
+// ── Search helpers ─────────────────────
+window.shortOpenSearch=function(){
+  const sb=document.getElementById('short-searchbar');
+  if(sb){sb.style.display='flex';const q=document.getElementById('short-q');if(q)q.focus();}
+};
+window.shortCloseSearch=function(){
+  const sb=document.getElementById('short-searchbar');
+  if(sb) sb.style.display='none';
+};
 window.shortSearch=function(){
   const q=(document.getElementById('short-q')||{}).value||'';
   _shortVideos=[]; _shortIdx=0; _shortPage=null;
-  shortLoad(q);
+  shortLoad(q).then(()=>shortPlayIdx(0));
 };
 
+// ── Load videos ────────────────────────
 async function shortLoad(q){
   if(_shortLoading) return;
   _shortLoading=true;
@@ -895,137 +976,182 @@ async function shortLoad(q){
     const items=d.items||[];
     _shortPage=d.nextPageToken||null;
     _shortVideos=[..._shortVideos,...items];
-    const loading=document.getElementById('short-loading');
-    if(loading) loading.style.display='none';
-    shortRender();
-  }catch(e){
-    const loading=document.getElementById('short-loading');
-    if(loading) loading.innerHTML='<div style="color:#fff;opacity:.7">Lỗi tải shorts.</div>';
-  }
+  }catch(e){}
   _shortLoading=false;
 }
 
-function shortRender(){
-  const slide=document.getElementById('short-slide');
-  if(!slide) return;
-  const h=window.innerHeight;
-  slide.innerHTML=_shortVideos.map((v,i)=>{
-    const thumb=(v.videoThumbnails||[]).find(t=>t.quality==='medium')||v.videoThumbnails?.[0]||{};
-    return `<div class="short-slide-item" data-idx="${i}" data-vid="${esc(v.videoId)}" style="position:absolute;top:${i*100}%;left:0;width:100%;height:${h}px;background:#000;overflow:hidden">
-      <!-- Thumbnail + overlay (ẩn khi đang play) -->
-      <div id="short-thumb-${i}" style="position:absolute;inset:0;z-index:2">
-        <img src="${esc(thumb.url||'')}" style="width:100%;height:100%;object-fit:cover;opacity:.7" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"/>
-        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%,rgba(0,0,0,.3) 100%)"></div>
-        <!-- Tap to play -->
-        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);cursor:pointer" onclick="shortPlay('${esc(v.videoId)}',${i})">
-          <svg width="72" height="72" viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.5)"/><path d="M10 8l6 4-6 4V8z"/></svg>
-        </div>
-        <!-- Info bottom -->
-        <div style="position:absolute;bottom:80px;left:16px;right:70px;pointer-events:none">
-          <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:4px">${esc(v.title||'')}</div>
-          <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
-        </div>
-        <!-- Side: mở full player -->
-        <div style="position:absolute;bottom:100px;right:12px;text-align:center;cursor:pointer" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
-          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-          </div>
-          <div style="color:#fff;font-size:10px;margin-top:3px">Mở rộng</div>
-        </div>
-      </div>
-      <!-- YT iframe (hidden until play) -->
-      <div id="short-iframe-${i}" style="position:absolute;inset:0;z-index:1;display:none">
-        <iframe id="short-yt-${i}" width="100%" height="100%"
-          style="border:none;display:block"
-          allow="autoplay;encrypted-media"
-          allowfullscreen>
-        </iframe>
-        <!-- Tap overlay to pause/resume -->
-        <div style="position:absolute;inset:0;z-index:3;cursor:pointer" onclick="shortToggle(${i})"></div>
-        <!-- Pause icon (shows on tap) -->
-        <div id="short-pause-icon-${i}" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:opacity .3s">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(255,255,255,.85)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.4)"/><rect x="8" y="7" width="3" height="10" rx="1"/><rect x="13" y="7" width="3" height="10" rx="1"/></svg>
-        </div>
-        <!-- Info bottom khi đang play -->
-        <div style="position:absolute;bottom:80px;left:16px;right:70px;pointer-events:none;z-index:4">
-          <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:4px">${esc(v.title||'')}</div>
-          <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
-        </div>
-        <!-- Side: mở full player -->
-        <div style="position:absolute;bottom:100px;right:12px;text-align:center;cursor:pointer;z-index:5" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
-          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
-          </div>
-          <div style="color:#fff;font-size:10px;margin-top:3px">Mở rộng</div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  shortGoto(_shortIdx,false);
+// ── Init YT IFrame API ─────────────────
+function shortInitYT(){
+  function createPlayer(){
+    if(!window.YT||!window.YT.Player){setTimeout(createPlayer,200);return;}
+    const el=document.getElementById('short-yt-player');
+    if(!el) return;
+    _shortYTPlayer=new YT.Player('short-yt-player',{
+      width:'100%',
+      height:'100%',
+      playerVars:{
+        autoplay:1,
+        playsinline:1,
+        controls:0,
+        rel:0,
+        modestbranding:1,
+        iv_load_policy:3,
+        fs:0,
+        disablekb:1,
+        loop:1,
+      },
+      events:{
+        onReady:function(e){
+          _shortYTAPIReady=true;
+          shortPlayIdx(0);
+        },
+        onStateChange:function(e){
+          // Auto-next khi video kết thúc
+          if(e.data===YT.PlayerState.ENDED){
+            if(_shortIdx<_shortVideos.length-1) shortNext();
+          }
+        }
+      }
+    });
+    // Make iframe fill screen
+    const iframe=el.querySelector('iframe');
+    if(iframe){
+      iframe.style.cssText='width:100vw!important;height:100vh!important;position:fixed;top:0;left:0;pointer-events:none';
+    }
+  }
+
+  if(!window.YT){
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=function(){
+      if(prev) prev();
+      _shortYTAPIReady=true;
+      createPlayer();
+    };
+    if(!document.getElementById('yt-api-script')){
+      const s=document.createElement('script');
+      s.id='yt-api-script';
+      s.src='https://www.youtube.com/iframe_api';
+      document.head.appendChild(s);
+    }
+  } else {
+    createPlayer();
+  }
 }
 
-window.shortPlay=function(vid,idx){
-  // Hide thumbnail, show iframe and load YT embed with autoplay
-  const thumb=document.getElementById('short-thumb-'+idx);
-  const iframeWrap=document.getElementById('short-iframe-'+idx);
-  const iframe=document.getElementById('short-yt-'+idx);
-  if(!iframe||!iframeWrap) return;
-  if(thumb) thumb.style.display='none';
-  iframeWrap.style.display='block';
-  // Only set src if not already set
-  if(!iframe.src||iframe.src==='about:blank'||!iframe.src.includes('youtube')){
-    iframe.src=`https://www.youtube.com/embed/${vid}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
-  }
-  window._shortPlayingIdx=idx;
-};
-
-window.shortToggle=function(idx){
-  // Show pause icon briefly
-  const icon=document.getElementById('short-pause-icon-'+idx);
-  if(icon){ icon.style.opacity='1'; setTimeout(()=>{ if(icon) icon.style.opacity='0'; },600); }
-};
-
-function shortGoto(idx,animate){
-  // Pause iframe của slide trước
-  if(typeof window._shortPlayingIdx==='number' && window._shortPlayingIdx!==idx){
-    const oldIframe=document.getElementById('short-yt-'+window._shortPlayingIdx);
-    if(oldIframe) oldIframe.src='';
-    const oldWrap=document.getElementById('short-iframe-'+window._shortPlayingIdx);
-    if(oldWrap) oldWrap.style.display='none';
-    const oldThumb=document.getElementById('short-thumb-'+window._shortPlayingIdx);
-    if(oldThumb) oldThumb.style.display='block';
-    window._shortPlayingIdx=null;
-  }
+// ── Play by index ──────────────────────
+window.shortPlayIdx=function(idx){
+  if(!_shortVideos.length) return;
+  idx=Math.max(0,Math.min(idx,_shortVideos.length-1));
   _shortIdx=idx;
-  const slide=document.getElementById('short-slide');
-  if(!slide) return;
-  slide.style.transition=animate?'transform .35s cubic-bezier(.4,0,.2,1)':'none';
-  slide.style.transform=`translateY(-${idx*100}%)`;
+  const v=_shortVideos[idx];
+  if(!v) return;
+  _shortCurrentVid=v.videoId;
+
+  // Update info UI
+  const titleEl=document.getElementById('short-title');
+  const authorEl=document.getElementById('short-author-text');
+  if(titleEl) titleEl.textContent=v.title||'';
+  if(authorEl) authorEl.textContent=v.author||'';
+
+  // Update dots
+  shortUpdateDots();
+
+  // Hide loading overlay once we start playing
+  const overlay=document.getElementById('short-loading-overlay');
+  if(overlay) overlay.style.display='none';
+
+  // Play via YT Player
+  if(_shortYTPlayer&&_shortYTPlayer.loadVideoById){
+    _shortYTPlayer.loadVideoById({videoId:v.videoId,startSeconds:0});
+  }
+
   // Preload more if near end
-  if(_shortVideos.length>0 && idx>=_shortVideos.length-3) shortLoad('');
+  if(idx>=_shortVideos.length-4) shortLoad('');
+};
+
+// ── Navigation ─────────────────────────
+window.shortNext=function(){
+  if(_shortIdx<_shortVideos.length-1) shortPlayIdx(_shortIdx+1);
+};
+window.shortPrev=function(){
+  if(_shortIdx>0) shortPlayIdx(_shortIdx-1);
+};
+window.shortOpenFull=function(){
+  if(_shortCurrentVid) go('play-yt',{ytId:_shortCurrentVid});
+};
+window.shortLike=function(btn){
+  const svg=btn.querySelector('svg');
+  if(!svg) return;
+  const liked=svg.getAttribute('fill')==='#ff0050';
+  svg.setAttribute('fill',liked?'none':'#ff0050');
+  svg.setAttribute('stroke',liked?'#fff':'#ff0050');
+};
+
+// ── Tap to pause/play ──────────────────
+let _shortPaused=false;
+window.shortTapToggle=function(){
+  if(!_shortYTPlayer) return;
+  try{
+    const state=_shortYTPlayer.getPlayerState();
+    const icon=document.getElementById('short-flash-icon');
+    const flashSvg=document.getElementById('short-flash-svg');
+    if(state===1){
+      _shortYTPlayer.pauseVideo(); _shortPaused=true;
+      if(flashSvg) flashSvg.innerHTML='<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>';
+    } else {
+      _shortYTPlayer.playVideo(); _shortPaused=false;
+      if(flashSvg) flashSvg.innerHTML='<path d="M8 5v14l11-7z"/>';
+    }
+    if(icon){
+      icon.style.opacity='1';
+      setTimeout(()=>{if(icon)icon.style.opacity='0';},600);
+    }
+  }catch(e){}
+};
+
+// ── Dots indicator ─────────────────────
+function shortUpdateDots(){
+  const dots=document.getElementById('short-dots');
+  if(!dots||!_shortVideos.length) return;
+  const total=Math.min(_shortVideos.length,7);
+  const start=Math.max(0,_shortIdx-3);
+  dots.innerHTML=Array.from({length:total},(_,i)=>{
+    const active=start+i===_shortIdx;
+    return `<div style="width:${active?20:6}px;height:6px;border-radius:3px;background:${active?'#ff0050':'rgba(255,255,255,.4)'};transition:all .2s"></div>`;
+  }).join('');
 }
 
+// ── Swipe gesture ──────────────────────
 function shortSetupSwipe(){
-  const cont=document.getElementById('short-container');
-  if(!cont) return;
-  let startY=0, diffY=0, dragging=false;
-  cont.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; dragging=true; diffY=0; },{passive:true});
-  cont.addEventListener('touchmove',e=>{ if(!dragging) return; diffY=e.touches[0].clientY-startY; },{passive:true});
-  cont.addEventListener('touchend',()=>{
-    if(!dragging) return; dragging=false;
-    if(diffY<-60 && _shortIdx<_shortVideos.length-1) shortGoto(_shortIdx+1,true);
-    else if(diffY>60 && _shortIdx>0) shortGoto(_shortIdx-1,true);
-    diffY=0;
-  });
-  // Mouse wheel support
+  const page=document.getElementById('short-page');
+  if(!page) return;
+  let startY=0,startX=0,moved=false;
+  page.addEventListener('touchstart',e=>{
+    startY=e.touches[0].clientY;
+    startX=e.touches[0].clientX;
+    moved=false;
+  },{passive:true});
+  page.addEventListener('touchmove',e=>{
+    const dy=Math.abs(e.touches[0].clientY-startY);
+    const dx=Math.abs(e.touches[0].clientX-startX);
+    if(dy>10||dx>10) moved=true;
+  },{passive:true});
+  page.addEventListener('touchend',e=>{
+    if(!moved) return;
+    const diffY=e.changedTouches[0].clientY-startY;
+    if(diffY<-60) shortNext();
+    else if(diffY>60) shortPrev();
+  },{passive:true});
+  // Mouse wheel
   let wt=0;
-  cont.addEventListener('wheel',e=>{
+  page.addEventListener('wheel',e=>{
     const now=Date.now();
-    if(now-wt<500) return; wt=now;
-    if(e.deltaY>30 && _shortIdx<_shortVideos.length-1) shortGoto(_shortIdx+1,true);
-    else if(e.deltaY<-30 && _shortIdx>0) shortGoto(_shortIdx-1,true);
+    if(now-wt<600) return; wt=now;
+    if(e.deltaY>30) shortNext();
+    else if(e.deltaY<-30) shortPrev();
   },{passive:true});
 }
+
 
 // ═══════════════════════════════════════
 //  PLAYER — YouTube (dùng YT IFrame API để custom controls)
