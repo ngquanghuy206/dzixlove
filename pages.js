@@ -805,6 +805,189 @@ async function pgPlayAni(){
 }
 
 // ═══════════════════════════════════════
+//  DZITUBE LANDING PAGE
+// ═══════════════════════════════════════
+async function pgDZITube(){
+  const app=document.getElementById('app');
+  app.innerHTML=renderNav()+`<div class="cat-page page">
+    <h1 style="color:var(--yt)">🔴 DZITube</h1>
+    <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn" style="background:linear-gradient(135deg,#c00,#ef4444);color:#fff;font-size:15px;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;min-width:160px;justify-content:center" onclick="go('cat',{cat:'yt'})">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        Xem DZITube
+      </button>
+      <button class="btn" style="background:linear-gradient(135deg,#1a0a0a,#ff0050);color:#fff;font-size:15px;padding:12px 24px;border-radius:12px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex:1;min-width:160px;justify-content:center" onclick="go('dzitube-short')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 10.79L8 5.09A2 2 0 0 0 5 6.84v10.32a2 2 0 0 0 3 1.75l9.05-5.7a2 2 0 0 0 0-3.42z"/></svg>
+        DZITube Short
+      </button>
+    </div>
+    <div class="sec-head"><h2 class="sec-title">🔥 Trending DZITube</h2></div>
+    <div id="dzt-grid" class="yt-grid">${skGrid(12).replace(/sk-p/g,'sk-yt')}</div>
+  </div>`;
+  setupNavScroll();
+  // Load trending
+  try{
+    const items=await ytTrending();
+    const grid=document.getElementById('dzt-grid');
+    if(!grid) return;
+    if(!items||!items.length){ grid.innerHTML='<div style="color:var(--mu);padding:20px">Không load được trending.</div>'; return; }
+    grid.innerHTML=items.map(v=>{
+      const thumb=(v.videoThumbnails||[]).find(t=>t.quality==='medium')||v.videoThumbnails?.[0]||{};
+      return `<div class="card" onclick="go('play-yt',{ytId:'${esc(v.videoId)}'})">
+        <div class="thumb-wrap"><img class="thumb" src="${esc(thumb.url||'')}" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"></div>
+        <div class="card-info">
+          <div class="card-title">${esc(v.title||'')}</div>
+          <div class="card-meta"><span class="tag yt">DZITube</span>${esc(v.author||'')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    const grid=document.getElementById('dzt-grid');
+    if(grid) grid.innerHTML='<div style="color:var(--mu);padding:20px">Lỗi load trending.</div>';
+  }
+}
+
+// ═══════════════════════════════════════
+//  DZITUBE SHORT — TikTok-style shorts
+// ═══════════════════════════════════════
+let _shortVideos=[], _shortIdx=0, _shortPage=null, _shortLoading=false, _shortPlayer=null;
+
+async function pgDZITubeShort(){
+  const app=document.getElementById('app');
+  _shortVideos=[]; _shortIdx=0; _shortPage=null; _shortLoading=false;
+
+  app.innerHTML=renderNav()+`
+  <div id="short-page" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:50;overflow:hidden;touch-action:pan-y">
+    <div id="short-header" style="position:absolute;top:0;left:0;right:0;z-index:60;padding:12px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);display:flex;align-items:center;gap:12px">
+      <button onclick="go('dzitube')" style="background:none;border:none;color:#fff;cursor:pointer;padding:4px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div style="color:#fff;font-weight:700;font-size:16px">🔴 DZITube Short</div>
+      <div style="flex:1"></div>
+      <div id="short-search-wrap" style="display:flex;align-items:center;gap:8px">
+        <input id="short-q" type="text" placeholder="Tìm shorts..." style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:6px 14px;color:#fff;font-size:13px;width:140px;outline:none" onkeydown="if(event.key==='Enter')shortSearch()" placeholder="Tìm shorts..."/>
+        <button onclick="shortSearch()" style="background:#ff0050;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="short-container" style="height:100%;width:100%;position:relative;overflow:hidden">
+      <div id="short-slide" style="width:100%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1)">
+        <!-- slides injected here -->
+      </div>
+    </div>
+
+    <div id="short-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:55">
+      <div style="color:#fff;font-size:15px;opacity:.7">⏳ Đang tải shorts...</div>
+    </div>
+  </div>`;
+
+  setupNavScroll();
+  await shortLoad('');
+  shortSetupSwipe();
+}
+
+window.shortSearch=function(){
+  const q=(document.getElementById('short-q')||{}).value||'';
+  _shortVideos=[]; _shortIdx=0; _shortPage=null;
+  shortLoad(q);
+};
+
+async function shortLoad(q){
+  if(_shortLoading) return;
+  _shortLoading=true;
+  try{
+    const qs=new URLSearchParams({_p:'/yt/shorts'});
+    if(q) qs.set('q',q);
+    if(_shortPage) qs.set('pageToken',_shortPage);
+    const d=await (await fetch('/api/music?'+qs)).json();
+    const items=d.items||[];
+    _shortPage=d.nextPageToken||null;
+    _shortVideos=[..._shortVideos,...items];
+    const loading=document.getElementById('short-loading');
+    if(loading) loading.style.display='none';
+    shortRender();
+  }catch(e){
+    const loading=document.getElementById('short-loading');
+    if(loading) loading.innerHTML='<div style="color:#fff;opacity:.7">Lỗi tải shorts.</div>';
+  }
+  _shortLoading=false;
+}
+
+function shortRender(){
+  const slide=document.getElementById('short-slide');
+  if(!slide) return;
+  const h=window.innerHeight;
+  const w=window.innerWidth;
+  slide.innerHTML=_shortVideos.map((v,i)=>{
+    const thumb=(v.videoThumbnails||[]).find(t=>t.quality==='medium')||v.videoThumbnails?.[0]||{};
+    return `<div class="short-slide-item" data-idx="${i}" data-vid="${esc(v.videoId)}" style="position:absolute;top:${i*100}%;left:0;width:100%;height:${h}px;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer" onclick="shortPlay('${esc(v.videoId)}',${i})">
+      <img src="${esc(thumb.url||'')}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;opacity:.7" onerror="this.src='https://i.ytimg.com/vi/${esc(v.videoId)}/hqdefault.jpg'"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 50%,rgba(0,0,0,.3) 100%)"></div>
+      <!-- Play icon -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);opacity:.9">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="rgba(255,255,255,.85)"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.4)"/><path d="M10 8l6 4-6 4V8z"/></svg>
+      </div>
+      <!-- Info bottom -->
+      <div style="position:absolute;bottom:80px;left:16px;right:70px">
+        <div style="color:#fff;font-weight:700;font-size:15px;line-height:1.3;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:6px">${esc(v.title||'')}</div>
+        <div style="color:rgba(255,255,255,.8);font-size:13px">${esc(v.author||'')}</div>
+      </div>
+      <!-- Side actions -->
+      <div style="position:absolute;bottom:100px;right:12px;display:flex;flex-direction:column;align-items:center;gap:20px">
+        <div style="text-align:center;cursor:pointer" onclick="event.stopPropagation();go('play-yt',{ytId:'${esc(v.videoId)}'})">
+          <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+          </div>
+          <div style="color:#fff;font-size:10px;margin-top:3px">Mở</div>
+        </div>
+      </div>
+      <!-- Progress dots -->
+      <div id="short-dots-${i}" style="position:absolute;bottom:30px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:4px"></div>
+    </div>`;
+  }).join('');
+  shortGoto(_shortIdx,false);
+}
+
+window.shortPlay=function(vid,idx){
+  // tap to play → open full player
+  go('play-yt',{ytId:vid});
+};
+
+function shortGoto(idx,animate){
+  _shortIdx=idx;
+  const slide=document.getElementById('short-slide');
+  if(!slide) return;
+  slide.style.transition=animate?'transform .35s cubic-bezier(.4,0,.2,1)':'none';
+  slide.style.transform=`translateY(-${idx*100}%)`;
+  // Preload more if near end
+  if(_shortVideos.length>0 && idx>=_shortVideos.length-3) shortLoad('');
+}
+
+function shortSetupSwipe(){
+  const cont=document.getElementById('short-container');
+  if(!cont) return;
+  let startY=0, diffY=0, dragging=false;
+  cont.addEventListener('touchstart',e=>{ startY=e.touches[0].clientY; dragging=true; diffY=0; },{passive:true});
+  cont.addEventListener('touchmove',e=>{ if(!dragging) return; diffY=e.touches[0].clientY-startY; },{passive:true});
+  cont.addEventListener('touchend',()=>{
+    if(!dragging) return; dragging=false;
+    if(diffY<-60 && _shortIdx<_shortVideos.length-1) shortGoto(_shortIdx+1,true);
+    else if(diffY>60 && _shortIdx>0) shortGoto(_shortIdx-1,true);
+    diffY=0;
+  });
+  // Mouse wheel support
+  let wt=0;
+  cont.addEventListener('wheel',e=>{
+    const now=Date.now();
+    if(now-wt<500) return; wt=now;
+    if(e.deltaY>30 && _shortIdx<_shortVideos.length-1) shortGoto(_shortIdx+1,true);
+    else if(e.deltaY<-30 && _shortIdx>0) shortGoto(_shortIdx-1,true);
+  },{passive:true});
+}
+
+// ═══════════════════════════════════════
 //  PLAYER — YouTube (dùng YT IFrame API để custom controls)
 // ═══════════════════════════════════════
 async function pgPlayYT(){

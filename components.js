@@ -121,7 +121,7 @@ function renderNav(){
       <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'})">Phim bộ</a></li>
       <li><a class="${p==='lt'?'on':''}" onclick="go('lt')" style="color:${p==='lt'?'var(--gold)':''}">🔊 Lồng tiếng</a></li>
       <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'})">Anime 🎌</a></li>
-      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'})" style="color:${isOn('cat','yt')?'':S.cat==='yt'?'var(--yt)':''}">🔴 DZITube</a></li>
+      <li><a class="${p==='dzitube'||isOn('cat','yt')||p==='dzitube-short'?'on':''}" onclick="go('dzitube')" style="color:${p==='dzitube'||isOn('cat','yt')||p==='dzitube-short'?'':'var(--yt)'}">🔴 DZITube</a></li>
       <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac')" style="color:${p==='nhac'?'var(--green)':''}">🎵 Nhạc</a></li>
       <li><a onclick="go('watchlist')">Yêu thích</a></li>
     </ul>
@@ -143,20 +143,17 @@ function renderNav(){
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </span>Trang chủ
       </a></li>
-      <li><a onclick="go('watchlist');closeSidebar()">
-        <span class="sbi" style="background:linear-gradient(135deg,#3d0a0a,#dc2626)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </span>Yêu thích
-      </a></li>
-      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('hi'),100)">
-        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#4f46e5)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </span>Lịch sử xem phim
-      </a></li>
-      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('nh'),100)">
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- NHẠC LINKS -->
+    <div class="sb-section-title">NHẠC</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()">
         <span class="sbi" style="background:linear-gradient(135deg,#0f2a1a,#16a34a)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </span>Lịch sử nghe nhạc
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </span><span style="color:${p==='nhac'?'var(--green)':''}">Nghe nhạc</span>
       </a></li>
     </ul>
 
@@ -195,21 +192,44 @@ function renderNav(){
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
         </span>Anime
       </a></li>
-      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'});closeSidebar()">
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- DZITUBE LINKS -->
+    <div class="sb-section-title" style="color:var(--yt)">DZITUBE</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='dzitube'||isOn('cat','yt')?'on':''}" onclick="go('dzitube');closeSidebar()">
         <span class="sbi" style="background:linear-gradient(135deg,#3d0000,#ef4444)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
-        </span><span style="color:var(--yt)">DZITube</span>
+        </span><span style="color:var(--yt)">Xem DZITube</span>
+      </a></li>
+      <li><a class="${p==='dzitube-short'?'on':''}" onclick="go('dzitube-short');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a0a0a,#ff0050)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 10.79L8 5.09A2 2 0 0 0 5 6.84v10.32a2 2 0 0 0 3 1.75l9.05-5.7a2 2 0 0 0 0-3.42z"/></svg>
+        </span><span style="color:#ff0050">DZITube Short</span>
       </a></li>
     </ul>
 
     <div class="sb-divider"></div>
 
-    <div class="sb-section-title">NHẠC</div>
+    <!-- LỊCH SỬ & YÊU THÍCH -->
+    <div class="sb-section-title">LỊCH SỬ</div>
     <ul class="sb-icon-links">
-      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()">
+      <li><a onclick="go('watchlist');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d0a0a,#dc2626)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>Yêu thích
+      </a></li>
+      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('hi'),100)">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#4f46e5)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>Lịch sử xem phim
+      </a></li>
+      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('nh'),100)">
         <span class="sbi" style="background:linear-gradient(135deg,#0f2a1a,#16a34a)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        </span><span style="color:${p==='nhac'?'var(--green)':''}">Nghe nhạc</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>Lịch sử nghe nhạc
       </a></li>
     </ul>
 
@@ -239,7 +259,8 @@ function renderFooter(){
           <li><a onclick="go('cat',{cat:'anime-now'})">Đang chiếu</a></li>
         </ul></div>
         <div class="ft-col"><h4>DZITube</h4><ul>
-          <li><a onclick="go('cat',{cat:'yt'})">Tìm kiếm YT</a></li>
+          <li><a onclick="go('dzitube')">Xem DZITube</a></li>
+          <li><a onclick="go('dzitube-short')">DZITube Short</a></li>
         </ul></div>
         <div class="ft-col"><h4>🎵 Nhạc</h4><ul>
           <li><a onclick="go('nhac')">Nghe Nhạc</a></li>

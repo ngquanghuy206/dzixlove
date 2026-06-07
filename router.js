@@ -12,6 +12,8 @@ function render(){
     case 'det-ani':   pgDetAni();    break;
     case 'play-kk':   pgPlayKK();    break;
     case 'play-ani':  pgPlayAni();   break;
+    case 'dzitube':       pgDZITube();       break;
+    case 'dzitube-short': pgDZITubeShort();  break;
     case 'play-yt':   pgPlayYT();    break;
     case 'search':    pgSearch();    break;
     case 'watchlist': pgWatchlist(); break;
