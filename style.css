@@ -219,7 +219,7 @@ img{display:block}
 .player-wrap iframe,.player-wrap video{position:absolute;inset:0;width:100%;height:100%;border:none}
 /* YT player: crop iframe để ẩn logo, controls bar, ads overlay */
 .yt-wrap{overflow:hidden}
-.yt-iframe-crop{position:absolute;left:-3%;top:-4%;width:106%;height:115%;border:none;display:block}
+.yt-iframe-crop{position:absolute;left:-5%;top:-13%;width:110%;height:135%;border:none;display:block}
 .player-info{padding:12px clamp(10px,3vw,48px)}
 .player-title{font-family:"Orbitron",sans-serif;font-size:18px;margin-bottom:4px;letter-spacing:1px}
 .player-meta{font-size:12px;color:var(--mu);margin-bottom:10px}
@@ -1494,13 +1494,12 @@ body.has-player { padding-bottom: 72px; }
 }
 
 #dzi-pip-frame {
-  /* Scale up and crop all sides to hide play button, lock icon, and bottom controls */
+  /* Scale up and crop all sides to hide play button, lock icon, bottom controls, YT logo */
   position: absolute;
   left: -15%;
-  right: -15%;
-  top: -20%;
+  top: -25%;
   width: 130%;
-  height: 180%;
+  height: 195%;
   border: none;
   display: block;
   pointer-events: auto;
