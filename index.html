@@ -46,10 +46,8 @@
 
 <!-- Picture-in-Picture floating player -->
 <div id="dzi-pip">
-  <!-- Video + overlay controls all inside pip-video -->
   <div id="dzi-pip-video">
     <iframe id="dzi-pip-frame" src="about:blank" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
-    <!-- Controls overlay — auto-hide, show on tap/hover -->
     <div id="dzi-pip-controls">
       <div id="dzi-pip-top">
         <span id="dzi-pip-title">Đang xem...</span>
@@ -57,9 +55,10 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
+      <!-- Center: tap = go back to player -->
       <div id="dzi-pip-center" onclick="pipGoBack()">
         <div id="pip-play-ico">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
         </div>
       </div>
     </div>

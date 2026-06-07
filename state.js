@@ -46,21 +46,25 @@ function pipShow(src, title){
   const fr  = document.getElementById('dzi-pip-frame');
   const tl  = document.getElementById('dzi-pip-title');
   if(!pip || !fr) return;
-  // Append autoplay param if not already present
+
+  // Build src with autoplay=1
   let pipSrc = src;
   try {
     const u = new URL(src);
-    if(!u.searchParams.has('autoplay')) u.searchParams.set('autoplay','1');
+    u.searchParams.set('autoplay','1');
     pipSrc = u.toString();
   } catch(e){ pipSrc = src; }
-  if(fr.src !== pipSrc) fr.src = pipSrc;
+
+  // Always force-reload iframe so video actually plays
+  // (browser suspends iframes when navigating away — must reset src)
+  fr.src = 'about:blank';
+  setTimeout(()=>{ fr.src = pipSrc; }, 50);
+
   if(tl) tl.textContent = title || 'Đang xem...';
   pip.classList.add('show');
   PIP.active = true;
-  PIP.src = src; // keep original
+  PIP.src = src;
   PIP.title = title;
-  // Show controls briefly on first appear, then auto-hide
-  setTimeout(()=>{ if(typeof pipShowControls==='function') pipShowControls(); }, 200);
 }
 
 window.pipClose = function(){
@@ -116,14 +120,11 @@ function initPipDrag(){
   });
   pip.addEventListener('pointerup', e=>{
     if(!moved && !e.target.closest('.pip-btn')){
-      // Short tap = show controls
+      // Short tap = show/hide controls (auto-hide after 3s)
       pipShowControls();
     }
     dragging=false;
   });
-
-  // Touch: show controls on tap
-  pip.addEventListener('touchstart', ()=>{ pipShowControls(); }, {passive:true});
 }
 
 if(document.readyState==='loading'){

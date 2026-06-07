@@ -1466,19 +1466,19 @@ body.has-player { padding-bottom: 72px; }
 }
 
 #dzi-pip-frame {
-  /* Enlarge and shift up to crop player's bottom controls out of view */
+  /* Enlarge iframe so bottom controls are hidden by overflow:hidden */
   position: absolute;
   left: 0;
   right: 0;
-  top: -5%;
+  top: -3%;
   width: 100%;
-  height: 130%;  /* extra height → controls fall outside overflow:hidden */
+  height: 150%;
   border: none;
   display: block;
   pointer-events: none;
 }
 
-/* Controls overlay — shown on hover/touch, auto-hide */
+/* Controls overlay — hidden by default, shown on tap/hover, auto-hide after 3s */
 #dzi-pip-controls {
   position: absolute;
   inset: 0;
@@ -1486,7 +1486,7 @@ body.has-player { padding-bottom: 72px; }
   flex-direction: column;
   pointer-events: none;
   opacity: 0;
-  transition: opacity .22s ease;
+  transition: opacity .2s ease;
   z-index: 2;
 }
 #dzi-pip.pip-show-ctrl #dzi-pip-controls,
@@ -1500,9 +1500,9 @@ body.has-player { padding-bottom: 72px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 8px 6px 12px;
-  background: linear-gradient(to bottom, rgba(0,0,0,.75), transparent);
-  gap: 8px;
+  padding: 6px 8px 6px 10px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.8), transparent);
+  gap: 6px;
 }
 #dzi-pip-title {
   font-size: 11px;
@@ -1514,7 +1514,7 @@ body.has-player { padding-bottom: 72px; }
   flex: 1;
 }
 
-/* Center play icon */
+/* Center: tap = go back to player */
 #dzi-pip-center {
   position: absolute;
   inset: 0;
@@ -1524,15 +1524,15 @@ body.has-player { padding-bottom: 72px; }
   cursor: pointer;
 }
 #pip-play-ico {
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   background: rgba(0,0,0,.55);
   display: flex; align-items: center; justify-content: center;
   backdrop-filter: blur(4px);
-  border: 1.5px solid rgba(255,255,255,.3);
+  border: 1.5px solid rgba(255,255,255,.35);
   transition: transform .15s, background .15s;
 }
-#pip-play-ico:hover { background: rgba(220,38,38,.7); transform: scale(1.1); }
+#pip-play-ico:active { background: rgba(220,38,38,.7); transform: scale(.95); }
 
 /* Close button */
 .pip-btn {
