@@ -3,6 +3,11 @@
 // ═══════════════════════════════════════
 function render(){
   clearInterval(window._ht);
+  // Reset fake fullscreen khi chuyển trang
+  if(window._ytFakeFS){
+    window._ytFakeFS = false;
+    document.body.style.overflow='';
+  }
   switch(S.page){
     case 'home':      pgHome();      break;
     case 'phim':      pgPhim();      break;

@@ -1707,27 +1707,50 @@ window.ytVol = function(v){
   try { _ytPlayer.setVolume(_ytVolume); } catch(e){}
 };
 
+let _ytFakeFS = false;
 window.ytFullscreen = function(){
   ytShowCtrl();
   const outer = document.querySelector('.yt-player-outer');
   if(!outer) return;
-  // iOS Safari: dùng screen orientation API hoặc CSS transform
-  if(document.fullscreenElement || document.webkitFullscreenElement){
-    (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
-    return;
+
+  // Thử native fullscreen trước (Android Chrome)
+  if(!_ytFakeFS){
+    const req = outer.requestFullscreen || outer.webkitRequestFullscreen || outer.mozRequestFullScreen;
+    if(req && !(/iP(hone|ad|od)/.test(navigator.userAgent))){
+      try{
+        req.call(outer);
+        return;
+      }catch(e){}
+    }
+    // iOS / không support: dùng CSS fake fullscreen
+    _ytFakeFS = true;
+    outer.style.cssText += ';position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;max-height:100vh!important;z-index:9999!important;border-radius:0!important;aspect-ratio:unset!important';
+    document.body.style.overflow='hidden';
+    // Đổi icon thành thu nhỏ
+    const fsBtn = outer.querySelector('.yt-fs-btn svg');
+    if(fsBtn) fsBtn.innerHTML='<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>';
+  } else {
+    // Exit fake fullscreen
+    _ytFakeFS = false;
+    outer.style.cssText = outer.style.cssText
+      .replace(/position:[^;]+;?/gi,'')
+      .replace(/top:[^;]+;?/gi,'')
+      .replace(/left:[^;]+;?/gi,'')
+      .replace(/width:[^;v]+;?/gi,'')
+      .replace(/height:[^;v]+;?/gi,'')
+      .replace(/max-height:[^;]+;?/gi,'')
+      .replace(/z-index:[^;]+;?/gi,'')
+      .replace(/border-radius:[^;]+;?/gi,'')
+      .replace(/aspect-ratio:[^;]+;?/gi,'');
+    document.body.style.overflow='';
+    const fsBtn = outer.querySelector('.yt-fs-btn svg');
+    if(fsBtn) fsBtn.innerHTML='<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+    // Native exit fullscreen nếu đang active
+    if(document.fullscreenElement||document.webkitFullscreenElement){
+      (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+    }
   }
-  // Thử requestFullscreen trên outer div
-  const req = outer.requestFullscreen || outer.webkitRequestFullscreen || outer.mozRequestFullScreen;
-  if(req){
-    req.call(outer).catch(()=>{
-      // Fallback iOS: dùng screen.orientation.lock landscape
-      if(screen.orientation && screen.orientation.lock){
-        screen.orientation.lock('landscape').catch(()=>{});
-      }
-    });
-  } else if(screen.orientation && screen.orientation.lock){
-    screen.orientation.lock('landscape').catch(()=>{});
-  }
+  ytShowCtrl();
 };
 
 // ── Init player ────────────────────────────────────────
