@@ -46,14 +46,21 @@ function pipShow(src, title){
   const fr  = document.getElementById('dzi-pip-frame');
   const tl  = document.getElementById('dzi-pip-title');
   if(!pip || !fr) return;
-  if(fr.src !== src) fr.src = src;
+  // Append autoplay param if not already present
+  let pipSrc = src;
+  try {
+    const u = new URL(src);
+    if(!u.searchParams.has('autoplay')) u.searchParams.set('autoplay','1');
+    pipSrc = u.toString();
+  } catch(e){ pipSrc = src; }
+  if(fr.src !== pipSrc) fr.src = pipSrc;
   if(tl) tl.textContent = title || 'Đang xem...';
   pip.classList.add('show');
   PIP.active = true;
-  PIP.src = src;
+  PIP.src = src; // keep original
   PIP.title = title;
-  // Show controls briefly on first appear
-  setTimeout(()=>{ if(typeof pipShowControls==='function') pipShowControls(); }, 100);
+  // Show controls briefly on first appear, then auto-hide
+  setTimeout(()=>{ if(typeof pipShowControls==='function') pipShowControls(); }, 200);
 }
 
 window.pipClose = function(){
