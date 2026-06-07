@@ -118,11 +118,18 @@ window.doLogin = async function(){
   if(!u||!p){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
   btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; err.style.display='none';
   try {
-    const r = await fetch('/api/login',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username:u, password:p})
-    });
-    const d = await r.json();
+    let r;
+    try {
+      r = await fetch('/api/login',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:u, password:p})
+      });
+    } catch(netErr){
+      throw new Error('Không kết nối được server. Kiểm tra lại mạng.');
+    }
+    let d;
+    try { d = await r.json(); }
+    catch(_){ throw new Error(r.ok ? 'Lỗi phản hồi server' : 'Sai tên đăng nhập hoặc mật khẩu'); }
     if(!r.ok) throw new Error(d.detail||'Sai tên đăng nhập hoặc mật khẩu');
     saveSession(d);
     hideAuthScreen();
@@ -173,7 +180,7 @@ window.doRegisterSendOtp = async function(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username:u, password:p, email:em})
     });
-    const d = await r.json();
+    let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi gửi OTP'); }
     if(!r.ok) throw new Error(d.detail||'Lỗi gửi OTP');
     document.getElementById('dzi-reg-step1').style.display = 'none';
     document.getElementById('dzi-reg-step2').style.display = 'flex';
@@ -197,7 +204,7 @@ window.doRegisterVerify = async function(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username:u, password:p, email:em, otp})
     });
-    const d = await r.json();
+    let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi đăng ký'); }
     if(!r.ok) throw new Error(d.detail||'Lỗi đăng ký');
     stopRegTimer();
     dziToast('✅ Đăng ký thành công! Hãy đăng nhập.','#10b981');
