@@ -663,9 +663,9 @@ async function pgPlayKK(){
 
   let playerHTML;
   if(embed){
-    const embedAP1 = (()=>{ try{ const u=new URL(embed); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return embed; }})();
-    playerHTML=`<iframe src="${esc(embedAP1)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
-    PIP.src = embedAP1; PIP.title = movie.name || S.slug;
+    const embedUrl = (()=>{ try{ const u=new URL(embed); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return embed; }})();
+    playerHTML=`<iframe src="${esc(embedUrl)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>`;
+    PIP.src = embedUrl; PIP.title = movie.name || S.slug;
   } else if(m3u8){
     playerHTML=`<video id="hls-v" controls autoplay style="position:absolute;inset:0;width:100%;height:100%"></video>`;
   } else {
@@ -733,14 +733,15 @@ async function pgPlayAni(){
     const eOpts=Array.from({length:eMax},(_,i)=>`<option value="${i+1}"${i+1===epn?' selected':''}>Tập ${i+1}</option>`).join('');
     const dOpts=`<option value="0"${dub===0?' selected':''}>Sub</option><option value="1"${dub===1?' selected':''}>Dub</option>`;
 
-    const aniEmbedSrc = vsAnime(id,epn,dub);
+    const aniEmbedSrcRaw = vsAnime(id,epn,dub);
+    const aniEmbedSrc = (()=>{ try{ const u=new URL(aniEmbedSrcRaw); u.searchParams.set('autoplay','1'); return u.toString(); }catch(e){ return aniEmbedSrcRaw; }})();
     PIP.src = aniEmbedSrc; PIP.title = anime&&anime.title||'Anime';
     app.innerHTML=renderNav()+`<div class="player-page page">
       <div class="player-wrap" style="position:relative">
         <button onclick="go(history.state&&history.state.from||'home', history.state&&history.state.fromOpts||{})" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.55);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <iframe id="ani-fr" src="${(()=>{ try{ const u=new URL(aniEmbedSrc); u.searchParams.set('autoplay','1'); return esc(u.toString()); }catch(e){ return esc(aniEmbedSrc); }})()" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
+        <iframe id="ani-fr" src="${esc(aniEmbedSrc)}" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
       </div>
       <div class="player-info">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
