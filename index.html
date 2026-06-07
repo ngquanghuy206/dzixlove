@@ -46,22 +46,23 @@
 
 <!-- Picture-in-Picture floating player -->
 <div id="dzi-pip">
-  <div id="dzi-pip-video" onclick="pipGoBack()" title="Bấm để xem tiếp" style="position:relative;cursor:pointer">
-    <iframe id="dzi-pip-frame" src="about:blank" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen style="pointer-events:none"></iframe>
-    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s" id="pip-overlay">
-      <div style="background:rgba(0,0,0,.6);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+  <!-- Video + overlay controls all inside pip-video -->
+  <div id="dzi-pip-video">
+    <iframe id="dzi-pip-frame" src="about:blank" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen></iframe>
+    <!-- Controls overlay — auto-hide, show on tap/hover -->
+    <div id="dzi-pip-controls">
+      <div id="dzi-pip-top">
+        <span id="dzi-pip-title">Đang xem...</span>
+        <button class="pip-btn" id="pip-close-btn" title="Đóng" onclick="event.stopPropagation();pipClose()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="dzi-pip-center" onclick="pipGoBack()">
+        <div id="pip-play-ico">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="dzi-pip-bar">
-    <button class="pip-btn pip-btn-back" title="Xem tiếp" onclick="pipGoBack()" style="flex-shrink:0;color:rgba(99,180,255,.9)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-    </button>
-    <span id="dzi-pip-title" onclick="pipGoBack()" style="cursor:pointer">Đang xem...</span>
-    <button class="pip-btn" title="Đóng" onclick="pipClose()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
   </div>
 </div>
 

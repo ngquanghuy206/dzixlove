@@ -52,6 +52,8 @@ function pipShow(src, title){
   PIP.active = true;
   PIP.src = src;
   PIP.title = title;
+  // Show controls briefly on first appear
+  setTimeout(()=>{ if(typeof pipShowControls==='function') pipShowControls(); }, 100);
 }
 
 window.pipClose = function(){
@@ -77,23 +79,46 @@ window.pipGoBack = function(){
   }
 };
 
-// Draggable PiP — init after DOM ready
+// Draggable PiP + auto-hide controls — init after DOM ready
+let _pipHideT = null;
+function pipShowControls(){
+  const pip = document.getElementById('dzi-pip');
+  if(!pip) return;
+  pip.classList.add('pip-show-ctrl');
+  clearTimeout(_pipHideT);
+  _pipHideT = setTimeout(()=>{ pip.classList.remove('pip-show-ctrl'); }, 3000);
+}
+
 function initPipDrag(){
   const pip = document.getElementById('dzi-pip');
   if(!pip) return;
-  let ox=0,oy=0,startX=0,startY=0,dragging=false;
+  let ox=0,oy=0,startX=0,startY=0,dragging=false,moved=false;
+
   pip.addEventListener('pointerdown', e=>{
     if(e.target.closest('.pip-btn')) return;
-    dragging=true; pip.setPointerCapture(e.pointerId);
+    dragging=true; moved=false;
+    pip.setPointerCapture(e.pointerId);
     startX=e.clientX-ox; startY=e.clientY-oy;
   });
   pip.addEventListener('pointermove', e=>{
     if(!dragging) return;
-    ox=e.clientX-startX; oy=e.clientY-startY;
+    const nx=e.clientX-startX, ny=e.clientY-startY;
+    if(Math.abs(nx-ox)>4||Math.abs(ny-oy)>4) moved=true;
+    ox=nx; oy=ny;
     pip.style.transform=`translate(${ox}px,${oy}px)`;
   });
-  pip.addEventListener('pointerup', ()=>{ dragging=false; });
+  pip.addEventListener('pointerup', e=>{
+    if(!moved && !e.target.closest('.pip-btn')){
+      // Short tap = show controls
+      pipShowControls();
+    }
+    dragging=false;
+  });
+
+  // Touch: show controls on tap
+  pip.addEventListener('touchstart', ()=>{ pipShowControls(); }, {passive:true});
 }
+
 if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', initPipDrag);
 } else {
