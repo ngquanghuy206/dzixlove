@@ -896,7 +896,11 @@ async function pgDZITubeShort(){
     <div id="short-info" style="position:absolute;bottom:0;left:0;right:80px;z-index:15;padding:20px 16px 36px;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 100%);pointer-events:none">
       <div id="short-title" style="color:#fff;font-weight:700;font-size:15px;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-bottom:6px"></div>
       <div id="short-author" style="color:rgba(255,255,255,.75);font-size:13px;display:flex;align-items:center;gap:6px">
-        <div style="width:24px;height:24px;border-radius:50%;background:#ff0050;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">▶</div>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="24" height="24" rx="5" fill="transparent"/>
+          <path d="M21.8 7.2s-.2-1.4-.8-2c-.8-.8-1.6-.8-2-.9C16.2 4 12 4 12 4s-4.2 0-7 .3c-.4.1-1.3.1-2 .9-.6.6-.8 2-.8 2S2 8.8 2 10.4v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.2.8C6.6 18 12 18 12 18s4.2 0 7-.3c.4-.1 1.3-.1 2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 8.8 21.8 7.2 21.8 7.2z" fill="#ff0000"/>
+          <path d="M10 14.5v-5l5.5 2.5-5.5 2.5z" fill="white"/>
+        </svg>
         <span id="short-author-text"></span>
       </div>
     </div>
@@ -927,7 +931,7 @@ async function pgDZITubeShort(){
     </div>
 
     <!-- Progress dots -->
-    <div id="short-dots" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:15;display:flex;gap:5px;pointer-events:none"></div>
+    <div id="short-dots" style="position:absolute;bottom:100px;left:calc(50% - 40px);transform:translateX(-50%);z-index:15;display:flex;gap:5px;pointer-events:none"></div>
 
     <!-- Loading overlay -->
     <div id="short-loading-overlay" style="position:absolute;inset:0;z-index:70;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
@@ -1181,6 +1185,8 @@ async function pgPlayYT(){
       </button>
       <!-- YT IFrame API target -->
       <div id="yt-api-player"></div>
+      <!-- Transparent tap overlay to show/hide controls -->
+      <div id="yt-tap-overlay" style="position:absolute;inset:0;z-index:4;cursor:pointer" onclick="ytToggleCtrl()"></div>
       <!-- Custom controls -->
       <div class="yt-ctrl" id="yt-ctrl">
         <div class="yt-prog-wrap">
@@ -1697,9 +1703,23 @@ window.ytFullscreen = function(){
   ytShowCtrl();
   const outer = document.querySelector('.yt-player-outer');
   if(!outer) return;
-  if(document.fullscreenElement){ document.exitFullscreen(); }
-  else if(outer.requestFullscreen){ outer.requestFullscreen(); }
-  else if(outer.webkitRequestFullscreen){ outer.webkitRequestFullscreen(); } // iOS Safari
+  // iOS Safari: dùng screen orientation API hoặc CSS transform
+  if(document.fullscreenElement || document.webkitFullscreenElement){
+    (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+    return;
+  }
+  // Thử requestFullscreen trên outer div
+  const req = outer.requestFullscreen || outer.webkitRequestFullscreen || outer.mozRequestFullScreen;
+  if(req){
+    req.call(outer).catch(()=>{
+      // Fallback iOS: dùng screen.orientation.lock landscape
+      if(screen.orientation && screen.orientation.lock){
+        screen.orientation.lock('landscape').catch(()=>{});
+      }
+    });
+  } else if(screen.orientation && screen.orientation.lock){
+    screen.orientation.lock('landscape').catch(()=>{});
+  }
 };
 
 // ── Init player ────────────────────────────────────────
@@ -1724,14 +1744,18 @@ window.initYTPlayer = function(videoId){
           // Bắt đầu auto-hide sau 3s
           _ytHideTimer = setTimeout(ytHideCtrl, 3000);
           // Setup touch/click trên player để show controls
-          const outer = document.querySelector('.yt-player-outer');
-          if(outer){
-            outer.addEventListener('click', ytToggleCtrl);
-            outer.addEventListener('touchend', function(ev){
-              // Chỉ toggle nếu không phải tap vào button
-              if(ev.target.closest('.yt-ctrl,.yt-back-btn')) return;
+          const tapOverlay = document.getElementById('yt-tap-overlay');
+          if(tapOverlay){
+            let _lastTouch=0;
+            tapOverlay.addEventListener('touchend', function(ev){
+              _lastTouch=Date.now();
+              ev.preventDefault();
               ytToggleCtrl();
-            }, {passive:true});
+            }, {passive:false});
+            tapOverlay.addEventListener('click', function(ev){
+              if(Date.now()-_lastTouch<400) return;
+              ytToggleCtrl();
+            });
           }
           // Setup volume slider với pointer events (fix mobile)
           const volSl = document.getElementById('yt-vol');
