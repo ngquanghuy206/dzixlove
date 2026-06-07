@@ -98,6 +98,7 @@ function loadMissionState(username){
 // ── Save state vào localStorage ──
 function saveMissionState(username, state){
   localStorage.setItem('dzi_missions_' + (username||'guest'), JSON.stringify(state));
+  if(window.syncSchedule && username && username!=='guest') syncSchedule();
 }
 
 // ── Khởi tạo state nhiệm vụ hôm nay ──
@@ -251,10 +252,14 @@ window.pgMissions = function(){
     showToast('⚠️ Vui lòng đăng nhập để xem nhiệm vụ');
     go('home'); return;
   }
+  const isAdmin = window.DZI_ADMIN;
   const state = initMissionState(username);
-  const { lv, pct, curExp, needExp } = calcLevelProgress(state.totalExp);
-  const color = getLvColor(lv);
-  const title = getLvTitle(lv);
+  const lv = isAdmin ? 30 : calcLevelProgress(state.totalExp).lv;
+  const pct = isAdmin ? 100 : calcLevelProgress(state.totalExp).pct;
+  const curExp = isAdmin ? 0 : calcLevelProgress(state.totalExp).curExp;
+  const needExp = isAdmin ? 0 : calcLevelProgress(state.totalExp).needExp;
+  const color = isAdmin ? '#ff1744' : getLvColor(lv);
+  const title = isAdmin ? 'Administrator' : getLvTitle(lv);
   const doneCnt = state.missions.filter(m=>m.done).length;
   const totalExp = state.missions.reduce((a,m)=>a+m.exp,0);
   const earnedExp = state.missions.filter(m=>m.done).reduce((a,m)=>a+m.exp,0);

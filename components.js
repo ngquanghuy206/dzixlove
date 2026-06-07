@@ -283,6 +283,15 @@ function renderNav(){
     <div class="sb-divider"></div>
     ` : ''}
 
+    ${window.DZI_USER ? `
+    <div style="padding:12px 16px 20px">
+      <button onclick="doLogout();closeSidebar()" style="width:100%;padding:12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;color:#ef4444;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Đăng xuất
+      </button>
+    </div>
+    ` : ''}
+
   </div>`;
 }
 

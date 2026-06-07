@@ -146,7 +146,8 @@ window.doLogin = async function(){
     if(!r.ok) throw new Error(d.detail||'Sai tên đăng nhập hoặc mật khẩu');
     saveSession(d);
     hideAuthScreen();
-    if(window.render) window.render();
+    if(window.syncOnLogin) await syncOnLogin();
+    else if(window.render) window.render();
     if(window.sfxLogin) sfxLogin();
     dziToast('✅ Chào mừng trở lại, '+DZI_USER.username+'!','#10b981');
   } catch(e){ showErr(err, e.message); }
@@ -354,31 +355,46 @@ window.openAccountModal = function(){
   if(el('dzi-acc-username-at')) el('dzi-acc-username-at').textContent = DZI_USER.username||'—';
 
   // ── Level & EXP ──
-  if(window.initMissionState && window.calcLevelProgress) {
-    const ms = initMissionState(DZI_USER.username);
-    const { lv, pct, curExp, needExp } = calcLevelProgress(ms.totalExp);
-    const color = getLvColor(lv);
-    const title = getLvTitle(lv);
-    const lvEl = el('dzi-acc-lv-wrap');
-    if(lvEl) lvEl.innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(${hexToRgb(color)},.08);border:1px solid rgba(${hexToRgb(color)},.2);border-radius:14px;margin-bottom:12px">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${color},rgba(${hexToRgb(color)},.4));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 2px 12px rgba(${hexToRgb(color)},.4)">
-          ${lv >= 30 ? '👑' : lv}
-        </div>
-        <div style="flex:1">
-          <div style="font-size:15px;font-weight:800;color:${color}">${title} · Lv ${lv}</div>
-          <div style="font-size:11px;color:rgba(232,238,255,.4);margin-bottom:6px">${ms.totalExp.toLocaleString()} EXP tổng</div>
-          ${lv < 30 ? `
-          <div style="background:rgba(255,255,255,.08);border-radius:99px;height:6px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color},rgba(${hexToRgb(color)},.5));border-radius:99px"></div>
+  const lvEl = el('dzi-acc-lv-wrap');
+  if(lvEl) {
+    if(DZI_ADMIN) {
+      // Admin: hiện badge đặc biệt, không có EXP/level
+      lvEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.25);border-radius:14px;margin-bottom:12px">
+          <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff1744,#ff6d00);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;box-shadow:0 2px 12px rgba(255,23,68,.4)">
+            👑
           </div>
-          <div style="display:flex;justify-content:space-between;margin-top:4px">
-            <span style="font-size:10px;color:rgba(232,238,255,.35)">${curExp.toLocaleString()} / ${needExp.toLocaleString()} EXP</span>
-            <span style="font-size:10px;font-weight:700;color:${color}">${pct}% → Lv ${lv+1}</span>
-          </div>` : `<div style="font-size:11px;color:${color};font-weight:700">🏆 Cấp độ tối đa!</div>`}
-        </div>
-        <button onclick="closeDziModal('dzi-account-modal');go('missions')" style="padding:6px 12px;background:rgba(${hexToRgb(color)},.15);border:1px solid rgba(${hexToRgb(color)},.3);border-radius:10px;color:${color};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Nhiệm vụ →</button>
-      </div>`;
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800;color:#ff1744">Administrator · DZI</div>
+            <div style="font-size:11px;color:rgba(232,238,255,.4);margin-top:2px">Founder & Developer · 2006</div>
+            <div style="font-size:11px;color:#ff6d00;font-weight:700;margin-top:4px">🏆 Cấp độ tối đa!</div>
+          </div>
+        </div>`;
+    } else if(window.initMissionState && window.calcLevelProgress) {
+      const ms = initMissionState(DZI_USER.username);
+      const { lv, pct, curExp, needExp } = calcLevelProgress(ms.totalExp);
+      const color = getLvColor(lv);
+      const title = getLvTitle(lv);
+      lvEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:rgba(${hexToRgb(color)},.08);border:1px solid rgba(${hexToRgb(color)},.2);border-radius:14px;margin-bottom:12px">
+          <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${color},rgba(${hexToRgb(color)},.4));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 2px 12px rgba(${hexToRgb(color)},.4)">
+            ${lv >= 30 ? '👑' : lv}
+          </div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800;color:${color}">${title} · Lv ${lv}</div>
+            <div style="font-size:11px;color:rgba(232,238,255,.4);margin-bottom:6px">${ms.totalExp.toLocaleString()} EXP tổng</div>
+            ${lv < 30 ? `
+            <div style="background:rgba(255,255,255,.08);border-radius:99px;height:6px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,${color},rgba(${hexToRgb(color)},.5));border-radius:99px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span style="font-size:10px;color:rgba(232,238,255,.35)">${curExp.toLocaleString()} / ${needExp.toLocaleString()} EXP</span>
+              <span style="font-size:10px;font-weight:700;color:${color}">${pct}% → Lv ${lv+1}</span>
+            </div>` : `<div style="font-size:11px;color:${color};font-weight:700">🏆 Cấp độ tối đa!</div>`}
+          </div>
+          <button onclick="closeDziModal('dzi-account-modal');go('missions')" style="padding:6px 12px;background:rgba(${hexToRgb(color)},.15);border:1px solid rgba(${hexToRgb(color)},.3);border-radius:10px;color:${color};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">Nhiệm vụ →</button>
+        </div>`;
+    }
   }
 
   // Clear pw fields
@@ -480,7 +496,8 @@ document.addEventListener('DOMContentLoaded', function(){
   updateNavUser();
   if(DZI_USER){
     hideAuthScreen();
-    if(window.render) window.render();
+    if(window.syncOnLogin) syncOnLogin();
+    else if(window.render) window.render();
   } else {
     showAuthScreen();
   }

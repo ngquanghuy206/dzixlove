@@ -538,14 +538,17 @@ window.zToggleLike = function(){
   if(ZMP.liked.has(k)){
     ZMP.liked.delete(k);
     const likedTracks = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
+    if(window.syncSchedule) syncSchedule();
     localStorage.setItem('zmp_liked_tracks', JSON.stringify(likedTracks.filter(x=>String(x.id)!==k)));
   } else {
     ZMP.liked.add(k);
     const likedTracks = JSON.parse(localStorage.getItem('zmp_liked_tracks')||'[]');
     if(!likedTracks.find(x=>String(x.id)===k)) likedTracks.unshift(t);
+    if(window.syncSchedule) syncSchedule();
     localStorage.setItem('zmp_liked_tracks', JSON.stringify(likedTracks));
   }
-  localStorage.setItem('zmp_liked', JSON.stringify([...ZMP.liked]));
+  if(window.syncSchedule) syncSchedule();
+    localStorage.setItem('zmp_liked', JSON.stringify([...ZMP.liked]));
   const lb = document.getElementById('zlike-btn');
   const liked = ZMP.liked.has(k);
   if(lb){ lb.className='zmp-like-btn'+(liked?' liked':''); lb.innerHTML=liked?`<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Đã thích`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Thích`; }
