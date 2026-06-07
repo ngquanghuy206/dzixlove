@@ -75,8 +75,6 @@ function switchAuthTab(tab){
   const titleReg  = document.getElementById('dzi-title-register');
   const subLogin  = document.getElementById('dzi-sub-login');
   const subReg    = document.getElementById('dzi-sub-register');
-  const tabLogin  = document.getElementById('dzi-tab-login');
-  const tabReg    = document.getElementById('dzi-tab-reg');
 
   if(loginForm) loginForm.style.display  = tab==='login' ? 'flex' : 'none';
   if(regForm)   regForm.style.display    = tab==='register' ? 'flex' : 'none';
@@ -84,8 +82,6 @@ function switchAuthTab(tab){
   if(titleReg)   titleReg.style.display  = tab==='register' ? '' : 'none';
   if(subLogin)   subLogin.style.display  = tab==='login' ? '' : 'none';
   if(subReg)     subReg.style.display    = tab==='register' ? '' : 'none';
-  if(tabLogin)   tabLogin.classList.toggle('active', tab==='login');
-  if(tabReg)     tabReg.classList.toggle('active',   tab==='register');
 
   // Toggle bottom switch links
   const bottomLogin = document.getElementById('dzi-auth-bottom-login');
@@ -129,13 +125,16 @@ window.doLogin = async function(){
   const err = document.getElementById('dzi-login-err');
   const btn = document.getElementById('dzi-login-btn');
   if(!u||!p){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
+  const capEl = document.querySelector('#hcap-login iframe');
+  const capToken = window.hcaptcha ? hcaptcha.getResponse(document.getElementById('hcap-login').dataset.hcaptchaWidgetId) : '';
+  if(!capToken){ showErr(err,'Vui lòng xác minh captcha'); return; }
   btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; err.style.display='none';
   try {
     let r;
     try {
       r = await fetch((window.API_BASE||'')+'/api/login',{
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({username:u, password:p})
+        body: JSON.stringify({username:u, password:p, hcaptcha_token:capToken})
       });
     } catch(netErr){
       throw new Error('Không kết nối được server. Kiểm tra lại mạng.');
@@ -150,7 +149,10 @@ window.doLogin = async function(){
     else if(window.render) window.render();
     if(window.sfxLogin) sfxLogin();
     dziToast('✅ Chào mừng trở lại, '+DZI_USER.username+'!','#10b981');
-  } catch(e){ showErr(err, e.message); }
+  } catch(e){
+    showErr(err, e.message);
+    if(window.hcaptcha) hcaptcha.reset();
+  }
   finally { btn.disabled=false; btn.textContent='🔐 Đăng nhập'; }
 };
 
@@ -190,11 +192,13 @@ window.doRegisterSendOtp = async function(){
   if(!u||!p||!em){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
   if(u.length<6||p.length<6){ showErr(err,'Username & mật khẩu tối thiểu 6 ký tự'); return; }
   if(!em.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
+  const capToken = window.hcaptcha ? hcaptcha.getResponse(document.getElementById('hcap-reg').dataset.hcaptchaWidgetId) : '';
+  if(!capToken){ showErr(err,'Vui lòng xác minh captcha'); return; }
   btn.disabled=true; btn.textContent='⏳ Đang gửi OTP...'; err.style.display='none';
   try {
     const r = await fetch((window.API_BASE||'')+'/api/register/send-otp',{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username:u, password:p, email:em})
+      body: JSON.stringify({username:u, password:p, email:em, hcaptcha_token:capToken})
     });
     let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi gửi OTP'); }
     if(!r.ok) throw new Error(d.detail||'Lỗi gửi OTP');
@@ -202,7 +206,10 @@ window.doRegisterSendOtp = async function(){
     document.getElementById('dzi-reg-step2').style.display = 'flex';
     startRegTimer();
     dziToast('📨 OTP đã gửi về Gmail của bạn!','#4f7cff');
-  } catch(e){ showErr(err, e.message); }
+  } catch(e){
+    showErr(err, e.message);
+    if(window.hcaptcha) hcaptcha.reset();
+  }
   finally { btn.disabled=false; btn.textContent='📧 Gửi mã OTP xác minh'; }
 };
 

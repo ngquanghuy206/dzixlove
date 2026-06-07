@@ -130,7 +130,7 @@ function pgHome(){
     <!-- ADMIN INFO CARD -->
     <div class="intro-admin-card">
       <div class="iac-header">
-        <div class="iac-crown">👨‍💻</div>
+        <div class="iac-crown"><img src="admin.jpg" alt="Admin" onerror="this.parentElement.innerHTML='👨‍💻'"></div>
         <div>
           <div class="iac-name">Nguyễn Hoàng Khánh Nam</div>
           <div class="iac-role">DZI · Founder & Developer · 2006</div>

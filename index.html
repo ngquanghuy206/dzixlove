@@ -6,9 +6,9 @@
 
 <!-- SEO PRIMARY -->
 <title>DZI MUSIC & MOVIE — Xem Phim, Nghe Nhạc Miễn Phí</title>
-<meta name="description" content="DZI MUSIC & MOVIE — Xem phim Việt, anime, YouTube hoàn toàn miễn phí. Phim bộ, phim lẻ, lồng tiếng, thuyết minh, top anime mới nhất 2026."/>
+<meta name="description" content="Nền tảng giải trí miễn phí hàng đầu Việt Nam. Xem phim bộ, phim lẻ, lồng tiếng, thuyết minh, anime vietsub mới nhất 2026. Nghe nhạc Việt, V-Pop, EDM, Lo-Fi không giới hạn. Không quảng cáo."/>
 <meta name="keywords" content="xem phim online miễn phí, phim việt, anime vietsub, phim lồng tiếng, phim thuyết minh, dzi music movie, dzimusic.movie"/>
-<meta name="robots" content="index, follow"/>
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"/>
 <meta name="author" content="DZI MUSIC & MOVIE"/>
 <link rel="canonical" href="https://dzimusic.movie/"/>
 
@@ -16,7 +16,7 @@
 <meta property="og:type" content="website"/>
 <meta property="og:url" content="https://dzimusic.movie/"/>
 <meta property="og:title" content="DZI MUSIC & MOVIE — Xem Phim Miễn Phí"/>
-<meta property="og:description" content="Nền tảng xem phim hoàn toàn miễn phí. Phim bộ, phim lẻ, lồng tiếng — tất cả tại DZI MUSIC & MOVIE"/>
+<meta property="og:description" content="Nền tảng giải trí miễn phí hàng đầu Việt Nam. Phim bộ, phim lẻ, anime vietsub, nhạc Việt — tất cả không quảng cáo, không mất phí."/>
 <meta property="og:image" content="https://files.catbox.moe/v56bhy.jpeg"/>
 <meta property="og:locale" content="vi_VN"/>
 <link rel="icon" type="image/jpeg" href="https://files.catbox.moe/v56bhy.jpeg">
@@ -26,7 +26,7 @@
 <!-- TWITTER CARD -->
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="DZI MUSIC & MOVIE — Xem Phim Miễn Phí"/>
-<meta name="twitter:description" content="Phim — Hoàn toàn miễn phí tại DZI MUSIC & MOVIE"/>
+<meta name="twitter:description" content="Phim Việt, anime vietsub, nhạc không quảng cáo — hoàn toàn miễn phí tại DZI MUSIC & MOVIE"/>
 <meta name="twitter:image" content="https://files.catbox.moe/v56bhy.jpeg"/>
 
 <!-- STRUCTURED DATA -->
@@ -51,6 +51,8 @@
 
 <!-- STYLES -->
 <link rel="stylesheet" href="style.css"/>
+<!-- hCaptcha -->
+<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
 </head>
 <body>
 <div id="app" style="display:none"></div>
@@ -108,12 +110,6 @@
       <div id="dzi-sub-register" style="font-size:14px;color:rgba(232,238,255,.45);margin-top:4px;display:none">Tạo tài khoản miễn phí ngay</div>
     </div>
 
-    <!-- Tabs -->
-    <div style="display:flex;background:rgba(255,255,255,.05);border-radius:12px;padding:4px;margin-bottom:20px;gap:4px">
-      <button id="dzi-tab-login" class="dzi-tab-btn active" onclick="switchAuthTab('login')">Đăng nhập</button>
-      <button id="dzi-tab-reg"   class="dzi-tab-btn"        onclick="switchAuthTab('register')">Đăng ký</button>
-    </div>
-
     <!-- LOGIN FORM -->
     <div id="dzi-login-form" style="display:flex;flex-direction:column;gap:14px">
       <div>
@@ -140,6 +136,7 @@
         <span onclick="openForgotModal()" style="font-size:13px;font-weight:700;color:rgba(79,124,255,.9);cursor:pointer">Quên mật khẩu?</span>
       </div>
       <div class="dzi-auth-err" id="dzi-login-err"></div>
+      <div class="h-captcha" id="hcap-login" data-sitekey="91fc5d1c-75a6-4564-abc4-43a63ee2a464" data-theme="dark" style="margin-bottom:4px"></div>
       <button class="dzi-auth-btn" id="dzi-login-btn" onclick="doLogin()">🔐 Đăng nhập</button>
     </div>
 
@@ -168,6 +165,7 @@
               onkeydown="if(event.key==='Enter')doRegisterSendOtp()">
           </div>
           <div class="dzi-auth-err" id="dzi-reg-err"></div>
+          <div class="h-captcha" id="hcap-reg" data-sitekey="91fc5d1c-75a6-4564-abc4-43a63ee2a464" data-theme="dark" style="margin-bottom:4px"></div>
           <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegisterSendOtp()">📧 Gửi mã OTP xác minh</button>
         </div>
       </div>
