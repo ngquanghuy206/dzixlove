@@ -60,6 +60,8 @@ img{display:block}
 .nav-links a:hover{color:var(--tx);background:rgba(79,124,255,.1);text-shadow:0 0 8px rgba(79,124,255,.5)}
 .nav-links a.on{color:var(--accent);background:rgba(79,124,255,.14)}
 .nav-right{display:flex;align-items:center;gap:8px}
+.nav-search-btn{background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--fg);transition:background .2s}
+.nav-search-btn:hover{background:rgba(79,124,255,.15)}
 
 /* SEARCH BAR */
 .search-wrap{position:relative}
