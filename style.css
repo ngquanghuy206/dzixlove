@@ -1466,15 +1466,17 @@ body.has-player { padding-bottom: 72px; }
 }
 
 #dzi-pip-frame {
-  /* Scale up to crop out play button and lock icon from embed UI */
+  /* Scale up and crop all sides to hide play button, lock icon, and bottom controls */
   position: absolute;
-  left: -20%;
-  top: -25%;
-  width: 140%;
-  height: 190%;
+  left: -15%;
+  right: -15%;
+  top: -20%;
+  width: 130%;
+  height: 180%;
   border: none;
   display: block;
   pointer-events: auto;
+  transform-origin: center center;
 }
 
 /* Controls overlay — hidden by default, shown on tap/hover, auto-hide after 3s */
