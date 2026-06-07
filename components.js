@@ -140,13 +140,13 @@ function renderNav(){
     ${window.DZI_USER ? `
     <div style="margin:0 12px 4px;background:linear-gradient(135deg,rgba(79,124,255,.12),rgba(124,58,237,.08));border:1px solid rgba(79,124,255,.2);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px">
       <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0">
-        ${DZI_USER.avatar ? \`<img src="\${DZI_USER.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">\` : DZI_USER.username.charAt(0).toUpperCase()}
+        ${DZI_USER.avatar ? '<img src="' + DZI_USER.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover">' : DZI_USER.username.charAt(0).toUpperCase()}
       </div>
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:800;color:#e8eeff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${DZI_USER.username}</div>
-        <div style="font-size:11px;color:rgba(232,238,255,.45);margin-top:1px">${DZI_ADMIN ? '\u{1F451} Admin' : (DZI_USER.email || 'Thành viên')}</div>
+        <div style="font-size:11px;color:rgba(232,238,255,.45);margin-top:1px">${DZI_ADMIN ? '👑 Admin' : (DZI_USER.email || 'Thành viên')}</div>
       </div>
-      ${!DZI_ADMIN ? \`<div style="font-size:10px;font-weight:700;color:#4f7cff;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);border-radius:8px;padding:3px 8px">Lv \${window.calcLevel && window.initMissionState ? calcLevel(initMissionState(DZI_USER.username).totalExp) : 1}</div>\` : ''}
+      ${!DZI_ADMIN ? '<div style="font-size:10px;font-weight:700;color:#4f7cff;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);border-radius:8px;padding:3px 8px">Lv ' + (window.calcLevel && window.initMissionState ? calcLevel(initMissionState(DZI_USER.username).totalExp) : 1) + '</div>' : ''}
     </div>` : `
     <div style="margin:0 12px 4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;text-align:center;cursor:pointer" onclick="openDziModal('dzi-auth-screen');closeSidebar()">
       <div style="font-size:13px;color:rgba(232,238,255,.5)">Đăng nhập để xem thông tin</div>
