@@ -136,12 +136,39 @@ function renderNav(){
       <button class="sb-close" onclick="closeSidebar()">✕</button>
     </div>
 
+    <!-- USER CARD -->
+    ${window.DZI_USER ? `
+    <div style="margin:0 12px 4px;background:linear-gradient(135deg,rgba(79,124,255,.12),rgba(124,58,237,.08));border:1px solid rgba(79,124,255,.2);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0">
+        ${DZI_USER.avatar ? \`<img src="\${DZI_USER.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">\` : DZI_USER.username.charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:#e8eeff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${DZI_USER.username}</div>
+        <div style="font-size:11px;color:rgba(232,238,255,.45);margin-top:1px">${DZI_ADMIN ? '\u{1F451} Admin' : (DZI_USER.email || 'Thành viên')}</div>
+      </div>
+      ${!DZI_ADMIN ? \`<div style="font-size:10px;font-weight:700;color:#4f7cff;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);border-radius:8px;padding:3px 8px">Lv \${window.calcLevel && window.initMissionState ? calcLevel(initMissionState(DZI_USER.username).totalExp) : 1}</div>\` : ''}
+    </div>` : `
+    <div style="margin:0 12px 4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;text-align:center;cursor:pointer" onclick="openDziModal('dzi-auth-screen');closeSidebar()">
+      <div style="font-size:13px;color:rgba(232,238,255,.5)">Đăng nhập để xem thông tin</div>
+    </div>`}
+
+    <div class="sb-divider"></div>
+
     <!-- TRANG CHỦ -->
     <ul class="sb-icon-links">
       <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">
         <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#6366f1)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         </span>Trang chủ
+      </a></li>
+    </ul>
+
+    <!-- NHIỆM VỤ (ngay dưới Trang chủ) -->
+    <ul class="sb-icon-links">
+      <li><a class="${p==='missions'?'on':''}" onclick="go('missions');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
       </a></li>
     </ul>
 
@@ -235,37 +262,18 @@ function renderNav(){
 
     <div class="sb-divider"></div>
 
-    <!-- NHIỆM VỤ -->
-    <div class="sb-section-title" style="color:#fbbf24">⚔️ NHIỆM VỤ</div>
+    <!-- ADMIN QUẢN LÝ -->
+    ${window.DZI_ADMIN ? `
+    <div class="sb-section-title" style="color:#f97316">👑 QUẢN LÝ</div>
     <ul class="sb-icon-links">
-      <li><a class="${p==='missions'?'on':''}" onclick="go('missions');closeSidebar()">
-        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
+      <li><a onclick="openAdminStatsModal();closeSidebar()" style="cursor:pointer">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d1a00,#f97316)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span><span style="color:#f97316">Chỉnh sửa số liệu</span>
       </a></li>
     </ul>
-
     <div class="sb-divider"></div>
-
-    <!-- ADMIN QUẢN LÝ -->\n    ${window.DZI_ADMIN ? `\n    <div class=\"sb-section-title\" style=\"color:#f97316\">👑 QUẢN LÝ</div>\n    <ul class=\"sb-icon-links\">\n      <li><a onclick=\"openAdminStatsModal();closeSidebar()\" style=\"cursor:pointer\">\n        <span class=\"sbi\" style=\"background:linear-gradient(135deg,#3d1a00,#f97316)\">\n          <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87\"/><path d=\"M16 3.13a4 4 0 0 1 0 7.75\"/></svg>\n        </span><span style=\"color:#f97316\">Chỉnh sửa số liệu</span>\n      </a></li>\n    </ul>\n    <div class=\"sb-divider\"></div>\n    ` : ''}\n\n    <!-- LIÊN HỆ ADMIN -->
-    <div class="sb-section-title">LIÊN HỆ</div>
-    <ul class="sb-icon-links">
-      <li><a href="https://zalo.me/0993329535" target="_blank" rel="noopener">
-        <span class="sbi" style="background:linear-gradient(135deg,#0a2540,#0068ff)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/></svg>
-        </span><span style="color:#4f9eff">Zalo Admin</span>
-      </a></li>
-      <li><a href="https://t.me/dzimeomeo" target="_blank" rel="noopener">
-        <span class="sbi" style="background:linear-gradient(135deg,#1a3a5c,#29b6f6)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.68 8.26l-2.05 9.66c-.15.68-.55.84-1.11.52l-3.07-2.26-1.48 1.43c-.16.16-.3.3-.62.3l.22-3.12 5.67-5.12c.25-.22-.05-.34-.38-.12L6.97 14.6 3.94 13.6c-.66-.21-.67-.66.14-.97l11.16-4.3c.55-.2 1.03.13.44.93z"/></svg>
-        </span><span style="color:#29b6f6">Telegram</span>
-      </a></li>
-      <li><a href="https://tiktok.com/@hkhanhnam206" target="_blank" rel="noopener">
-        <span class="sbi" style="background:linear-gradient(135deg,#1a0a0a,#ee1d52)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.32a8.16 8.16 0 004.77 1.52V7.39a4.85 4.85 0 01-1-.7z"/></svg>
-        </span><span style="color:#ee1d52">@hkhanhnam206</span>
-      </a></li>
-    </ul>
+    ` : ''}
 
   </div>`;
 }

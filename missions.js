@@ -98,11 +98,6 @@ function loadMissionState(username){
 // ── Save state vào localStorage ──
 function saveMissionState(username, state){
   localStorage.setItem('dzi_missions_' + (username||'guest'), JSON.stringify(state));
-  // Sync to MongoDB
-  if(window.DZI_TOKEN && window.dziSyncData && username && username!=='guest'){
-    clearTimeout(window._missionSyncTimer);
-    window._missionSyncTimer = setTimeout(()=>dziSyncData({missions: state}), 1500);
-  }
 }
 
 // ── Khởi tạo state nhiệm vụ hôm nay ──
@@ -187,6 +182,7 @@ window.missionProgress = function(type, amount){
       if(m.progress >= m.target){
         m.done = true;
         earned += m.exp;
+        if(window.sfxMissionDone) sfxMissionDone();
         showToast(`✅ Nhiệm vụ hoàn thành! +${m.exp} EXP — "${m.title}"`);
       }
     }
@@ -196,6 +192,7 @@ window.missionProgress = function(type, amount){
     const newLv = calcLevel(state.totalExp);
     if(newLv > state.level){
       state.level = newLv;
+      if(window.sfxLevelUp) sfxLevelUp();
       setTimeout(()=> showLvUpEffect(newLv), 600);
     }
   }

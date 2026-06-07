@@ -51,84 +51,6 @@ function pgHome(){
       </div>
     </div>
 
-    <!-- ABOUT SECTION -->
-    <div class="intro-about-grid">
-      <div class="intro-card">
-        <div class="intro-card-icon" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
-        </div>
-        <h3>Xem Phim</h3>
-        <p>Phim Việt, phim bộ, phim lẻ, lồng tiếng, thuyết minh. Anime mới nhất. DZITube không quảng cáo. Tất cả miễn phí.</p>
-        <button class="btn btn-ghost intro-card-btn" onclick="go('phim')">Khám phá →</button>
-      </div>
-
-      <div class="intro-card">
-        <div class="intro-card-icon" style="background:linear-gradient(135deg,#064e3b,#10b981)">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        </div>
-        <h3>DZI x MUSIC</h3>
-        <p>Nghe nhạc trực tuyến miễn phí. V-Pop, Rap Việt, Bolero, Lo-Fi, EDM, K-Pop. Playlist cá nhân, yêu thích &amp; tìm kiếm.</p>
-        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--green);color:var(--green)" onclick="go('nhac')">Nghe ngay →</button>
-      </div>
-
-      <div class="intro-card">
-        <div class="intro-card-icon" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6)">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </div>
-        <h3>Miễn Phí 100%</h3>
-        <p>Không đăng ký, không tài khoản, không quảng cáo phiền hà. Truy cập trực tiếp, xem &amp; nghe không giới hạn.</p>
-        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--blue);color:var(--blue)" onclick="go('nhac')">Bắt đầu →</button>
-      </div>
-    </div>
-
-    <!-- DZI x MUSIC — CUSTOM PLAYER -->
-    <section class="intro-sc-section">
-      <div class="intro-sc-header">
-        <div class="intro-sc-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          DZI x MUSIC
-        </div>
-        <span class="intro-sc-sub">Nhạc cá nhân tuyển chọn</span>
-      </div>
-      <div class="dzi-music-player" id="dzi-home-player">
-        <div class="dmp-visualizer">
-          <div class="dmp-bars" id="dmp-bars">
-            <div class="dmp-bar" style="animation-delay:0.0s"></div><div class="dmp-bar" style="animation-delay:0.07s"></div><div class="dmp-bar" style="animation-delay:0.14s"></div><div class="dmp-bar" style="animation-delay:0.21s"></div><div class="dmp-bar" style="animation-delay:0.28s"></div><div class="dmp-bar" style="animation-delay:0.35s"></div><div class="dmp-bar" style="animation-delay:0.42s"></div><div class="dmp-bar" style="animation-delay:0.49s"></div><div class="dmp-bar" style="animation-delay:0.56s"></div><div class="dmp-bar" style="animation-delay:0.63s"></div><div class="dmp-bar" style="animation-delay:0.7s"></div><div class="dmp-bar" style="animation-delay:0.77s"></div><div class="dmp-bar" style="animation-delay:0.84s"></div><div class="dmp-bar" style="animation-delay:0.91s"></div><div class="dmp-bar" style="animation-delay:0.98s"></div><div class="dmp-bar" style="animation-delay:1.05s"></div><div class="dmp-bar" style="animation-delay:1.12s"></div><div class="dmp-bar" style="animation-delay:1.19s"></div><div class="dmp-bar" style="animation-delay:1.26s"></div><div class="dmp-bar" style="animation-delay:1.33s"></div><div class="dmp-bar" style="animation-delay:1.4s"></div><div class="dmp-bar" style="animation-delay:1.47s"></div><div class="dmp-bar" style="animation-delay:1.54s"></div><div class="dmp-bar" style="animation-delay:1.61s"></div>
-          </div>
-          <div class="dmp-vinyl" id="dmp-vinyl">
-            <div class="dmp-vinyl-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-            </div>
-          </div>
-        </div>
-        <div class="dmp-info">
-          <div class="dmp-track-name" id="dmp-name">Nonstop Trend 2026 - Nhạc Remix</div>
-          <div class="dmp-track-artist" id="dmp-artist">DZI x MUSIC · Tuyển chọn</div>
-          <div class="dmp-progress-wrap">
-            <div class="dmp-progress-bg"><div class="dmp-progress-fill" id="dmp-fill"></div></div>
-            <div class="dmp-time"><span id="dmp-cur">0:00</span><span id="dmp-dur">--:--</span></div>
-          </div>
-          <div class="dmp-controls">
-            <button class="dmp-btn dmp-btn-sm" onclick="dmpPrev()" title="Trước"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
-            <button class="dmp-btn dmp-btn-play" id="dmp-play" onclick="dmpToggle()">
-              <svg id="dmp-ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              <svg id="dmp-ico-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-            </button>
-            <button class="dmp-btn dmp-btn-sm" onclick="dmpNext()" title="Tiếp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/></svg></button>
-            <button class="dmp-btn dmp-btn-sm dmp-shuffle" id="dmp-shuf" onclick="dmpShuffle()" title="Ngẫu nhiên"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
-          </div>
-        </div>
-        <div class="dmp-playlist" id="dmp-playlist">
-          <div class="dmp-pl-title">Danh sách phát</div>
-          <div id="dmp-pl-items"></div>
-        </div>
-      </div>
-      <button class="btn intro-sc-more" onclick="go('nhac')">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Khám phá thêm nhạc →
-      </button>
-    </section>
-
     <!-- STATS ROW -->
     <!-- TRUST COUNTER -->
     <div class="intro-trust-bar">
@@ -228,6 +150,84 @@ function pgHome(){
         </a>
       </div>
     </div>
+
+    <!-- ABOUT SECTION -->
+    <div class="intro-about-grid">
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </div>
+        <h3>Xem Phim</h3>
+        <p>Phim Việt, phim bộ, phim lẻ, lồng tiếng, thuyết minh. Anime mới nhất. DZITube không quảng cáo. Tất cả miễn phí.</p>
+        <button class="btn btn-ghost intro-card-btn" onclick="go('phim')">Khám phá →</button>
+      </div>
+
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#064e3b,#10b981)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <h3>DZI x MUSIC</h3>
+        <p>Nghe nhạc trực tuyến miễn phí. V-Pop, Rap Việt, Bolero, Lo-Fi, EDM, K-Pop. Playlist cá nhân, yêu thích &amp; tìm kiếm.</p>
+        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--green);color:var(--green)" onclick="go('nhac')">Nghe ngay →</button>
+      </div>
+
+      <div class="intro-card">
+        <div class="intro-card-icon" style="background:linear-gradient(135deg,#1e3a5f,#3b82f6)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Miễn Phí 100%</h3>
+        <p>Không đăng ký, không tài khoản, không quảng cáo phiền hà. Truy cập trực tiếp, xem &amp; nghe không giới hạn.</p>
+        <button class="btn btn-ghost intro-card-btn" style="border-color:var(--blue);color:var(--blue)" onclick="go('nhac')">Bắt đầu →</button>
+      </div>
+    </div>
+
+    <!-- DZI x MUSIC — CUSTOM PLAYER -->
+    <section class="intro-sc-section">
+      <div class="intro-sc-header">
+        <div class="intro-sc-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          DZI x MUSIC
+        </div>
+        <span class="intro-sc-sub">Nhạc cá nhân tuyển chọn</span>
+      </div>
+      <div class="dzi-music-player" id="dzi-home-player">
+        <div class="dmp-visualizer">
+          <div class="dmp-bars" id="dmp-bars">
+            <div class="dmp-bar" style="animation-delay:0.0s"></div><div class="dmp-bar" style="animation-delay:0.07s"></div><div class="dmp-bar" style="animation-delay:0.14s"></div><div class="dmp-bar" style="animation-delay:0.21s"></div><div class="dmp-bar" style="animation-delay:0.28s"></div><div class="dmp-bar" style="animation-delay:0.35s"></div><div class="dmp-bar" style="animation-delay:0.42s"></div><div class="dmp-bar" style="animation-delay:0.49s"></div><div class="dmp-bar" style="animation-delay:0.56s"></div><div class="dmp-bar" style="animation-delay:0.63s"></div><div class="dmp-bar" style="animation-delay:0.7s"></div><div class="dmp-bar" style="animation-delay:0.77s"></div><div class="dmp-bar" style="animation-delay:0.84s"></div><div class="dmp-bar" style="animation-delay:0.91s"></div><div class="dmp-bar" style="animation-delay:0.98s"></div><div class="dmp-bar" style="animation-delay:1.05s"></div><div class="dmp-bar" style="animation-delay:1.12s"></div><div class="dmp-bar" style="animation-delay:1.19s"></div><div class="dmp-bar" style="animation-delay:1.26s"></div><div class="dmp-bar" style="animation-delay:1.33s"></div><div class="dmp-bar" style="animation-delay:1.4s"></div><div class="dmp-bar" style="animation-delay:1.47s"></div><div class="dmp-bar" style="animation-delay:1.54s"></div><div class="dmp-bar" style="animation-delay:1.61s"></div>
+          </div>
+          <div class="dmp-vinyl" id="dmp-vinyl">
+            <div class="dmp-vinyl-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="dmp-info">
+          <div class="dmp-track-name" id="dmp-name">Nonstop Trend 2026 - Nhạc Remix</div>
+          <div class="dmp-track-artist" id="dmp-artist">DZI x MUSIC · Tuyển chọn</div>
+          <div class="dmp-progress-wrap">
+            <div class="dmp-progress-bg"><div class="dmp-progress-fill" id="dmp-fill"></div></div>
+            <div class="dmp-time"><span id="dmp-cur">0:00</span><span id="dmp-dur">--:--</span></div>
+          </div>
+          <div class="dmp-controls">
+            <button class="dmp-btn dmp-btn-sm" onclick="dmpPrev()" title="Trước"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+            <button class="dmp-btn dmp-btn-play" id="dmp-play" onclick="dmpToggle()">
+              <svg id="dmp-ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="dmp-ico-pause" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="dmp-btn dmp-btn-sm" onclick="dmpNext()" title="Tiếp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2.5-6 8.5 6V6z"/></svg></button>
+            <button class="dmp-btn dmp-btn-sm dmp-shuffle" id="dmp-shuf" onclick="dmpShuffle()" title="Ngẫu nhiên"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></button>
+          </div>
+        </div>
+        <div class="dmp-playlist" id="dmp-playlist">
+          <div class="dmp-pl-title">Danh sách phát</div>
+          <div id="dmp-pl-items"></div>
+        </div>
+      </div>
+      <button class="btn intro-sc-more" onclick="go('nhac')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Khám phá thêm nhạc →
+      </button>
+    </section>
 
     ${renderFooter()}
   </div>`;

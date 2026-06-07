@@ -133,8 +133,8 @@ window.doLogin = async function(){
     if(!r.ok) throw new Error(d.detail||'Sai tên đăng nhập hoặc mật khẩu');
     saveSession(d);
     hideAuthScreen();
+    if(window.sfxLogin) sfxLogin();
     dziToast('✅ Chào mừng trở lại, '+DZI_USER.username+'!','#10b981');
-    if(window.dziOnLoginSuccess) dziOnLoginSuccess();
   } catch(e){ showErr(err, e.message); }
   finally { btn.disabled=false; btn.textContent='🔐 Đăng nhập'; }
 };
@@ -521,53 +521,3 @@ window.saveAdminStats = async function(){
   const saved = localStorage.getItem('dzi_trust_count');
   if(saved) window.DZI_TRUST_COUNT = parseInt(saved);
 })();
-
-// ── Load stats from server on startup ──
-(function fetchServerStats(){
-  fetch((window.API_BASE||'')+'/api/stats')
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.trust_count) {
-        window.DZI_TRUST_COUNT = d.trust_count;
-        localStorage.setItem('dzi_trust_count', d.trust_count);
-      }
-    }).catch(()=>{});
-})();
-
-// ── Sync dữ liệu user lên MongoDB ──────────────────────────
-window.dziSyncData = async function(dataObj) {
-  if(!DZI_TOKEN) return;
-  try {
-    await fetch((window.API_BASE||'')+'/api/user/data', {
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+DZI_TOKEN},
-      body: JSON.stringify(dataObj)
-    });
-  } catch(e){}
-};
-
-window.dziLoadData = async function() {
-  if(!DZI_TOKEN) return null;
-  try {
-    const r = await fetch((window.API_BASE||'')+'/api/user/data', {
-      headers:{'Authorization':'Bearer '+DZI_TOKEN}
-    });
-    if(!r.ok) return null;
-    return await r.json();
-  } catch(e){ return null; }
-};
-
-// Gọi sau khi đăng nhập xong để load dữ liệu từ server
-window.dziOnLoginSuccess = async function() {
-  const data = await dziLoadData();
-  if(!data) return;
-  // Merge vào localStorage để các module khác đọc được
-  try {
-    const u = DZI_USER.username;
-    if(data.watchlist)  localStorage.setItem('dzi_wl_'+u,   JSON.stringify(data.watchlist));
-    if(data.history)    localStorage.setItem('dzi_hist_'+u,  JSON.stringify(data.history));
-    if(data.nhacHist)   localStorage.setItem('dzi_nhhist_'+u,JSON.stringify(data.nhacHist));
-    if(data.likedMusic) localStorage.setItem('dzi_liked_'+u, JSON.stringify(data.likedMusic));
-    if(data.missions)   localStorage.setItem('dzi_ms_'+u,    JSON.stringify(data.missions));
-  } catch(e){}
-};
