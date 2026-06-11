@@ -149,7 +149,7 @@
           <div class="dzi-remember-check" id="dzi-remember-check"></div>
           <span style="font-size:13px;color:rgba(232,238,255,.55)">Ghi nhớ đăng nhập</span>
         </div>
-        <span onclick="openForgotModal()" style="font-size:13px;font-weight:700;color:rgba(79,124,255,.9);cursor:pointer">Quên mật khẩu?</span>
+
       </div>
       <div class="dzi-auth-err" id="dzi-login-err"></div>
       <div id="hcap-login" style="margin-bottom:4px"></div>
@@ -178,25 +178,11 @@
           <div>
             <div class="dzi-field-label">Gmail</div>
             <input class="dzi-input" id="dzi-reg-email" type="text" inputmode="email" placeholder="example@gmail.com"
-              onkeydown="if(event.key==='Enter')doRegisterSendOtp()">
+              onkeydown="if(event.key==='Enter')doRegister()">
           </div>
           <div class="dzi-auth-err" id="dzi-reg-err"></div>
           <div id="hcap-reg" style="margin-bottom:4px"></div>
-          <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegisterSendOtp()">📧 Gửi mã OTP xác minh</button>
-        </div>
-      </div>
-      <!-- Step 2: OTP -->
-      <div id="dzi-reg-step2" style="display:none;flex-direction:column;gap:10px">
-        <p style="font-size:12px;color:rgba(232,238,255,.45);text-align:center;margin:0">📨 Mã OTP đã gửi về Gmail của bạn</p>
-        <div class="dzi-otp-timer">
-          ⏱ Còn lại: <span class="dzi-otp-timer-val" id="dzi-reg-timer-val">5:00</span>
-          <span class="dzi-otp-bar"><span class="dzi-otp-fill" id="dzi-reg-bar-fill" style="width:100%"></span></span>
-        </div>
-        <input class="dzi-input" id="dzi-reg-otp" type="text" maxlength="6" placeholder="Nhập OTP 6 số"
-          style="letter-spacing:8px;font-size:20px;text-align:center">
-        <button class="dzi-auth-btn" id="dzi-reg-otp-btn" onclick="doRegisterVerify()">✅ Xác minh & Đăng ký</button>
-        <div style="text-align:center">
-          <span onclick="doRegisterSendOtp()" style="color:rgba(79,124,255,.8);font-size:12px;cursor:pointer">🔄 Gửi lại OTP</span>
+          <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegister()">✅ Đăng ký</button>
         </div>
       </div>
     </div>
@@ -209,47 +195,6 @@
       Đã có tài khoản? <span onclick="switchAuthTab('login')" style="color:#4f7cff;font-weight:700;cursor:pointer">Đăng nhập</span>
     </div>
 
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════
-     FORGOT PASSWORD MODAL
-════════════════════════════════════════════════════ -->
-<div class="dzi-modal-overlay" id="dzi-forgot-modal" onclick="if(event.target===this)closeDziModal('dzi-forgot-modal')">
-  <div class="dzi-modal-box">
-    <div class="dzi-modal-title">🔑 Quên mật khẩu</div>
-    <div id="dzi-forgot-step1">
-      <div class="dzi-field-label">Gmail đã đăng ký</div>
-      <input class="dzi-input" id="dzi-forgot-email" type="text" inputmode="email" placeholder="example@gmail.com"
-        onkeydown="if(event.key==='Enter')doForgotSend()" style="margin-bottom:10px">
-      <div class="dzi-auth-err" id="dzi-forgot-err1"></div>
-      <button class="dzi-auth-btn" id="dzi-forgot-btn1" onclick="doForgotSend()" style="margin-top:8px">📧 Gửi mã OTP</button>
-    </div>
-    <div id="dzi-forgot-step2" style="display:none">
-      <p style="font-size:13px;color:rgba(232,238,255,.45);text-align:center;margin-bottom:10px">Nhập mã OTP đã gửi về Gmail</p>
-      <div class="dzi-otp-timer">
-        ⏱ Còn lại: <span class="dzi-otp-timer-val" id="dzi-forgot-timer-val">5:00</span>
-        <span class="dzi-otp-bar"><span class="dzi-otp-fill" id="dzi-forgot-bar-fill" style="width:100%"></span></span>
-      </div>
-      <div class="dzi-field-label" style="margin-top:12px">Mã OTP (6 số)</div>
-      <input class="dzi-input" id="dzi-forgot-otp" type="text" maxlength="6" placeholder="123456"
-        style="letter-spacing:6px;font-size:20px;text-align:center;margin-bottom:10px">
-      <div class="dzi-auth-err" id="dzi-forgot-err2"></div>
-      <button class="dzi-auth-btn" id="dzi-forgot-btn2" onclick="doVerifyForgotOtp()" style="margin-top:8px">✅ Xác nhận OTP</button>
-      <div style="text-align:center;margin-top:8px">
-        <span onclick="doForgotSend()" style="color:rgba(79,124,255,.8);font-size:12px;cursor:pointer">Gửi lại OTP</span>
-      </div>
-    </div>
-    <div id="dzi-forgot-step3" style="display:none">
-      <p style="font-size:13px;color:rgba(232,238,255,.45);text-align:center;margin-bottom:16px">OTP hợp lệ! Nhập mật khẩu mới</p>
-      <div class="dzi-field-label">Mật khẩu mới</div>
-      <input class="dzi-input" id="dzi-forgot-newpw" type="password" placeholder="Tối thiểu 6 ký tự" style="margin-bottom:10px">
-      <div class="dzi-field-label">Xác nhận mật khẩu</div>
-      <input class="dzi-input" id="dzi-forgot-confirmpw" type="password" placeholder="Nhập lại mật khẩu mới" style="margin-bottom:10px">
-      <div class="dzi-auth-err" id="dzi-forgot-err3"></div>
-      <button class="dzi-auth-btn" id="dzi-forgot-btn3" onclick="doResetPassword()" style="margin-top:8px">🔐 Đặt lại mật khẩu</button>
-    </div>
-    <button onclick="closeDziModal('dzi-forgot-modal')" class="dzi-modal-close-btn" style="margin-top:14px">Đóng</button>
   </div>
 </div>
 

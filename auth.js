@@ -170,24 +170,7 @@ function saveSession(d){
 }
 
 // ── REGISTER ──
-let _regOtpTimer = null;
-function stopRegTimer(){ if(_regOtpTimer){ clearInterval(_regOtpTimer); _regOtpTimer=null; } }
-function startRegTimer(){
-  stopRegTimer();
-  let rem = 300;
-  const lbl = document.getElementById('dzi-reg-timer-val');
-  const bar = document.getElementById('dzi-reg-bar-fill');
-  function tick(){
-    const m=Math.floor(rem/60), s=rem%60;
-    if(lbl) lbl.textContent = m+':'+(s<10?'0':'')+s;
-    if(bar)  bar.style.width = (rem/300*100)+'%';
-    if(rem<=0){ stopRegTimer(); if(lbl){lbl.textContent='Hết hạn!';lbl.style.color='#ff5252';} return; }
-    rem--;
-  }
-  tick(); _regOtpTimer = setInterval(tick, 1000);
-}
-
-window.doRegisterSendOtp = async function(){
+window.doRegister = async function(){
   const u   = document.getElementById('dzi-reg-user').value.trim();
   const p   = document.getElementById('dzi-reg-pass').value.trim();
   const em  = document.getElementById('dzi-reg-email').value.trim();
@@ -195,142 +178,26 @@ window.doRegisterSendOtp = async function(){
   const btn = document.getElementById('dzi-reg-btn');
   if(!u||!p||!em){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
   if(u.length<6||p.length<6){ showErr(err,'Username & mật khẩu tối thiểu 6 ký tự'); return; }
-  if(!em.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
   const capToken = window.hcaptcha ? hcaptcha.getResponse(window._hcapRegId) : '';
   if(!capToken){ showErr(err,'Vui lòng xác minh captcha'); return; }
-  btn.disabled=true; btn.textContent='⏳ Đang gửi OTP...'; err.style.display='none';
+  btn.disabled=true; btn.textContent='⏳ Đang đăng ký...'; err.style.display='none';
   try {
-    const r = await fetch((window.API_BASE||'')+'/api/register/send-otp',{
+    const r = await fetch((window.API_BASE||'')+'/api/register',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({username:u, password:p, email:em, hcaptcha_token:capToken})
     });
-    let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi gửi OTP'); }
-    if(!r.ok) throw new Error(d.detail||'Lỗi gửi OTP');
-    document.getElementById('dzi-reg-step1').style.display = 'none';
-    document.getElementById('dzi-reg-step2').style.display = 'flex';
-    startRegTimer();
-    dziToast('📨 OTP đã gửi về Gmail của bạn!','#4f7cff');
+    let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi đăng ký'); }
+    if(!r.ok) throw new Error(d.detail||'Lỗi đăng ký');
+    saveSession(d);
+    hideAuthScreen();
+    if(window.syncOnLogin) await syncOnLogin();
+    else if(window.render) window.render();
+    dziToast('✅ Đăng ký thành công! Chào mừng '+DZI_USER.username+'!','#10b981');
   } catch(e){
     showErr(err, e.message);
     if(window.hcaptcha) hcaptcha.reset(window._hcapRegId);
   }
-  finally { btn.disabled=false; btn.textContent='📧 Gửi mã OTP xác minh'; }
-};
-
-window.doRegisterVerify = async function(){
-  const u   = document.getElementById('dzi-reg-user').value.trim();
-  const p   = document.getElementById('dzi-reg-pass').value.trim();
-  const em  = document.getElementById('dzi-reg-email').value.trim();
-  const otp = document.getElementById('dzi-reg-otp').value.trim();
-  const err = document.getElementById('dzi-reg-err');
-  const btn = document.getElementById('dzi-reg-otp-btn');
-  if(!otp||otp.length!==6){ showErr(err,'Nhập đủ 6 số OTP'); return; }
-  btn.disabled=true; btn.textContent='⏳ Đang xác minh...'; err.style.display='none';
-  try {
-    const r = await fetch((window.API_BASE||'')+'/api/register',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({username:u, password:p, email:em, otp})
-    });
-    let d; try { d = await r.json(); } catch(_) { throw new Error(r.ok ? 'Lỗi server' : 'Lỗi đăng ký'); }
-    if(!r.ok) throw new Error(d.detail||'Lỗi đăng ký');
-    stopRegTimer();
-    dziToast('✅ Đăng ký thành công! Hãy đăng nhập.','#10b981');
-    switchAuthTab('login');
-  } catch(e){ showErr(err, e.message); }
-  finally { btn.disabled=false; btn.textContent='✅ Xác minh & Đăng ký'; }
-};
-
-// ── FORGOT PASSWORD ──
-let _forgotEmail='', _forgotOtp='';
-let _forgotTimer = null;
-function stopForgotTimer(){ if(_forgotTimer){ clearInterval(_forgotTimer); _forgotTimer=null; } }
-function startForgotTimer(){
-  stopForgotTimer();
-  let rem=300;
-  const lbl=document.getElementById('dzi-forgot-timer-val');
-  const bar=document.getElementById('dzi-forgot-bar-fill');
-  function tick(){
-    const m=Math.floor(rem/60),s=rem%60;
-    if(lbl) lbl.textContent=m+':'+(s<10?'0':'')+s;
-    if(bar)  bar.style.width=(rem/300*100)+'%';
-    if(rem<=0){stopForgotTimer();if(lbl){lbl.textContent='Hết hạn!';lbl.style.color='#ff5252';}return;}
-    rem--;
-  }
-  tick(); _forgotTimer=setInterval(tick,1000);
-}
-
-window.openForgotModal = function(){
-  _forgotEmail=''; _forgotOtp='';
-  ['dzi-forgot-step1','dzi-forgot-step2','dzi-forgot-step3'].forEach((id,i)=>{
-    const el=document.getElementById(id); if(el) el.style.display=i===0?'block':'none';
-  });
-  ['dzi-forgot-email','dzi-forgot-otp','dzi-forgot-newpw','dzi-forgot-confirmpw'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  ['dzi-forgot-err1','dzi-forgot-err2','dzi-forgot-err3'].forEach(id=>{
-    const el=document.getElementById(id); if(el){el.textContent='';el.style.display='none';}
-  });
-  openDziModal('dzi-forgot-modal');
-};
-
-window.doForgotSend = async function(){
-  const email = document.getElementById('dzi-forgot-email').value.trim();
-  const err   = document.getElementById('dzi-forgot-err1');
-  const btn   = document.getElementById('dzi-forgot-btn1');
-  if(!email){ showErr(err,'Vui lòng nhập Gmail'); return; }
-  if(!email.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
-  btn.disabled=true; btn.textContent='⏳ Đang gửi...'; err.style.display='none';
-  try {
-    const r=await fetch((window.API_BASE||'')+'/api/forgot-password',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email})
-    });
-    const d=await r.json(); if(!r.ok) throw new Error(d.detail||'Lỗi gửi OTP');
-    _forgotEmail=email;
-    document.getElementById('dzi-forgot-step1').style.display='none';
-    document.getElementById('dzi-forgot-step2').style.display='block';
-    startForgotTimer();
-  } catch(e){ showErr(err,e.message); }
-  finally { btn.disabled=false; btn.textContent='📧 Gửi mã OTP'; }
-};
-
-window.doVerifyForgotOtp = async function(){
-  const otp = document.getElementById('dzi-forgot-otp').value.trim();
-  const err = document.getElementById('dzi-forgot-err2');
-  const btn = document.getElementById('dzi-forgot-btn2');
-  if(!otp||otp.length!==6){ showErr(err,'OTP gồm 6 số'); return; }
-  btn.disabled=true; btn.textContent='⏳...'; err.style.display='none';
-  try {
-    const r=await fetch((window.API_BASE||'')+'/api/verify-otp',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:_forgotEmail,otp})
-    });
-    const d=await r.json(); if(!r.ok) throw new Error(d.detail||'OTP không đúng');
-    _forgotOtp=otp; stopForgotTimer();
-    document.getElementById('dzi-forgot-step2').style.display='none';
-    document.getElementById('dzi-forgot-step3').style.display='block';
-  } catch(e){ showErr(err,e.message); }
-  finally { btn.disabled=false; btn.textContent='✅ Xác nhận OTP'; }
-};
-
-window.doResetPassword = async function(){
-  const pw  = document.getElementById('dzi-forgot-newpw').value.trim();
-  const pw2 = document.getElementById('dzi-forgot-confirmpw').value.trim();
-  const err = document.getElementById('dzi-forgot-err3');
-  const btn = document.getElementById('dzi-forgot-btn3');
-  if(!pw||pw.length<6){ showErr(err,'Mật khẩu tối thiểu 6 ký tự'); return; }
-  if(pw!==pw2){ showErr(err,'Mật khẩu không khớp'); return; }
-  btn.disabled=true; btn.textContent='⏳...'; err.style.display='none';
-  try {
-    const r=await fetch((window.API_BASE||'')+'/api/reset-password',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:_forgotEmail,otp:_forgotOtp,new_password:pw})
-    });
-    const d=await r.json(); if(!r.ok) throw new Error(d.detail||'Lỗi đặt lại');
-    closeDziModal('dzi-forgot-modal');
-    dziToast('✅ Đổi mật khẩu thành công! Hãy đăng nhập lại.','#10b981');
-  } catch(e){ showErr(err,e.message); }
-  finally { btn.disabled=false; btn.textContent='🔐 Đặt lại mật khẩu'; }
+  finally { btn.disabled=false; btn.textContent='✅ Đăng ký'; }
 };
 
 // ── LOGOUT ──
