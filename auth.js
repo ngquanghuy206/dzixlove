@@ -69,6 +69,11 @@ function updateNavUser(){
 
 // ── Tab switching ──
 function switchAuthTab(tab){
+  // Reset cả 2 captcha widget khi chuyển tab tránh lấy nhầm response
+  if(window.hcaptcha){
+    if(window._hcapLoginId != null) hcaptcha.reset(window._hcapLoginId);
+    if(window._hcapRegId   != null) hcaptcha.reset(window._hcapRegId);
+  }
   const loginForm = document.getElementById('dzi-login-form');
   const regForm   = document.getElementById('dzi-register-form');
   const titleLogin= document.getElementById('dzi-title-login');
@@ -125,12 +130,7 @@ window.doLogin = async function(){
   const err = document.getElementById('dzi-login-err');
   const btn = document.getElementById('dzi-login-btn');
   if(!u||!p){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
-  const capEl = document.querySelector('#hcap-login iframe');
-  // getResponse() không truyền arg = lấy response của widget đầu tiên trên trang
-  // Nếu truyền widgetId=undefined thì getResponse trả '' dù user đã tick ✅
-  const _loginEl = document.getElementById('hcap-login');
-  const _loginWidgetId = _loginEl ? _loginEl.dataset.hcaptchaWidgetId : undefined;
-  const capToken = window.hcaptcha ? (hcaptcha.getResponse(_loginWidgetId) || hcaptcha.getResponse()) : '';
+  const capToken = window.hcaptcha ? hcaptcha.getResponse(window._hcapLoginId) : '';
   if(!capToken){ showErr(err,'Vui lòng xác minh captcha'); return; }
   btn.disabled = true; btn.textContent = '⏳ Đang đăng nhập...'; err.style.display='none';
   try {
@@ -155,7 +155,7 @@ window.doLogin = async function(){
     dziToast('✅ Chào mừng trở lại, '+DZI_USER.username+'!','#10b981');
   } catch(e){
     showErr(err, e.message);
-    if(window.hcaptcha) hcaptcha.reset();
+    if(window.hcaptcha) hcaptcha.reset(window._hcapLoginId);
   }
   finally { btn.disabled=false; btn.textContent='🔐 Đăng nhập'; }
 };
@@ -196,9 +196,7 @@ window.doRegisterSendOtp = async function(){
   if(!u||!p||!em){ showErr(err,'Vui lòng nhập đầy đủ thông tin'); return; }
   if(u.length<6||p.length<6){ showErr(err,'Username & mật khẩu tối thiểu 6 ký tự'); return; }
   if(!em.toLowerCase().endsWith('@gmail.com')){ showErr(err,'Chỉ chấp nhận @gmail.com'); return; }
-  const _regEl = document.getElementById('hcap-reg');
-  const _regWidgetId = _regEl ? _regEl.dataset.hcaptchaWidgetId : undefined;
-  const capToken = window.hcaptcha ? (hcaptcha.getResponse(_regWidgetId) || hcaptcha.getResponse()) : '';
+  const capToken = window.hcaptcha ? hcaptcha.getResponse(window._hcapRegId) : '';
   if(!capToken){ showErr(err,'Vui lòng xác minh captcha'); return; }
   btn.disabled=true; btn.textContent='⏳ Đang gửi OTP...'; err.style.display='none';
   try {
@@ -214,7 +212,7 @@ window.doRegisterSendOtp = async function(){
     dziToast('📨 OTP đã gửi về Gmail của bạn!','#4f7cff');
   } catch(e){
     showErr(err, e.message);
-    if(window.hcaptcha) hcaptcha.reset();
+    if(window.hcaptcha) hcaptcha.reset(window._hcapRegId);
   }
   finally { btn.disabled=false; btn.textContent='📧 Gửi mã OTP xác minh'; }
 };
@@ -505,6 +503,21 @@ function showErr(el, msg){
 // ── Init: decide to show auth or app ──
 document.addEventListener('DOMContentLoaded', function(){
   updateNavUser();
+  // Auto-clear lỗi khi user gõ lại
+  ['dzi-reg-user','dzi-reg-pass','dzi-reg-email'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => {
+      const err = document.getElementById('dzi-reg-err');
+      if(err) err.style.display = 'none';
+    });
+  });
+  ['dzi-login-user','dzi-login-pass'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', () => {
+      const err = document.getElementById('dzi-login-err');
+      if(err) err.style.display = 'none';
+    });
+  });
   if(DZI_USER){
     hideAuthScreen();
     if(window.syncOnLogin) syncOnLogin();

@@ -54,7 +54,21 @@
 <!-- STYLES -->
 <link rel="stylesheet" href="style.css"/>
 <!-- hCaptcha -->
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+<script src="https://js.hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit" async defer></script>
+<script>
+  window._hcapLoginId  = null;
+  window._hcapRegId    = null;
+  window.hcaptchaOnLoad = function(){
+    window._hcapLoginId = hcaptcha.render('hcap-login', {
+      sitekey: '91fc5d1c-75a6-4564-abc4-43a63ee2a464',
+      theme: 'dark'
+    });
+    window._hcapRegId = hcaptcha.render('hcap-reg', {
+      sitekey: '91fc5d1c-75a6-4564-abc4-43a63ee2a464',
+      theme: 'dark'
+    });
+  };
+</script>
 </head>
 <body>
 <div id="app" style="display:none"></div>
@@ -138,7 +152,7 @@
         <span onclick="openForgotModal()" style="font-size:13px;font-weight:700;color:rgba(79,124,255,.9);cursor:pointer">Quên mật khẩu?</span>
       </div>
       <div class="dzi-auth-err" id="dzi-login-err"></div>
-      <div class="h-captcha" id="hcap-login" data-sitekey="91fc5d1c-75a6-4564-abc4-43a63ee2a464" data-theme="dark" style="margin-bottom:4px"></div>
+      <div id="hcap-login" style="margin-bottom:4px"></div>
       <button class="dzi-auth-btn" id="dzi-login-btn" onclick="doLogin()">🔐 Đăng nhập</button>
     </div>
 
@@ -167,7 +181,7 @@
               onkeydown="if(event.key==='Enter')doRegisterSendOtp()">
           </div>
           <div class="dzi-auth-err" id="dzi-reg-err"></div>
-          <div class="h-captcha" id="hcap-reg" data-sitekey="91fc5d1c-75a6-4564-abc4-43a63ee2a464" data-theme="dark" style="margin-bottom:4px"></div>
+          <div id="hcap-reg" style="margin-bottom:4px"></div>
           <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegisterSendOtp()">📧 Gửi mã OTP xác minh</button>
         </div>
       </div>
