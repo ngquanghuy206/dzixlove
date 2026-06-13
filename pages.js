@@ -1936,13 +1936,13 @@ window.toggle18Cats = function(){
 // Card 18+ giống CardKK — thumb + title + ep badge
 function CardXvid(raw){
   const m     = xvidNorm(raw);
+  const id    = raw.id || raw.vod_id || '';
   const pic   = m.vod_pic;
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  const playUrl = m.vod_play_url || '';
-  const titleJ  = JSON.stringify(m.vod_name || '');
-  return `<div class="card xvid-card" onclick="xvid18Play('${esc(playUrl)}',${titleJ})" style="cursor:pointer">
+  const titleJ = JSON.stringify(m.vod_name || '');
+  return `<div class="card xvid-card" onclick="xvid18Play('${esc(String(id))}',${titleJ})" style="cursor:pointer">
     <div class="card-img xvid-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
       <div class="xvid-play-btn">▶</div>
@@ -1957,7 +1957,17 @@ function CardXvid(raw){
   </div>`;
 }
 
-window.xvid18Play = function(playUrl, title){
+// Fetch chi tiết 1 phim theo id để lấy episodes/play URL
+async function xvidDetail(id){
+  const qs = new URLSearchParams({ _p:'/api/xvid', ac:'videolist', at:'json', ids: String(id) });
+  const r = await fetch(`/api/music?${qs}`);
+  if(!r.ok) throw new Error('API lỗi ' + r.status);
+  const d = await r.json();
+  const list = xvidItems(d);
+  return list[0] || null;
+}
+
+function xvidShowModal(playUrl, title){
   const existing = document.getElementById('xvid-modal');
   if(existing) existing.remove();
 
@@ -1970,7 +1980,7 @@ window.xvid18Play = function(playUrl, title){
 
   let playerHTML = '';
   if(noUrl){
-    playerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab;font-size:14px">⚠️ Không tìm thấy link phim.<br><span style="font-size:12px;color:rgba(255,255,255,.4)">API chưa trả về play URL</span></div>`;
+    playerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab;font-size:14px">⚠️ Không tìm thấy link phim.<br><span style="font-size:12px;color:rgba(255,255,255,.4)">API không trả về play URL</span></div>`;
   } else if(isEmbed){
     playerHTML = `<video src="${playUrl}" controls autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:56vw"></video>`;
   } else {
@@ -1992,6 +2002,28 @@ window.xvid18Play = function(playUrl, title){
 
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
+}
+
+window.xvid18Play = async function(id, title){
+  // Show loading modal trước
+  const existing = document.getElementById('xvid-modal');
+  if(existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'xvid-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `<div style="text-align:center;color:#ff8fab"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:14px">Đang tải...</div></div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
+
+  try {
+    const raw = await xvidDetail(id);
+    if(!raw){ xvidShowModal('', title); return; }
+    const m = xvidNorm(raw);
+    console.log('[XVID detail]', m.vod_name, '| play:', m.vod_play_url, '| raw eps:', JSON.stringify(raw.episodes).slice(0,200));
+    xvidShowModal(m.vod_play_url, m.vod_name || title);
+  } catch(e){
+    xvidShowModal('', title);
+  }
 };
 
 // Fetch helper — qua /api/music?_p=/api/xvid → server.py → xvidapi.com
@@ -2168,9 +2200,9 @@ async function pgPhim18Cat(){
         const year   = m.vod_year || '';
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
-        const playUrl= m.vod_play_url || '';
+        const id     = raw.id || raw.vod_id || '';
         const titleJ = JSON.stringify(m.vod_name || '');
-        return `<div class="card xvid-card" onclick="xvid18Play('${esc(playUrl)}',${titleJ})" style="cursor:pointer">
+        return `<div class="card xvid-card" onclick="xvid18Play('${esc(String(id))}',${titleJ})" style="cursor:pointer">
           <div class="card-img xvid-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
             <div class="xvid-play-btn">▶</div>
