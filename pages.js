@@ -1934,12 +1934,13 @@ window.toggle18Cats = function(){
 };
 
 // Card 18+ giống CardKK — thumb + title + ep badge
-function CardXvid(m){
-  const pic   = m.vod_pic || '';
-  const title = esc(m.vod_name || 'Unknown');
+function CardXvid(raw){
+  const m     = xvidNorm(raw);
+  const pic   = m.vod_pic;
+  const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  const playUrl = (m.vod_play_url || '').split('$')[0] || '';
+  const playUrl = m.vod_play_url.split('$')[0] || '';
   return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
     <div class="card-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
@@ -1960,15 +1961,43 @@ window.xvid18Play = function(playUrl){
   window.open(playUrl, '_blank', 'noopener,noreferrer');
 };
 
-// Fetch helper qua Vercel API route /api/xvid (proxy → xvidapi.com)
+// Fetch helper — qua /api/music?_p=/api/xvid → server.py → xvidapi.com
+// Giống cách YT dùng: /api/music?_p=/yt/search
 async function xvidFetch(params){
-  const qs = new URLSearchParams({ ac:'detail', at:'json', pagesize:'20', ...params });
-  const r = await fetch(`/api/xvid?${qs}`);
+  const qs = new URLSearchParams({ _p:'/api/xvid', ac:'detail', at:'json', pagesize:'20', ...params });
+  const r = await fetch(`/api/music?${qs}`);
   if(!r.ok) throw new Error('API lỗi ' + r.status);
   return r.json();
 }
 
-function xvidItems(d){ return d.list || d.data || d.items || []; }
+function xvidItems(d){
+  // xvidapi.com Maccms format: { code, list: [...] }
+  // hoặc { data: { list: [...] } } hoặc { data: [...] }
+  if(Array.isArray(d)) return d;
+  if(Array.isArray(d.list)) return d.list;
+  if(d.data){
+    if(Array.isArray(d.data)) return d.data;
+    if(Array.isArray(d.data?.list)) return d.data.list;
+  }
+  if(Array.isArray(d.items)) return d.items;
+  // Log để debug
+  console.warn('[xvidItems] Unknown structure:', Object.keys(d));
+  return [];
+}
+
+// Normalize field: xvidapi trả về snake_case (vod_name, vod_pic, ...)
+// nhưng đôi khi Maccms dùng camelCase hoặc field name khác
+function xvidNorm(m){
+  return {
+    vod_name:     m.vod_name     || m.name     || m.title  || '',
+    vod_pic:      m.vod_pic      || m.pic       || m.thumb  || m.cover || '',
+    vod_year:     m.vod_year     || m.year      || '',
+    vod_actor:    m.vod_actor    || m.actor     || '',
+    vod_play_url: m.vod_play_url || m.play_url  || m.url   || '',
+    episode_current: m.episode_current || m.ep  || '',
+    type_name:    m.type_name    || m.cat_name  || '',
+  };
+}
 
 async function pgPhim18(){
   const app = document.getElementById('app');
@@ -2067,13 +2096,14 @@ async function pgPhim18Cat(){
       const items = xvidItems(d);
       const total = d.pagecount || d.total || 1;
 
-      const cards = items.map(m => {
-        const pic    = m.vod_pic || '';
-        const title  = esc(m.vod_name || 'Unknown');
+      const cards = items.map(raw => {
+        const m      = xvidNorm(raw);
+        const pic    = m.vod_pic;
+        const title  = esc(m.vod_name || '---');
         const year   = m.vod_year || '';
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
-        const playUrl= (m.vod_play_url || '').split('$')[0] || '';
+        const playUrl= m.vod_play_url.split('$')[0] || '';
         return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
           <div class="card-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
