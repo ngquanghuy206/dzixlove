@@ -1940,11 +1940,12 @@ function CardXvid(raw){
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  const playUrl = ( m.vod_play_url || '' ).split('$')[0];
-  return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
-    <div class="card-img">
+  const playUrl = m.vod_play_url || '';
+  const titleJ  = JSON.stringify(m.vod_name || '');
+  return `<div class="card xvid-card" onclick="xvid18Play('${esc(playUrl)}',${titleJ})" style="cursor:pointer">
+    <div class="card-img xvid-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
-      <div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab;font-weight:700">▶</div>
+      <div class="xvid-play-btn">▶</div>
     </div>
     <div class="card-info">
       <div class="card-title">${title}</div>
@@ -1955,10 +1956,34 @@ function CardXvid(raw){
     </div>
   </div>`;
 }
+}
 
-window.xvid18Play = function(playUrl){
-  if(!playUrl || playUrl === 'undefined') return;
-  window.open(playUrl, '_blank', 'noopener,noreferrer');
+window.xvid18Play = function(playUrl, title){
+  if(!playUrl || playUrl === 'undefined' || playUrl === '') return;
+  // Tạo modal xem phim
+  const existing = document.getElementById('xvid-modal');
+  if(existing) existing.remove();
+  const isEmbed = /\.(mp4|m3u8|mkv)/i.test(playUrl);
+  const modal = document.createElement('div');
+  modal.id = 'xvid-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `
+    <div style="width:100%;max-width:560px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="color:#ff8fab;font-size:14px;font-weight:700;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title||'Xem phim'}</span>
+        <button onclick="document.getElementById('xvid-modal').remove()" style="background:rgba(255,77,109,.2);border:1px solid #ff4d6d;border-radius:8px;color:#ff4d6d;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">✕ Đóng</button>
+      </div>
+      ${isEmbed
+        ? `<video src="${playUrl}" controls autoplay style="width:100%;border-radius:10px;background:#000;max-height:56vw"></video>`
+        : `<iframe src="${playUrl}" allowfullscreen style="width:100%;aspect-ratio:16/9;border-radius:10px;border:none;background:#000"></iframe>`
+      }
+      <a href="${playUrl}" target="_blank" rel="noopener noreferrer"
+        style="display:block;margin-top:12px;text-align:center;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none">
+        ↗ Mở tab mới nếu không load được
+      </a>
+    </div>`;
+  modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
+  document.body.appendChild(modal);
 };
 
 // Fetch helper — qua /api/music?_p=/api/xvid → server.py → xvidapi.com
@@ -1990,22 +2015,29 @@ function xvidItems(d){
 function xvidNorm(m){
   const rawActor = m.vod_actor || m.actor || '';
   const actorStr = Array.isArray(rawActor) ? rawActor.join(',') : String(rawActor || '');
-  const rawPic   = m.vod_pic || m.poster_url || m.thumb_url || m.pic || m.thumb || m.cover || '';
-  const rawPlay  = m.vod_play_url || m.play_url || m.url || '';
-  const episodes = m.episodes;
-  let playUrl = rawPlay;
-  if(!playUrl && Array.isArray(episodes) && episodes[0]){
-    const ep = episodes[0];
-    playUrl = ep.play_url || ep.url || ep.link || '';
+  const rawPic   = m.thumb_url || m.poster_url || m.vod_pic || m.pic || m.thumb || m.cover || '';
+  // Parse play URL: Maccms format "Server$url|||Server2$url2" hoặc field episodes array
+  let playUrl = '';
+  const rawPlay = m.vod_play_url || m.play_url || m.url || '';
+  if(rawPlay){
+    // lấy URL đầu tiên: split theo |||, rồi lấy phần sau $
+    const first = rawPlay.split('|||')[0] || rawPlay.split('#')[0] || rawPlay;
+    playUrl = first.includes('$') ? first.split('$').slice(1).join('$') : first;
+  }
+  if(!playUrl && Array.isArray(m.episodes) && m.episodes[0]){
+    const ep = m.episodes[0];
+    const epPlay = ep.play_url || ep.url || ep.link || '';
+    playUrl = epPlay.includes('$') ? epPlay.split('$').slice(1).join('$') : epPlay;
   }
   return {
-    vod_name:        m.vod_name     || m.name       || m.title || '',
+    vod_name:        m.vod_name  || m.name   || m.title || '',
     vod_pic:         rawPic,
-    vod_year:        m.vod_year     || m.year        || '',
+    vod_year:        m.vod_year  || m.year   || '',
     vod_actor:       actorStr,
-    vod_play_url:    playUrl,
-    episode_current: m.episode_current || m.ep       || '',
-    type_name:       m.type_name    || m.category    || m.cat_name || '',
+    vod_play_url:    playUrl.trim(),
+    episode_current: m.episode_current || m.ep || '',
+    type_name:       m.type_name || m.category || m.cat_name || '',
+    _raw_play:       rawPlay,
   };
 }
 
@@ -2113,11 +2145,12 @@ async function pgPhim18Cat(){
         const year   = m.vod_year || '';
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
-        const playUrl= ( m.vod_play_url || '' ).split('$')[0];
-        return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
-          <div class="card-img">
+        const playUrl= m.vod_play_url || '';
+        const titleJ = JSON.stringify(m.vod_name || '');
+        return `<div class="card xvid-card" onclick="xvid18Play('${esc(playUrl)}',${titleJ})" style="cursor:pointer">
+          <div class="card-img xvid-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
-            ${ep ? `<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.8);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab;font-weight:700">${esc(ep)}</div>` : `<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab">▶</div>`}
+            <div class="xvid-play-btn">▶</div>
           </div>
           <div class="card-info">
             <div class="card-title">${title}</div>
