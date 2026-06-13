@@ -24,6 +24,8 @@ function render(){
     case 'watchlist': pgWatchlist(); break;
     case 'nhac':      pgNhac();      break;
     case 'missions':  pgMissions();  break;
+    case 'phim18':    pgPhim18();    break;
+    case 'phim18cat': pgPhim18Cat(); break;
     default:          pgHome();
   }
 }

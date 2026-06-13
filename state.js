@@ -95,7 +95,7 @@ window.go = function(page, opts){
   if(window.sfxNav && !PLAYER_PAGES.has(page)) sfxNav();
 
   S.page = page;
-  ['slug','malId','ytId','q','src','cat','ltTab'].forEach(k=>{ if(opts[k]!==undefined) S[k]=opts[k]; });
+  ['slug','malId','ytId','q','src','cat','ltTab','typeId','typeLabel'].forEach(k=>{ if(opts[k]!==undefined) S[k]=opts[k]; });
   if(!PLAYER_PAGES.has(page)){ S.epIdx=0; S.svIdx=0; S.epNum=1; S.dub=0; }
   window.scrollTo({top:0,behavior:'smooth'});
   render();

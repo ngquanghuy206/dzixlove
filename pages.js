@@ -1918,3 +1918,191 @@ function startYTTimer(){
   clearInterval(_ytTimer);
   _ytTimer = setInterval(ytUpdateUI, 500);
 }
+
+// ═══════════════════════════════════════
+//  PHIM 18+ — TRANG CHỦ
+// ═══════════════════════════════════════
+
+// Toggle accordion danh mục trong sidebar
+window.toggle18Cats = function(){
+  const el = document.getElementById('sb18-cats');
+  const arrow = document.getElementById('sb18-arrow');
+  if(!el) return;
+  const open = el.style.display === 'none' || el.style.display === '';
+  el.style.display = open ? 'block' : 'none';
+  if(arrow) arrow.textContent = open ? '▲' : '▼';
+};
+
+// Card 18+ giống CardKK — thumb + title + ep badge
+function CardXvid(m){
+  const pic   = m.vod_pic || '';
+  const title = esc(m.vod_name || 'Unknown');
+  const year  = m.vod_year || '';
+  const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
+  const playUrl = (m.vod_play_url || '').split('$')[0] || '';
+  return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
+    <div class="card-img">
+      <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
+      <div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab;font-weight:700">▶</div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${title}</div>
+      <div class="card-meta">
+        ${year ? `<span>${year}</span>` : ''}
+        ${actor ? `<span style="color:var(--mu);font-size:11px">${actor}</span>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+window.xvid18Play = function(playUrl){
+  if(!playUrl || playUrl === 'undefined') return;
+  window.open(playUrl, '_blank', 'noopener,noreferrer');
+};
+
+// Fetch helper qua backend proxy
+async function xvidFetch(params){
+  const qs = new URLSearchParams({ ac:'detail', at:'json', pagesize:'20', ...params });
+  const r = await fetch(`${API_BASE}/api/xvid?${qs}`);
+  if(!r.ok) throw new Error('API lỗi ' + r.status);
+  return r.json();
+}
+
+function xvidItems(d){ return d.list || d.data || d.items || []; }
+
+async function pgPhim18(){
+  const app = document.getElementById('app');
+
+  // Render trang chủ 18+ — hero banner + sections theo danh mục nổi bật
+  app.innerHTML = renderNav() + `<div class="page" id="p18">
+
+    <!-- Hero header -->
+    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#1a0010 0%,#300020 60%,#1a0010 100%);padding:28px 18px 22px;text-align:center">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,77,109,.15) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="font-size:40px;margin-bottom:6px">🔞</div>
+      <h1 style="font-size:24px;font-weight:900;background:linear-gradient(90deg,#ff4d6d,#ff8fab,#ff4d6d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 4px">PHIM 18+</h1>
+      <p style="color:rgba(255,255,255,.35);font-size:12px;margin:0">Nội dung dành riêng cho người trên 18 tuổi</p>
+    </div>
+
+    <!-- Danh mục nhanh (scroll ngang) -->
+    <section class="sec" style="padding:14px 0 4px">
+      <div style="display:flex;overflow-x:auto;gap:8px;padding:0 14px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+        <button onclick="go('phim18cat',{typeId:0,typeLabel:'Tất cả'})"
+          style="flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid rgba(255,77,109,.4);background:linear-gradient(135deg,rgba(255,77,109,.2),rgba(192,57,43,.1));color:#ff8fab;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">
+          🆕 Mới nhất
+        </button>
+        ${(XVID_FEATURED_CATS||[]).map(c=>`
+        <button onclick="go('phim18cat',{typeId:${c.id},typeLabel:'${esc(c.icon+' '+c.label)}'})"
+          style="flex-shrink:0;padding:7px 14px;border-radius:20px;border:1px solid rgba(255,77,109,.25);background:rgba(255,77,109,.06);color:rgba(255,143,171,.8);font-size:13px;cursor:pointer;white-space:nowrap"
+          onmouseover="this.style.background='rgba(255,77,109,.18)'" onmouseout="this.style.background='rgba(255,77,109,.06)'">
+          ${c.icon} ${esc(c.label)}
+        </button>`).join('')}
+      </div>
+    </section>
+
+    <!-- Sections phim theo danh mục nổi bật -->
+    ${(XVID_FEATURED_CATS||[]).map(c=>`
+    <section class="sec" id="xvid-sec-${c.id}">
+      <div class="sec-head">
+        <h2 class="sec-title" style="color:#ff8fab">${c.icon} ${esc(c.label)}</h2>
+        <a class="see-all" onclick="go('phim18cat',{typeId:${c.id},typeLabel:'${esc(c.icon+' '+c.label)}'})">Tất cả →</a>
+      </div>
+      <div id="xvid-row-${c.id}" class="row">${skRow()}</div>
+    </section>`).join('')}
+
+    ${renderFooter()}
+  </div>`;
+  setupNavScroll();
+
+  // Fetch song song tất cả sections
+  const cats = XVID_FEATURED_CATS || [];
+  await Promise.allSettled(cats.map(async c => {
+    try{
+      const d = await xvidFetch({ t: String(c.id) });
+      const items = xvidItems(d).slice(0, 20);
+      const el = document.getElementById(`xvid-row-${c.id}`);
+      if(el) el.innerHTML = items.length
+        ? items.map(CardXvid).join('')
+        : `<div style="color:var(--mu);padding:18px;font-size:13px">Không có dữ liệu</div>`;
+    }catch(e){
+      const el = document.getElementById(`xvid-row-${c.id}`);
+      if(el) el.innerHTML = `<div style="color:var(--mu);padding:18px;font-size:13px">Lỗi tải dữ liệu</div>`;
+    }
+  }));
+}
+
+// ═══════════════════════════════════════
+//  PHIM 18+ — CATEGORY PAGE (như ảnh 3-4)
+// ═══════════════════════════════════════
+async function pgPhim18Cat(){
+  const app      = document.getElementById('app');
+  const typeId   = S.typeId   || 0;
+  const typeLabel= S.typeLabel|| 'Tất cả';
+  let _p18pg = 1;
+
+  app.innerHTML = renderNav() + `<div class="page" id="p18cat-page">
+    <div style="padding:16px 14px 8px;display:flex;align-items:center;gap:10px">
+      <button onclick="go('phim18')"
+        style="background:rgba(255,77,109,.1);border:1px solid rgba(255,77,109,.25);border-radius:10px;color:#ff4d6d;padding:7px 13px;font-size:13px;font-weight:700;cursor:pointer">← Quay lại</button>
+      <h1 style="font-size:18px;font-weight:900;color:#ff8fab;margin:0">${esc(typeLabel)}</h1>
+    </div>
+    <div id="p18cat-count" style="font-size:12px;color:var(--mu);padding:0 14px 8px">Đang tải...</div>
+    <div id="p18cat-grid" class="grid">${skGrid(24)}</div>
+    <div id="p18cat-more" style="text-align:center;padding:18px 0"></div>
+    ${renderFooter()}
+  </div>`;
+  setupNavScroll();
+
+  async function loadPage(pg){
+    const grid  = document.getElementById('p18cat-grid');
+    const count = document.getElementById('p18cat-count');
+    const more  = document.getElementById('p18cat-more');
+    if(!grid) return;
+    if(pg === 1) grid.innerHTML = skGrid(24);
+
+    try{
+      const params = { pg: String(pg), pagesize: '24' };
+      if(typeId && typeId !== 0) params.t = String(typeId);
+      const d     = await xvidFetch(params);
+      const items = xvidItems(d);
+      const total = d.pagecount || d.total || 1;
+
+      const cards = items.map(m => {
+        const pic    = m.vod_pic || '';
+        const title  = esc(m.vod_name || 'Unknown');
+        const year   = m.vod_year || '';
+        const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
+        const ep     = m.episode_current || '';
+        const playUrl= (m.vod_play_url || '').split('$')[0] || '';
+        return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
+          <div class="card-img">
+            <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
+            ${ep ? `<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.8);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab;font-weight:700">${esc(ep)}</div>` : `<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);border-radius:6px;padding:2px 7px;font-size:11px;color:#ff8fab">▶</div>`}
+          </div>
+          <div class="card-info">
+            <div class="card-title">${title}</div>
+            <div class="card-meta">
+              ${year ? `<span>${year}</span>` : ''}
+              ${actor ? `<span style="color:var(--mu);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${actor}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+      }).join('') || `<div style="text-align:center;padding:48px;color:var(--mu)">Không có dữ liệu</div>`;
+
+      if(pg === 1){ grid.innerHTML = cards; }
+      else { grid.insertAdjacentHTML('beforeend', cards); }
+
+      if(count) count.textContent = `Trang ${pg}${total > 1 ? '/' + total : ''} · ${items.length} phim`;
+      if(more) more.innerHTML = pg < Math.min(total, 100)
+        ? `<button class="btn btn-ghost" style="padding:10px 32px" onclick="p18LoadMore()">TẢI THÊM ↓</button>` : '';
+
+      _p18pg = pg;
+    }catch(e){
+      const grid2 = document.getElementById('p18cat-grid');
+      if(grid2) grid2.innerHTML = `<div style="text-align:center;padding:48px;color:var(--mu)">Lỗi: ${esc(e.message)}</div>`;
+    }
+  }
+
+  window.p18LoadMore = function(){ loadPage(_p18pg + 1); };
+  await loadPage(1);
+}

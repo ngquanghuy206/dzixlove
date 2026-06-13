@@ -266,6 +266,27 @@ function renderNav(){
 
     <div class="sb-divider"></div>
 
+    <!-- PHIM 18+ -->
+    <div class="sb-section-title" style="color:#ff4d6d">🔞 PHIM 18+</div>
+    <ul class="sb-icon-links">
+      <li>
+        <!-- Main 18+ link + accordion toggle -->
+        <a onclick="go('phim18');closeSidebar()" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span style="display:flex;align-items:center;gap:10px">
+            <span class="sbi" style="background:linear-gradient(135deg,#3d0018,#ff4d6d)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <span style="color:#ff4d6d">Phim 18+</span>
+          </span>
+          <span id="sb18-arrow" onclick="event.stopPropagation();toggle18Cats()" style="padding:4px 6px;color:rgba(255,77,109,.7);font-size:12px;cursor:pointer">▼</span>
+        </a>
+      </li>
+    </ul>
+    <!-- Accordion danh mục 18+ — rendered by JS -->
+    <div id="sb18-cats" style="display:none;padding:0 8px 4px 16px"></div>
+
+    <div class="sb-divider"></div>
+
     <!-- LỊCH SỬ & YÊU THÍCH -->
     <div class="sb-section-title">LỊCH SỬ</div>
     <ul class="sb-icon-links">
@@ -356,6 +377,19 @@ function setupNavScroll(){
   window.removeEventListener('scroll',window._ns);
   window._ns=()=>nav.style.background=window.scrollY>40?'rgba(7,9,15,.99)':'rgba(7,9,15,.96)';
   window.addEventListener('scroll',window._ns); window._ns();
+  // Fill accordion danh mục 18+ sau mỗi lần render nav
+  const sb18 = document.getElementById('sb18-cats');
+  if(sb18 && !sb18._filled){
+    sb18._filled = true;
+    const cats = (typeof XVID_ALL_CATS !== 'undefined' ? XVID_ALL_CATS : []);
+    sb18.innerHTML = cats.map(c =>
+      `<div onclick="go('phim18cat',{typeId:${c.id},typeLabel:'${c.label}'});closeSidebar()"
+        style="padding:7px 12px;border-radius:8px;font-size:13px;color:rgba(255,143,171,.8);cursor:pointer;display:flex;align-items:center;gap:8px"
+        onmouseover="this.style.background='rgba(255,77,109,.1)'" onmouseout="this.style.background=''">
+        <span style="width:5px;height:5px;border-radius:50%;background:#ff4d6d;flex-shrink:0"></span>${c.label}
+      </div>`
+    ).join('');
+  }
 }
 
 // ═══════════════════════════════════════
