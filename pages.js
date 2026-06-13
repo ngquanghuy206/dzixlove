@@ -2016,7 +2016,7 @@ async function pgPhim18(){
   app.innerHTML = renderNav() + `<div class="page" id="p18">
 
     <!-- Hero header -->
-    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#1a0010 0%,#300020 60%,#1a0010 100%);padding:28px 18px 22px;text-align:center">
+    <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#1a0010 0%,#300020 60%,#1a0010 100%);padding:48px 18px 28px;text-align:center;margin-top:8px">
       <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(255,77,109,.15) 0%,transparent 70%);pointer-events:none"></div>
       <div style="font-size:40px;margin-bottom:6px">🔞</div>
       <h1 style="font-size:24px;font-weight:900;background:linear-gradient(90deg,#ff4d6d,#ff8fab,#ff4d6d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:0 0 4px">PHIM 18+</h1>

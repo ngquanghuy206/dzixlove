@@ -161,6 +161,14 @@ img{display:block}
 .c-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 .c-sub{font-size:10px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
+/* CARD 18+ aliases */
+.card-img{position:relative;width:100%;aspect-ratio:2/3;border-radius:var(--r);overflow:hidden;background:var(--s2)}
+.card-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .38s}
+.card:hover .card-img img{transform:scale(1.06)}
+.card-info{margin-top:6px}
+.card-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;color:var(--text)}
+.card-meta{font-size:10px;color:var(--mu);display:flex;gap:6px;align-items:center;overflow:hidden}
+
 /* CARD — LANDSCAPE (YouTube) */
 .yt-card{flex-shrink:0;width:210px;cursor:pointer;scroll-snap-align:start;transition:transform .2s}
 .yt-card:hover{transform:translateY(-4px)}
