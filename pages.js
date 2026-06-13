@@ -2021,32 +2021,46 @@ function xvidItems(d){
 // Normalize field: xvidapi trả về snake_case (vod_name, vod_pic, ...)
 // nhưng đôi khi Maccms dùng camelCase hoặc field name khác
 function xvidNorm(m){
-  console.log('[XVID raw]', JSON.stringify(m).slice(0,300));
-  const rawActor = m.vod_actor || m.actor || '';
-  const actorStr = Array.isArray(rawActor) ? rawActor.join(',') : String(rawActor || '');
-  const rawPic   = m.thumb_url || m.poster_url || m.vod_pic || m.pic || m.thumb || m.cover || '';
-  // Parse play URL: Maccms format "Server$url|||Server2$url2" hoặc field episodes array
+  // Field thực tế API: name, actor, poster_url, thumb_url, episodes(array), year, type_name, slug, category
+  const rawActor = m.actor || m.vod_actor || '';
+  const actorStr = Array.isArray(rawActor) ? rawActor.join(', ') : String(rawActor || '');
+
+  // Ảnh: poster_url > thumb_url > fallback
+  const rawPic = m.poster_url || m.thumb_url || m.vod_pic || m.pic || '';
+
+  // Play URL: lấy từ episodes[0]
   let playUrl = '';
-  const rawPlay = m.vod_play_url || m.play_url || m.url || '';
-  if(rawPlay){
-    // lấy URL đầu tiên: split theo |||, rồi lấy phần sau $
-    const first = rawPlay.split('|||')[0] || rawPlay.split('#')[0] || rawPlay;
-    playUrl = first.includes('$') ? first.split('$').slice(1).join('$') : first;
+  const eps = m.episodes;
+  if(Array.isArray(eps) && eps.length > 0){
+    const ep0 = eps[0];
+    if(typeof ep0 === 'string'){
+      // episodes là array string
+      playUrl = ep0.includes('$') ? ep0.split('$').slice(1).join('$') : ep0;
+    } else if(typeof ep0 === 'object' && ep0){
+      const raw = ep0.play_url || ep0.url || ep0.link || ep0.src || '';
+      playUrl = raw.includes('$') ? raw.split('$').slice(1).join('$') : raw;
+    }
   }
-  if(!playUrl && Array.isArray(m.episodes) && m.episodes[0]){
-    const ep = m.episodes[0];
-    const epPlay = ep.play_url || ep.url || ep.link || '';
-    playUrl = epPlay.includes('$') ? epPlay.split('$').slice(1).join('$') : epPlay;
+  // Fallback vod_play_url nếu có
+  if(!playUrl){
+    const rawPlay = m.vod_play_url || m.play_url || m.url || '';
+    if(rawPlay){
+      const first = rawPlay.split('|||')[0].split('#')[0];
+      playUrl = first.includes('$') ? first.split('$').slice(1).join('$') : first;
+    }
   }
+
+  console.log('[XVID norm]', m.name||m.vod_name, '| pic:', rawPic.slice(0,60), '| play:', playUrl.slice(0,80), '| eps:', JSON.stringify(eps).slice(0,100));
+
   return {
-    vod_name:        m.vod_name  || m.name   || m.title || '',
+    vod_name:        m.name        || m.vod_name  || m.title || '',
     vod_pic:         rawPic,
-    vod_year:        m.vod_year  || m.year   || '',
+    vod_year:        m.year        || m.vod_year  || '',
     vod_actor:       actorStr,
     vod_play_url:    playUrl.trim(),
-    episode_current: m.episode_current || m.ep || '',
-    type_name:       m.type_name || m.category || m.cat_name || '',
-    _raw_play:       rawPlay,
+    episode_current: m.episode_current || m.ep    || '',
+    type_name:       m.type_name   || m.category  || m.cat_name || '',
+    _raw:            m,
   };
 }
 
