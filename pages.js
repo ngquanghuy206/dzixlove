@@ -1956,7 +1956,6 @@ function CardXvid(raw){
     </div>
   </div>`;
 }
-}
 
 window.xvid18Play = function(playUrl, title){
   if(!playUrl || playUrl === 'undefined' || playUrl === '') return;
