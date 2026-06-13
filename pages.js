@@ -1940,7 +1940,7 @@ function CardXvid(raw){
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  const playUrl = m.vod_play_url.split('$')[0] || '';
+  const playUrl = ( m.vod_play_url || '' ).split('$')[0];
   return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
     <div class="card-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
@@ -1988,14 +1988,24 @@ function xvidItems(d){
 // Normalize field: xvidapi trả về snake_case (vod_name, vod_pic, ...)
 // nhưng đôi khi Maccms dùng camelCase hoặc field name khác
 function xvidNorm(m){
+  const rawActor = m.vod_actor || m.actor || '';
+  const actorStr = Array.isArray(rawActor) ? rawActor.join(',') : String(rawActor || '');
+  const rawPic   = m.vod_pic || m.poster_url || m.thumb_url || m.pic || m.thumb || m.cover || '';
+  const rawPlay  = m.vod_play_url || m.play_url || m.url || '';
+  const episodes = m.episodes;
+  let playUrl = rawPlay;
+  if(!playUrl && Array.isArray(episodes) && episodes[0]){
+    const ep = episodes[0];
+    playUrl = ep.play_url || ep.url || ep.link || '';
+  }
   return {
-    vod_name:     m.vod_name     || m.name     || m.title  || '',
-    vod_pic:      m.vod_pic      || m.pic       || m.thumb  || m.cover || '',
-    vod_year:     m.vod_year     || m.year      || '',
-    vod_actor:    m.vod_actor    || m.actor     || '',
-    vod_play_url: m.vod_play_url || m.play_url  || m.url   || '',
-    episode_current: m.episode_current || m.ep  || '',
-    type_name:    m.type_name    || m.cat_name  || '',
+    vod_name:        m.vod_name     || m.name       || m.title || '',
+    vod_pic:         rawPic,
+    vod_year:        m.vod_year     || m.year        || '',
+    vod_actor:       actorStr,
+    vod_play_url:    playUrl,
+    episode_current: m.episode_current || m.ep       || '',
+    type_name:       m.type_name    || m.category    || m.cat_name || '',
   };
 }
 
@@ -2103,7 +2113,7 @@ async function pgPhim18Cat(){
         const year   = m.vod_year || '';
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
-        const playUrl= m.vod_play_url.split('$')[0] || '';
+        const playUrl= ( m.vod_play_url || '' ).split('$')[0];
         return `<div class="card" onclick="xvid18Play('${esc(playUrl)}')" style="cursor:pointer">
           <div class="card-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
