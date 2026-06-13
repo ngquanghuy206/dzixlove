@@ -1958,29 +1958,38 @@ function CardXvid(raw){
 }
 
 window.xvid18Play = function(playUrl, title){
-  if(!playUrl || playUrl === 'undefined' || playUrl === '') return;
-  // Tạo modal xem phim
   const existing = document.getElementById('xvid-modal');
   if(existing) existing.remove();
-  const isEmbed = /\.(mp4|m3u8|mkv)/i.test(playUrl);
+
+  const noUrl = !playUrl || playUrl === 'undefined' || playUrl === '';
+  const isEmbed = !noUrl && /\.(mp4|m3u8|mkv)/i.test(playUrl);
+
   const modal = document.createElement('div');
   modal.id = 'xvid-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+
+  let playerHTML = '';
+  if(noUrl){
+    playerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab;font-size:14px">⚠️ Không tìm thấy link phim.<br><span style="font-size:12px;color:rgba(255,255,255,.4)">API chưa trả về play URL</span></div>`;
+  } else if(isEmbed){
+    playerHTML = `<video src="${playUrl}" controls autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:56vw"></video>`;
+  } else {
+    playerHTML = `<iframe src="${playUrl}" allowfullscreen allow="autoplay;fullscreen" style="width:100%;aspect-ratio:16/9;border-radius:10px;border:none;background:#000"></iframe>`;
+  }
+
   modal.innerHTML = `
-    <div style="width:100%;max-width:560px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <span style="color:#ff8fab;font-size:14px;font-weight:700;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${title||'Xem phim'}</span>
-        <button onclick="document.getElementById('xvid-modal').remove()" style="background:rgba(255,77,109,.2);border:1px solid #ff4d6d;border-radius:8px;color:#ff4d6d;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">✕ Đóng</button>
+    <div style="width:100%;max-width:600px;box-sizing:border-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px">
+        <span style="color:#ff8fab;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${title||'Xem phim'}</span>
+        <button onclick="document.getElementById('xvid-modal').remove()" style="flex-shrink:0;background:rgba(255,77,109,.15);border:1px solid #ff4d6d;border-radius:8px;color:#ff4d6d;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer">✕</button>
       </div>
-      ${isEmbed
-        ? `<video src="${playUrl}" controls autoplay style="width:100%;border-radius:10px;background:#000;max-height:56vw"></video>`
-        : `<iframe src="${playUrl}" allowfullscreen style="width:100%;aspect-ratio:16/9;border-radius:10px;border:none;background:#000"></iframe>`
-      }
-      <a href="${playUrl}" target="_blank" rel="noopener noreferrer"
-        style="display:block;margin-top:12px;text-align:center;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none">
-        ↗ Mở tab mới nếu không load được
-      </a>
+      ${playerHTML}
+      ${!noUrl ? `<a href="${playUrl}" target="_blank" rel="noopener noreferrer"
+        style="display:block;margin-top:10px;text-align:center;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:11px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none">
+        ↗ Mở tab mới
+      </a>` : ''}
     </div>`;
+
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
 };
@@ -2012,6 +2021,7 @@ function xvidItems(d){
 // Normalize field: xvidapi trả về snake_case (vod_name, vod_pic, ...)
 // nhưng đôi khi Maccms dùng camelCase hoặc field name khác
 function xvidNorm(m){
+  console.log('[XVID raw]', JSON.stringify(m).slice(0,300));
   const rawActor = m.vod_actor || m.actor || '';
   const actorStr = Array.isArray(rawActor) ? rawActor.join(',') : String(rawActor || '');
   const rawPic   = m.thumb_url || m.poster_url || m.vod_pic || m.pic || m.thumb || m.cover || '';
