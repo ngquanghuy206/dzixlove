@@ -1960,10 +1960,10 @@ window.xvid18Play = function(playUrl){
   window.open(playUrl, '_blank', 'noopener,noreferrer');
 };
 
-// Fetch helper qua backend proxy
+// Fetch helper qua Vercel API route /api/xvid (proxy → xvidapi.com)
 async function xvidFetch(params){
   const qs = new URLSearchParams({ ac:'detail', at:'json', pagesize:'20', ...params });
-  const r = await fetch(`${API_BASE}/api/xvid?${qs}`);
+  const r = await fetch(`/api/xvid?${qs}`);
   if(!r.ok) throw new Error('API lỗi ' + r.status);
   return r.json();
 }
