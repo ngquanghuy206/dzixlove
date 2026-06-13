@@ -1959,8 +1959,9 @@ function CardXvid(raw){
 
 // Fetch chi tiết 1 phim theo id để lấy episodes/play URL
 async function xvidDetail(id){
-  const qs = new URLSearchParams({ _p:'/api/xvid', ac:'videolist', at:'json', ids: String(id) });
-  const r = await fetch(`/api/music?${qs}`);
+  const base = (window.API_BASE||'');
+  const qs = new URLSearchParams({ ac:'videolist', at:'json', ids: String(id) });
+  const r = await fetch(`${base}/api/xvid?${qs}`);
   if(!r.ok) throw new Error('API lỗi ' + r.status);
   const d = await r.json();
   const list = xvidItems(d);
@@ -2029,8 +2030,9 @@ window.xvid18Play = async function(id, title){
 // Fetch helper — qua /api/music?_p=/api/xvid → server.py → xvidapi.com
 // Giống cách YT dùng: /api/music?_p=/yt/search
 async function xvidFetch(params){
-  const qs = new URLSearchParams({ _p:'/api/xvid', ac:'detail', at:'json', pagesize:'20', ...params });
-  const r = await fetch(`/api/music?${qs}`);
+  const base = (window.API_BASE||'');
+  const qs = new URLSearchParams({ ac:'detail', at:'json', pagesize:'20', ...params });
+  const r = await fetch(`${base}/api/xvid?${qs}`);
   if(!r.ok) throw new Error('API lỗi ' + r.status);
   return r.json();
 }
