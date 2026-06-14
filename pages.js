@@ -1942,7 +1942,7 @@ function CardXvid(raw){
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  return `<div class="card xvid-card" onclick="go('play-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
+  return `<div class="card xvid-card" onclick="go('det-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
     <div class="card-img xvid-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
       <div class="xvid-play-btn">▶</div>
@@ -2206,7 +2206,7 @@ async function pgPhim18Cat(){
         const ep     = m.episode_current || '';
         const id     = raw.id || raw.vod_id || '';
         const slug   = raw.slug || '';
-        return `<div class="card xvid-card" onclick="go('play-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
+        return `<div class="card xvid-card" onclick="go('det-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
           <div class="card-img xvid-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
             <div class="xvid-play-btn">▶</div>
@@ -2240,12 +2240,90 @@ async function pgPhim18Cat(){
 }
 
 // ═══════════════════════════════════════
+//  PHIM 18+ — TRANG CHI TIẾT (det-xvid)
+// ═══════════════════════════════════════
+async function pgDetXvid(){
+  const app = document.getElementById('app');
+  const xvidId    = S.xvidId    || '';
+  const xvidTitle = S.xvidTitle || 'Đang tải...';
+
+  app.innerHTML = renderNav() + `<div class="det page"><div class="loading" style="padding-top:60px"><div class="spin"></div></div></div>`;
+  setupNavScroll();
+
+  try {
+    const base = (window.API_BASE||'');
+    const qs = new URLSearchParams({ ac:'videolist', at:'json', ids: xvidId });
+    const resp = await fetch(`${base}/api/xvid?${qs}`);
+    const data = await resp.json();
+    const list = xvidItems(data);
+    const raw  = list[0] || null;
+    if(!raw) throw new Error('Không tìm thấy phim');
+
+    const m      = xvidNorm(raw);
+    const title  = m.vod_name  || xvidTitle;
+    const year   = m.vod_year  || '';
+    const actor  = m.vod_actor || '';
+    const cat    = m.type_name || '';
+    const desc   = raw.description || '';
+    const qual   = raw.quality || '';
+    const bg     = m.vod_pic;
+    const po     = m.vod_pic || '';
+
+    // Episodes list
+    const eps = Array.isArray(raw.episodes) ? raw.episodes : [];
+    let epHTML = '';
+    if(eps.length > 1){
+      const epBtns = eps.map((ep,i)=>{
+        const epName = (typeof ep==='object' && ep.name) ? ep.name : 'Tập '+(i+1);
+        return `<button class="ep-btn" onclick="go('play-xvid',{xvidId:'${esc(String(xvidId))}',xvidEpIdx:${i},xvidTitle:${JSON.stringify(title)}})">${esc(epName)}</button>`;
+      }).join('');
+      epHTML = `<div class="ep-box"><h2 class="ep-box-title">Danh sách tập</h2><div class="ep-list">${epBtns}</div></div>`;
+    }
+
+    app.innerHTML = renderNav() + `<div class="det page">
+      <div class="det-hero">
+        <div class="det-bg" style="background-image:url('${esc(bg)}')"></div>
+        <div class="det-fog"></div>
+        <div class="det-body">
+          <div class="det-poster"><img src="${esc(po)}" onerror="this.src=''" style="border-radius:10px"/></div>
+          <div class="det-info">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+              <span style="background:rgba(255,77,109,.15);color:#ff4d6d;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid rgba(255,77,109,.3)">🔞 18+</span>
+              ${cat ? `<span style="background:rgba(255,255,255,.08);color:var(--mu);font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px">${esc(cat)}</span>` : ''}
+            </div>
+            <h1 class="det-title">${esc(title)}</h1>
+            <div class="det-chips">
+              ${qual ? `<span class="det-chip" style="color:#22c55e">${esc(qual)}</span>` : ''}
+              ${year ? `<span class="det-chip">${esc(year)}</span>` : ''}
+            </div>
+            ${actor ? `<div style="font-size:12px;color:var(--mu);margin-top:6px">👤 ${esc(actor)}</div>` : ''}
+            ${desc ? `<p class="det-desc">${esc(desc).slice(0,200)}${desc.length>200?'...':''}</p>` : ''}
+            <div class="det-acts">
+              <button class="btn btn-red" onclick="go('play-xvid',{xvidId:'${esc(String(xvidId))}',xvidEpIdx:0,xvidTitle:${JSON.stringify(title)}})">▶ Xem phim</button>
+              <button class="btn btn-ghost" onclick="history.back()">← Quay lại</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${epHTML}
+      ${renderFooter()}
+    </div>`;
+    setupNavScroll();
+
+  } catch(e){
+    app.innerHTML = renderNav() + `<div class="det page" style="padding:40px;text-align:center;color:var(--mu)">${esc(e.message)}</div>`;
+    setupNavScroll();
+  }
+}
+
+// ═══════════════════════════════════════
 //  PHIM 18+ — TRANG XEM PHIM (play-xvid)
 // ═══════════════════════════════════════
 async function pgPlayXvid(){
   const app = document.getElementById('app');
   const xvidId    = S.xvidId    || '';
   const xvidTitle = S.xvidTitle || 'Đang tải...';
+  const xvidEpIdx = S.xvidEpIdx || 0;
 
   app.innerHTML = renderNav() + `<div class="player-page page">
     <div class="player-wrap" style="position:relative">
@@ -2274,11 +2352,15 @@ async function pgPlayXvid(){
     const m = xvidNorm(raw);
     console.log('[pgPlayXvid]', m.vod_name, '| play:', m.vod_play_url, '| eps raw:', JSON.stringify(raw.episodes).slice(0,300));
 
-    const playUrl  = m.vod_play_url || '';
+    // Lấy play URL từ episode index
+    const eps2 = Array.isArray(raw.episodes) ? raw.episodes : [];
+    let playUrl = m.vod_play_url || '';
+    if(!playUrl && eps2.length > 0){
+      const ep = eps2[Math.min(xvidEpIdx, eps2.length-1)];
+      const raw2 = typeof ep==='string' ? ep : (ep.play_url||ep.url||ep.link||'');
+      playUrl = raw2.includes('$') ? raw2.split('$').slice(1).join('$') : raw2;
+    }
     const title    = m.vod_name || xvidTitle;
-    const year     = m.vod_year || '';
-    const actor    = m.vod_actor || '';
-    const desc     = raw.description || '';
 
     // Build episodes list nếu có nhiều tập
     const eps = Array.isArray(raw.episodes) ? raw.episodes : [];

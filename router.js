@@ -26,6 +26,8 @@ function render(){
     case 'missions':  pgMissions();  break;
     case 'phim18':    pgPhim18();    break;
     case 'phim18cat': pgPhim18Cat(); break;
+    case 'det-xvid':  pgDetXvid();   break;
+    case 'play-xvid': pgPlayXvid();  break;
     default:          pgHome();
   }
 }
