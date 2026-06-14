@@ -2057,46 +2057,31 @@ function xvidItems(d){
 // Normalize field: xvidapi trả về snake_case (vod_name, vod_pic, ...)
 // nhưng đôi khi Maccms dùng camelCase hoặc field name khác
 function xvidNorm(m){
-  // Field thực tế API: name, actor, poster_url, thumb_url, episodes(array), year, type_name, slug, category
-  const rawActor = m.actor || m.vod_actor || '';
+  // provide1 (Maccms) fields: vod_name, vod_pic, vod_actor, vod_play_url, vod_year, type_name
+  // Standard fields: name, poster_url, thumb_url, actor, episodes, year, category
+  const rawActor = m.vod_actor || m.actor || '';
   const actorStr = Array.isArray(rawActor) ? rawActor.join(', ') : String(rawActor || '');
 
-  // Ảnh: poster_url > thumb_url > fallback
-  const rawPic = m.poster_url || m.thumb_url || m.vod_pic || m.pic || '';
+  const rawPic = m.vod_pic || m.poster_url || m.thumb_url || m.pic || '';
 
-  // Play URL: lấy từ episodes[0]
+  // Parse vod_play_url: "ServerName$url#ServerName2$url2" hoặc "|||" separator
   let playUrl = '';
-  const eps = m.episodes;
-  if(Array.isArray(eps) && eps.length > 0){
-    const ep0 = eps[0];
-    if(typeof ep0 === 'string'){
-      // episodes là array string
-      playUrl = ep0.includes('$') ? ep0.split('$').slice(1).join('$') : ep0;
-    } else if(typeof ep0 === 'object' && ep0){
-      const raw = ep0.play_url || ep0.url || ep0.link || ep0.src || '';
-      playUrl = raw.includes('$') ? raw.split('$').slice(1).join('$') : raw;
-    }
+  const rawPlay = m.vod_play_url || m.play_url || '';
+  if(rawPlay){
+    // split theo # hoặc ||| lấy entry đầu tiên, rồi lấy phần sau $
+    const entries = rawPlay.split(/\$\$\$|#|\|\|\|/);
+    const first = entries[0] || '';
+    playUrl = first.includes('$') ? first.split('$').slice(1).join('$').trim() : first.trim();
   }
-  // Fallback vod_play_url nếu có
-  if(!playUrl){
-    const rawPlay = m.vod_play_url || m.play_url || m.url || '';
-    if(rawPlay){
-      const first = rawPlay.split('|||')[0].split('#')[0];
-      playUrl = first.includes('$') ? first.split('$').slice(1).join('$') : first;
-    }
-  }
-
-  console.log('[XVID norm]', m.name||m.vod_name, '| pic:', rawPic.slice(0,60), '| play:', playUrl.slice(0,80), '| eps:', JSON.stringify(eps).slice(0,100));
 
   return {
-    vod_name:        m.name        || m.vod_name  || m.title || '',
-    vod_pic:         rawPic,
-    vod_year:        m.year        || m.vod_year  || '',
-    vod_actor:       actorStr,
-    vod_play_url:    playUrl.trim(),
-    episode_current: m.episode_current || m.ep    || '',
-    type_name:       m.type_name   || m.category  || m.cat_name || '',
-    _raw:            m,
+    vod_name:  m.vod_name  || m.name  || m.title || '',
+    vod_pic:   rawPic,
+    vod_year:  m.vod_year  || m.year  || '',
+    vod_actor: actorStr,
+    vod_play_url: playUrl,
+    type_name: m.type_name || m.category || '',
+    _raw: m,
   };
 }
 
@@ -2349,33 +2334,53 @@ async function pgPlayXvid(){
     const raw  = list[0] || null;
     if(!raw){ throw new Error('Không tìm thấy phim'); }
 
-    const m = xvidNorm(raw);
-    console.log('[pgPlayXvid]', m.vod_name, '| play:', m.vod_play_url, '| eps raw:', JSON.stringify(raw.episodes).slice(0,300));
+    const m     = xvidNorm(raw);
+    const title = m.vod_name || xvidTitle;
+    const year  = m.vod_year || '';
+    const actor = m.vod_actor || '';
+    const desc  = raw.vod_content || raw.description || '';
 
-    // Lấy play URL từ episode index
-    const eps2 = Array.isArray(raw.episodes) ? raw.episodes : [];
-    let playUrl = m.vod_play_url || '';
-    if(!playUrl && eps2.length > 0){
-      const ep = eps2[Math.min(xvidEpIdx, eps2.length-1)];
-      const raw2 = typeof ep==='string' ? ep : (ep.play_url||ep.url||ep.link||'');
-      playUrl = raw2.includes('$') ? raw2.split('$').slice(1).join('$') : raw2;
+    // Parse provide1 format:
+    // vod_play_from = "Server1$$$Server2$$$Server3"
+    // vod_play_url  = "ep1$url1#ep2$url2$$$ep1$url1#ep2$url2"
+    const fromStr   = raw.vod_play_from || '';
+    const urlStr    = raw.vod_play_url  || '';
+    const svNames   = fromStr ? fromStr.split('$$$') : ['Server 1'];
+    const urlGroups = urlStr  ? urlStr.split('$$$')  : [];
+
+    const allServers = svNames.map((svName, si) => {
+      const group = urlGroups[si] || '';
+      const eps = group.split('#').filter(Boolean).map((entry, ei) => {
+        const dollarIdx = entry.indexOf('$');
+        if(dollarIdx < 0) return { name: 'Tập '+(ei+1), url: entry.trim() };
+        return {
+          name: entry.slice(0, dollarIdx).trim() || ('Tập '+(ei+1)),
+          url:  entry.slice(dollarIdx+1).trim(),
+        };
+      }).filter(e => e.url);
+      return { name: svName.trim() || ('Server '+(si+1)), eps };
+    }).filter(sv => sv.eps.length > 0);
+
+    // Chọn ep để play
+    const epIdx2 = Math.max(0, xvidEpIdx || 0);
+    let playUrl = '';
+    if(allServers.length > 0){
+      const sv0eps = allServers[0].eps;
+      playUrl = sv0eps[Math.min(epIdx2, sv0eps.length-1)]?.url || '';
     }
-    const title    = m.vod_name || xvidTitle;
+    if(!playUrl) playUrl = m.vod_play_url;
 
-    // Build episodes list nếu có nhiều tập
-    const eps = Array.isArray(raw.episodes) ? raw.episodes : [];
+    // Build server tabs + ep buttons
     let epBtns = '';
-    if(eps.length > 1){
-      epBtns = `<div style="margin-top:12px">
-        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--mu)">📋 Tập:</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">${eps.map((ep,i)=>{
-          const epUrl = typeof ep==='string'
-            ? (ep.includes('$') ? ep.split('$').slice(1).join('$') : ep)
-            : (ep.play_url||ep.url||ep.link||'');
-          const epName = (typeof ep==='object' && ep.name) ? ep.name : 'Tập '+(i+1);
-          return `<button class="ep-btn${i===0?' on':''}" onclick="xvid18SwitchEp('${esc(epUrl)}',this)">${esc(epName)}</button>`;
-        }).join('')}</div>
-      </div>`;
+    if(allServers.length > 0 && (allServers.length > 1 || allServers[0].eps.length > 1)){
+      epBtns = allServers.map((sv, si) => `
+        <div style="margin-top:10px">
+          ${allServers.length>1 ? `<div style="font-size:11px;font-weight:700;color:#ff8fab;margin-bottom:5px">📡 ${esc(sv.name)}</div>` : ''}
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${sv.eps.map((ep,ei)=>`
+            <button class="ep-btn${si===0&&ei===epIdx2?' on':''}" onclick="xvid18SwitchEp('${esc(ep.url)}',this)">${esc(ep.name)}</button>
+          `).join('')}</div>
+        </div>`).join('');
+      epBtns = `<div style="margin-top:14px"><div style="font-size:12px;font-weight:600;color:var(--mu);margin-bottom:4px">📋 Chọn tập:</div>${epBtns}</div>`;
     }
 
     const wrap = document.getElementById('xvid-player-wrap');
@@ -2385,7 +2390,7 @@ async function pgPlayXvid(){
       } else {
         wrap.innerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab">
           <div style="font-size:36px;margin-bottom:12px">⚠️</div>
-          <div style="font-size:14px;margin-bottom:16px">Chưa có nguồn phim</div>
+          <div style="font-size:14px">Chưa có nguồn phim</div>
         </div>`;
       }
     }
@@ -2394,16 +2399,15 @@ async function pgPlayXvid(){
     if(info) info.innerHTML = `
       <div class="pi-title">${esc(title)}</div>
       <div class="pi-meta">
-        ${year ? `<span>${esc(year)}</span>` : ''}
+        ${year  ? `<span>${esc(year)}</span>` : ''}
         ${actor ? `<span style="color:var(--mu)">${esc(actor.split(',')[0].trim())}</span>` : ''}
-        ${raw.quality ? `<span style="color:#ff8fab;font-weight:700">${esc(raw.quality)}</span>` : ''}
       </div>
       ${epBtns}
       ${playUrl ? `<a href="${esc(playUrl)}" target="_blank" rel="noopener noreferrer"
         style="display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:10px 20px;border-radius:10px;font-weight:700;font-size:13px;text-decoration:none">
         ↗ Mở tab mới
       </a>` : ''}
-      ${desc ? `<div style="margin-top:12px;font-size:12px;color:var(--mu);line-height:1.6">${esc(desc).slice(0,300)}${desc.length>300?'...':''}</div>` : ''}`;
+      ${desc ? `<div style="margin-top:12px;font-size:12px;color:var(--mu);line-height:1.6">${esc(desc.slice(0,300))}${desc.length>300?'...':''}</div>` : ''}`;
 
   } catch(e) {
     const wrap = document.getElementById('xvid-player-wrap');

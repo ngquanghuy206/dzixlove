@@ -579,7 +579,8 @@ async def api_userdata_set(req: Request):
     return JSONResponse({"ok": True})
 
 # ── XvidAPI Proxy (tránh CORS cho frontend) ───────────────
-XVID_BASE = "https://xvidapi.com/api.php/provide/vod"
+XVID_BASE        = "https://xvidapi.com/api.php/provide1/vod"
+XVID_BASE_LIST   = "https://xvidapi.com/api.php/provide1/vod"
 XVID_SESS = requests.Session()
 
 @app.get("/api/xvid")
@@ -608,12 +609,54 @@ def api_xvid(
     if actor:          params["actor"] = actor
     if category:       params["category"] = category
     if code:           params["code"] = code
+    # provide1 + ac=detail + ids = full detail bao gồm vod_play_url
+    if ac == "videolist" and ids:
+        params["ac"] = "detail"
     try:
         r = XVID_SESS.get(XVID_BASE, params=params, timeout=12)
         r.raise_for_status()
-        return JSONResponse(r.json())
+        data = r.json()
+        # Log shape để debug (chỉ keys top-level)
+        top_keys = list(data.keys()) if isinstance(data, dict) else type(data).__name__
+        list_len = 0
+        if isinstance(data, dict):
+            lst = data.get("list") or data.get("data") or data.get("items") or []
+            if isinstance(lst, list): list_len = len(lst)
+            elif isinstance(lst, dict):
+                inner = lst.get("list") or []
+                if isinstance(inner, list): list_len = len(inner)
+        # Log keys của item đầu tiên trong list để biết field name
+        if isinstance(data, dict):
+            lst = data.get("list") or []
+            if isinstance(lst, list) and lst:
+                first = lst[0]
+                item_keys = list(first.keys()) if isinstance(first, dict) else str(type(first))
+                eps = first.get('episodes') or []
+                ep0_raw = ''
+                if isinstance(eps, list) and eps:
+                    ep0_raw = str(eps[0])[:200]
+                print(f"[XVID] t={t} pg={pg} keys={top_keys} list_len={list_len} item_keys={item_keys}")
+                print(f"[XVID] name={first.get('name','?')} poster={first.get('poster_url','?')[:60]} thumb={first.get('thumb_url','?')[:60]}")
+                print(f"[XVID] episodes[0] raw = {ep0_raw}")
+            else:
+                print(f"[XVID] t={t} pg={pg} keys={top_keys} list_len={list_len}")
+        return JSONResponse(data)
     except Exception as e:
+        print(f"[XVID] ERROR: {e}")
         raise HTTPException(502, f"XvidAPI error: {e}")
+
+# ── XVID Debug — xem raw item đầu tiên ────────────────────
+@app.get("/api/xvid-debug")
+def api_xvid_debug(t: str = Query("43")):
+    """Trả về item[0] raw từ xvidapi để xem field name thực tế."""
+    try:
+        r = XVID_SESS.get(XVID_BASE, params={"ac":"detail","t":t,"pg":1,"pagesize":3,"at":"json"}, timeout=12)
+        r.raise_for_status()
+        data = r.json()
+        lst = data.get("list") or data.get("data") or []
+        return JSONResponse({"keys": list(data.keys()), "item0": lst[0] if lst else None, "total": len(lst)})
+    except Exception as e:
+        raise HTTPException(502, str(e))
 
 # ── Catch-all cho bot scanners (ngăn 404 spam log) ────────
 # Phải đặt SAU tất cả routes cụ thể để không shadow chúng
