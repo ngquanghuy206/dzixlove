@@ -1937,12 +1937,12 @@ window.toggle18Cats = function(){
 function CardXvid(raw){
   const m     = xvidNorm(raw);
   const id    = raw.id || raw.vod_id || '';
+  const slug  = raw.slug || '';
   const pic   = m.vod_pic;
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  const titleJ = JSON.stringify(m.vod_name || '');
-  return `<div class="card xvid-card" onclick="xvid18Play('${esc(String(id))}',${titleJ})" style="cursor:pointer">
+  return `<div class="card xvid-card" onclick="go('play-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
     <div class="card-img xvid-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
       <div class="xvid-play-btn">▶</div>
@@ -1973,33 +1973,35 @@ function xvidShowModal(playUrl, title){
   if(existing) existing.remove();
 
   const noUrl = !playUrl || playUrl === 'undefined' || playUrl === '';
-  const isEmbed = !noUrl && /\.(mp4|m3u8|mkv)/i.test(playUrl);
 
   const modal = document.createElement('div');
   modal.id = 'xvid-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;box-sizing:border-box';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
 
-  let playerHTML = '';
   if(noUrl){
-    playerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab;font-size:14px">⚠️ Không tìm thấy link phim.<br><span style="font-size:12px;color:rgba(255,255,255,.4)">API không trả về play URL</span></div>`;
-  } else if(isEmbed){
-    playerHTML = `<video src="${playUrl}" controls autoplay playsinline style="width:100%;border-radius:10px;background:#000;max-height:56vw"></video>`;
+    modal.innerHTML = `
+      <div style="text-align:center;color:#ff8fab;max-width:320px">
+        <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">Không tìm thấy link phim</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:20px">API chưa có play URL cho phim này</div>
+        <button onclick="document.getElementById('xvid-modal').remove()" style="background:#ff4d6d;border:none;border-radius:10px;color:#fff;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer">Đóng</button>
+      </div>`;
   } else {
-    playerHTML = `<iframe src="${playUrl}" allowfullscreen allow="autoplay;fullscreen" style="width:100%;aspect-ratio:16/9;border-radius:10px;border:none;background:#000"></iframe>`;
+    modal.innerHTML = `
+      <div style="width:100%;max-width:560px;box-sizing:border-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px">
+          <span style="color:#ff8fab;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${title||'Xem phim'}</span>
+          <button onclick="document.getElementById('xvid-modal').remove()" style="flex-shrink:0;background:rgba(255,77,109,.15);border:1px solid #ff4d6d;border-radius:8px;color:#ff4d6d;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer">✕</button>
+        </div>
+        <a href="${playUrl}" target="_blank" rel="noopener noreferrer"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:18px;border-radius:12px;font-weight:700;font-size:16px;text-decoration:none;margin-bottom:12px">
+          ▶ Xem phim ngay
+        </a>
+        <iframe src="${playUrl}" allowfullscreen allow="autoplay;fullscreen"
+          style="width:100%;aspect-ratio:16/9;border-radius:10px;border:none;background:#111;display:block"></iframe>
+        <div style="text-align:center;margin-top:8px;font-size:11px;color:rgba(255,255,255,.3)">Nếu iframe không load → bấm nút Xem phim ngay ↑</div>
+      </div>`;
   }
-
-  modal.innerHTML = `
-    <div style="width:100%;max-width:600px;box-sizing:border-box">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px">
-        <span style="color:#ff8fab;font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${title||'Xem phim'}</span>
-        <button onclick="document.getElementById('xvid-modal').remove()" style="flex-shrink:0;background:rgba(255,77,109,.15);border:1px solid #ff4d6d;border-radius:8px;color:#ff4d6d;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer">✕</button>
-      </div>
-      ${playerHTML}
-      ${!noUrl ? `<a href="${playUrl}" target="_blank" rel="noopener noreferrer"
-        style="display:block;margin-top:10px;text-align:center;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:11px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none">
-        ↗ Mở tab mới
-      </a>` : ''}
-    </div>`;
 
   modal.addEventListener('click', e=>{ if(e.target===modal) modal.remove(); });
   document.body.appendChild(modal);
@@ -2203,8 +2205,8 @@ async function pgPhim18Cat(){
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
         const id     = raw.id || raw.vod_id || '';
-        const titleJ = JSON.stringify(m.vod_name || '');
-        return `<div class="card xvid-card" onclick="xvid18Play('${esc(String(id))}',${titleJ})" style="cursor:pointer">
+        const slug   = raw.slug || '';
+        return `<div class="card xvid-card" onclick="go('play-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
           <div class="card-img xvid-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
             <div class="xvid-play-btn">▶</div>
@@ -2236,3 +2238,104 @@ async function pgPhim18Cat(){
   window.p18LoadMore = function(){ loadPage(_p18pg + 1); };
   await loadPage(1);
 }
+
+// ═══════════════════════════════════════
+//  PHIM 18+ — TRANG XEM PHIM (play-xvid)
+// ═══════════════════════════════════════
+async function pgPlayXvid(){
+  const app = document.getElementById('app');
+  const xvidId    = S.xvidId    || '';
+  const xvidTitle = S.xvidTitle || 'Đang tải...';
+
+  app.innerHTML = renderNav() + `<div class="player-page page">
+    <div class="player-wrap" style="position:relative">
+      <button onclick="history.back()" style="position:absolute;top:10px;left:10px;z-index:20;width:36px;height:36px;border-radius:50%;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 1px 3px rgba(0,0,0,.8))"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div id="xvid-player-wrap" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000">
+        <div style="text-align:center;color:#ff8fab"><div style="font-size:28px;margin-bottom:8px">⏳</div><div style="font-size:13px">Đang tải...</div></div>
+      </div>
+    </div>
+    <div class="player-info" id="xvid-player-info">
+      <div class="pi-title">${esc(xvidTitle)}</div>
+    </div>
+  </div>`;
+  setupNavScroll();
+
+  try {
+    const base = (window.API_BASE||'');
+    const qs = new URLSearchParams({ ac:'videolist', at:'json', ids: xvidId });
+    const resp = await fetch(`${base}/api/xvid?${qs}`);
+    const data = await resp.json();
+    const list = xvidItems(data);
+    const raw  = list[0] || null;
+    if(!raw){ throw new Error('Không tìm thấy phim'); }
+
+    const m = xvidNorm(raw);
+    console.log('[pgPlayXvid]', m.vod_name, '| play:', m.vod_play_url, '| eps raw:', JSON.stringify(raw.episodes).slice(0,300));
+
+    const playUrl  = m.vod_play_url || '';
+    const title    = m.vod_name || xvidTitle;
+    const year     = m.vod_year || '';
+    const actor    = m.vod_actor || '';
+    const desc     = raw.description || '';
+
+    // Build episodes list nếu có nhiều tập
+    const eps = Array.isArray(raw.episodes) ? raw.episodes : [];
+    let epBtns = '';
+    if(eps.length > 1){
+      epBtns = `<div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:600;margin-bottom:6px;color:var(--mu)">📋 Tập:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${eps.map((ep,i)=>{
+          const epUrl = typeof ep==='string'
+            ? (ep.includes('$') ? ep.split('$').slice(1).join('$') : ep)
+            : (ep.play_url||ep.url||ep.link||'');
+          const epName = (typeof ep==='object' && ep.name) ? ep.name : 'Tập '+(i+1);
+          return `<button class="ep-btn${i===0?' on':''}" onclick="xvid18SwitchEp('${esc(epUrl)}',this)">${esc(epName)}</button>`;
+        }).join('')}</div>
+      </div>`;
+    }
+
+    const wrap = document.getElementById('xvid-player-wrap');
+    if(wrap){
+      if(playUrl){
+        wrap.innerHTML = `<iframe id="xvid-iframe" src="${esc(playUrl)}" allowfullscreen allow="autoplay;fullscreen;picture-in-picture" style="position:absolute;inset:0;width:100%;height:100%;border:none"></iframe>`;
+      } else {
+        wrap.innerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab">
+          <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+          <div style="font-size:14px;margin-bottom:16px">Chưa có nguồn phim</div>
+        </div>`;
+      }
+    }
+
+    const info = document.getElementById('xvid-player-info');
+    if(info) info.innerHTML = `
+      <div class="pi-title">${esc(title)}</div>
+      <div class="pi-meta">
+        ${year ? `<span>${esc(year)}</span>` : ''}
+        ${actor ? `<span style="color:var(--mu)">${esc(actor.split(',')[0].trim())}</span>` : ''}
+        ${raw.quality ? `<span style="color:#ff8fab;font-weight:700">${esc(raw.quality)}</span>` : ''}
+      </div>
+      ${epBtns}
+      ${playUrl ? `<a href="${esc(playUrl)}" target="_blank" rel="noopener noreferrer"
+        style="display:inline-block;margin-top:12px;background:linear-gradient(135deg,#ff4d6d,#c0392b);color:#fff;padding:10px 20px;border-radius:10px;font-weight:700;font-size:13px;text-decoration:none">
+        ↗ Mở tab mới
+      </a>` : ''}
+      ${desc ? `<div style="margin-top:12px;font-size:12px;color:var(--mu);line-height:1.6">${esc(desc).slice(0,300)}${desc.length>300?'...':''}</div>` : ''}`;
+
+  } catch(e) {
+    const wrap = document.getElementById('xvid-player-wrap');
+    if(wrap) wrap.innerHTML = `<div style="text-align:center;padding:32px;color:#ff8fab">
+      <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:13px">${esc(e.message)}</div>
+    </div>`;
+  }
+}
+
+window.xvid18SwitchEp = function(url, btn){
+  if(!url) return;
+  const iframe = document.getElementById('xvid-iframe');
+  if(iframe) iframe.src = url;
+  document.querySelectorAll('.ep-btn').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+};
