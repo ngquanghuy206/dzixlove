@@ -1936,13 +1936,16 @@ window.toggle18Cats = function(){
 // Card 18+ giống CardKK — thumb + title + ep badge
 function CardXvid(raw){
   const m     = xvidNorm(raw);
-  const id    = raw.id || raw.vod_id || '';
+  const id    = String(raw.id || raw.vod_id || '');
   const slug  = raw.slug || '';
   const pic   = m.vod_pic;
   const title = esc(m.vod_name || '---');
   const year  = m.vod_year || '';
   const actor = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
-  return `<div class="card xvid-card" onclick="go('det-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
+  const tJ    = JSON.stringify(m.vod_name||'');
+  const idJ   = JSON.stringify(id);
+  const slugJ = JSON.stringify(slug);
+  return `<div class="card xvid-card" onclick="console.log('[XVID click]',${idJ},${tJ});go('det-xvid',{xvidId:${idJ},xvidSlug:${slugJ},xvidTitle:${tJ}})" style="cursor:pointer;position:relative">
     <div class="card-img xvid-img">
       <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
       <div class="xvid-play-btn">▶</div>
@@ -2189,9 +2192,12 @@ async function pgPhim18Cat(){
         const year   = m.vod_year || '';
         const actor  = m.vod_actor ? esc(m.vod_actor.split(',')[0].trim()) : '';
         const ep     = m.episode_current || '';
-        const id     = raw.id || raw.vod_id || '';
+        const id     = String(raw.id || raw.vod_id || '');
         const slug   = raw.slug || '';
-        return `<div class="card xvid-card" onclick="go('det-xvid',{xvidId:'${esc(String(id))}',xvidSlug:'${esc(slug)}',xvidTitle:${JSON.stringify(m.vod_name||'')}})" style="cursor:pointer">
+        const tJ2    = JSON.stringify(m.vod_name||'');
+        const idJ2   = JSON.stringify(id);
+        const slugJ2 = JSON.stringify(slug);
+        return `<div class="card xvid-card" onclick="console.log('[XVID cat click]',${idJ2},${tJ2});go('det-xvid',{xvidId:${idJ2},xvidSlug:${slugJ2},xvidTitle:${tJ2}})" style="cursor:pointer">
           <div class="card-img xvid-img">
             <img src="${esc(pic)}" loading="lazy" onerror="this.src=''" alt="${title}">
             <div class="xvid-play-btn">▶</div>
@@ -2245,6 +2251,7 @@ async function pgDetXvid(){
     if(!raw) throw new Error('Không tìm thấy phim');
 
     const m      = xvidNorm(raw);
+    console.log('[pgDetXvid] id=', xvidId, 'name=', m.vod_name, 'pic=', m.vod_pic.slice(0,60), 'play=', m.vod_play_url.slice(0,80));
     const title  = m.vod_name  || xvidTitle;
     const year   = m.vod_year  || '';
     const actor  = m.vod_actor || '';
