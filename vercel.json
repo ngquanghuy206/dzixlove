@@ -2,15 +2,15 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://prem-eu5.bot-hosting.cloud:20427/api/:path*"
+      "destination": "http://prem-eu2.bot-hosting.net:21828/api/:path*"
     },
     {
       "source": "/search",
-      "destination": "http://prem-eu5.bot-hosting.cloud:20427/search"
+      "destination": "http://prem-eu2.bot-hosting.net:21828/search"
     },
     {
       "source": "/stream",
-      "destination": "http://prem-eu5.bot-hosting.cloud:20427/stream"
+      "destination": "http://prem-eu2.bot-hosting.net:21828/stream"
     }
   ]
 }
