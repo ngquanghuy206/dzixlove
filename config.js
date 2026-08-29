@@ -14,7 +14,7 @@ const VS   = 'https://vidsrc.icu/embed';
 const KIMG = 'https://phimimg.com';
 
 // ── Backend server (bot-hosting) ──
-const API_BASE = 'http://prem-eu5.bot-hosting.cloud:20427';
+const API_BASE = 'http://prem-eu2.bot-hosting.net:21828';
 
 // ── XvidAPI (proxy qua backend để tránh CORS) ──
 const XVID = API_BASE + '/api/xvid';
