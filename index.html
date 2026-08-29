@@ -54,20 +54,11 @@
 <!-- STYLES -->
 <link rel="stylesheet" href="style.css"/>
 <!-- hCaptcha -->
-<script src="https://js.hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit" async defer></script>
+
 <script>
   window._hcapLoginId  = null;
   window._hcapRegId    = null;
-  window.hcaptchaOnLoad = function(){
-    window._hcapLoginId = hcaptcha.render('hcap-login', {
-      sitekey: '91fc5d1c-75a6-4564-abc4-43a63ee2a464',
-      theme: 'dark'
-    });
-    window._hcapRegId = hcaptcha.render('hcap-reg', {
-      sitekey: '91fc5d1c-75a6-4564-abc4-43a63ee2a464',
-      theme: 'dark'
-    });
-  };
+  
 </script>
 </head>
 <body>
@@ -152,7 +143,7 @@
 
       </div>
       <div class="dzi-auth-err" id="dzi-login-err"></div>
-      <div id="hcap-login" style="margin-bottom:4px"></div>
+      
       <button class="dzi-auth-btn" id="dzi-login-btn" onclick="doLogin()">🔐 Đăng nhập</button>
     </div>
 
@@ -181,7 +172,7 @@
               onkeydown="if(event.key==='Enter')doRegister()">
           </div>
           <div class="dzi-auth-err" id="dzi-reg-err"></div>
-          <div id="hcap-reg" style="margin-bottom:4px"></div>
+          
           <button class="dzi-auth-btn" id="dzi-reg-btn" onclick="doRegister()">✅ Đăng ký</button>
         </div>
       </div>
