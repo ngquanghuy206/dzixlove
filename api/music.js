@@ -4,7 +4,7 @@
 //             /api/music?_p=/yt/trending
 //             /api/music?_p=/yt/detail&videoId=xxx
 
-const TARGET = 'http://prem-eu5.bot-hosting.cloud:20427';
+const TARGET = 'http://prem-eu2.bot-hosting.net:21828';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
