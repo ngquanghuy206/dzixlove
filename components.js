@@ -75,6 +75,7 @@ function CardYT(v){
   const title = esc(v.title||'');
   const ch    = esc(v.author||'');
   const dur   = fmtSec(v.lengthSeconds||0);
+  const views = v.viewCount ? fmtNum(parseInt(v.viewCount)) : '';
   const thumb = ytThumb(v);
   return `<div class="yt-card" onclick="go('play-yt',{ytId:'${id}'})">
     <div class="yt-thumb">
@@ -83,7 +84,7 @@ function CardYT(v){
     </div>
     <div class="yt-info">
       <div class="yt-title">${title}</div>
-      <div class="yt-ch">📺 ${ch}</div>
+      <div class="yt-ch">📺 ${ch}${views?` <span style="color:var(--mu);font-size:11px">· ${views} lượt xem</span>`:''}</div>
     </div>
   </div>`;
 }
@@ -108,35 +109,228 @@ function renderNav(){
   const p = S.page;
   const isOn = (pg, cat) => (p===pg && (!cat||S.cat===cat)) ? 'on' : '';
   return `<div id="nav">
+    <button class="hamburger" id="ham-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
     <div class="logo" onclick="go('home')">DZI<b> MUSIC & MOVIE</b></div>
     <ul class="nav-links">
       <li><a class="${isOn('home')}" onclick="go('home')">Trang chủ</a></li>
+      <li><a class="${p==='phim'||isOn('cat','phim-moi')?'on':''}" onclick="go('phim')">Phim</a></li>
       <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'})">Phim mới</a></li>
       <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'})">Phim lẻ</a></li>
       <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'})">Phim bộ</a></li>
       <li><a class="${p==='lt'?'on':''}" onclick="go('lt')" style="color:${p==='lt'?'var(--gold)':''}">🔊 Lồng tiếng</a></li>
       <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'})">Anime 🎌</a></li>
-      <li><a class="${isOn('cat','yt')}" onclick="go('cat',{cat:'yt'})" style="color:${isOn('cat','yt')?'':S.cat==='yt'?'var(--yt)':''}">🔴 YouTube</a></li>
+      <li><a class="${p==='dzitube'||isOn('cat','yt')||p==='dzitube-short'?'on':''}" onclick="go('dzitube')" style="color:${p==='dzitube'||isOn('cat','yt')||p==='dzitube-short'?'':'var(--yt)'}">🔴 DZITube</a></li>
       <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac')" style="color:${p==='nhac'?'var(--green)':''}">🎵 Nhạc</a></li>
       <li><a onclick="go('watchlist')">Yêu thích</a></li>
     </ul>
     <div class="nav-right">
       <div class="search-wrap" id="sw">
-        <div class="search-box">
-          <span style="color:var(--mu);font-size:14px">🔍</span>
-          <input type="text" placeholder="Tìm phim, anime, YT..." id="nav-q"
-            value="${p==='search'?esc(S.q):''}"
-            autocomplete="off"
-            oninput="navInput(this.value)"
-            onkeydown="if(event.key==='Enter'){go('search',{q:this.value});closeNav()}"
-            onfocus="navInput(this.value)"/>
+        <button class="nav-search-btn" id="nav-search-toggle" onclick="toggleNavSearch()" aria-label="Tìm kiếm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div id="nav-search-box" style="display:none;position:absolute;right:0;top:42px;width:280px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+          <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--bd)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--mu)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="nav-search-input" type="text" placeholder="Tìm phim, nhạc..." autocomplete="off"
+              style="flex:1;background:none;border:none;outline:none;color:var(--fg);font-size:14px"
+              oninput="navInput(this.value)"
+              onkeydown="if(event.key==='Enter'&&this.value.trim()){go('search',{q:this.value.trim()});closeNavSearch()}"
+            />
+            <button onclick="closeNavSearch()" style="background:none;border:none;color:var(--mu);cursor:pointer;padding:0;line-height:1">✕</button>
+          </div>
+          <div id="drop"></div>
         </div>
-        <div id="drop"></div>
-      </div>
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;color:#fff;flex-shrink:0" onclick="go('watchlist')">
-        ${S.wl.length||'👤'}
       </div>
     </div>
+  </div>
+
+  <!-- MOBILE SIDEBAR OVERLAY -->
+  <div id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div id="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">DZI<b> MUSIC & MOVIE</b></div>
+      <button class="sb-close" onclick="closeSidebar()">✕</button>
+    </div>
+
+    <!-- USER CARD -->
+    ${window.DZI_USER ? `
+    <div style="margin:0 12px 4px;background:linear-gradient(135deg,rgba(79,124,255,.12),rgba(124,58,237,.08));border:1px solid rgba(79,124,255,.2);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0">
+        ${DZI_USER.avatar ? '<img src="' + DZI_USER.avatar + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover">' : DZI_USER.username.charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:800;color:#e8eeff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${DZI_USER.username}</div>
+        <div style="font-size:11px;color:rgba(232,238,255,.45);margin-top:1px">${DZI_ADMIN ? '👑 Admin' : (DZI_USER.email || 'Thành viên')}</div>
+      </div>
+      ${!DZI_ADMIN ? '<div style="font-size:10px;font-weight:700;color:#4f7cff;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);border-radius:8px;padding:3px 8px">Lv ' + (window.calcLevel && window.initMissionState ? calcLevel(initMissionState(DZI_USER.username).totalExp) : 1) + '</div>' : ''}
+    </div>` : `
+    <div style="margin:0 12px 4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;text-align:center;cursor:pointer" onclick="openDziModal('dzi-auth-screen');closeSidebar()">
+      <div style="font-size:13px;color:rgba(232,238,255,.5)">Đăng nhập để xem thông tin</div>
+    </div>`}
+
+    <div class="sb-divider"></div>
+
+    <!-- TRANG CHỦ -->
+    <ul class="sb-icon-links">
+      <li><a class="${isOn('home')}" onclick="go('home');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#6366f1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </span>Trang chủ
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- NHẠC LINKS -->
+    <div class="sb-section-title">NHẠC</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='nhac'?'on':''}" onclick="go('nhac');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#0f2a1a,#16a34a)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </span><span style="color:${p==='nhac'?'var(--green)':''}">Nghe nhạc</span>
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- PHIM LINKS -->
+    <div class="sb-section-title">PHIM</div>
+    <ul class="sb-icon-links">
+      <li><a class="${isOn('phim')}" onclick="go('phim');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e3a5f,#2563eb)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </span>Xem Phim
+      </a></li>
+      <li><a class="${isOn('cat','phim-moi')}" onclick="go('cat',{cat:'phim-moi'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#7c1d1d,#dc2626)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </span>Phim mới
+      </a></li>
+      <li><a class="${isOn('cat','phim-le')}" onclick="go('cat',{cat:'phim-le'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e3a2f,#059669)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </span>Phim lẻ
+      </a></li>
+      <li><a class="${isOn('cat','phim-bo')}" onclick="go('cat',{cat:'phim-bo'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1e2a3a,#0284c7)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </span>Phim bộ
+      </a></li>
+      <li><a class="${p==='lt'?'on':''}" onclick="go('lt');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#d97706)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </span><span style="color:var(--gold)">Lồng tiếng</span>
+      </a></li>
+      <li><a class="${isOn('cat','anime')}" onclick="go('cat',{cat:'anime'});closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#2d1a3d,#9333ea)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </span>Anime
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- DZITUBE LINKS -->
+    <div class="sb-section-title" style="color:var(--yt)">DZITUBE</div>
+    <ul class="sb-icon-links">
+      <li><a class="${p==='dzitube'||isOn('cat','yt')?'on':''}" onclick="go('dzitube');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d0000,#ef4444)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+        </span><span style="color:var(--yt)">Xem DZITube</span>
+      </a></li>
+      <li><a class="${p==='dzitube-short'?'on':''}" onclick="go('dzitube-short');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a0a0a,#ff0050)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 10.79L8 5.09A2 2 0 0 0 5 6.84v10.32a2 2 0 0 0 3 1.75l9.05-5.7a2 2 0 0 0 0-3.42z"/></svg>
+        </span><span style="color:#ff0050">DZITube Short</span>
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- TÀI KHOẢN -->
+    <div class="sb-section-title">TÀI KHOẢN</div>
+    <ul class="sb-icon-links">
+      <li><a onclick="openAccountModal();closeSidebar()" style="cursor:pointer">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#4f7cff)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>Thông tin tài khoản
+      </a></li>
+      <li><a onclick="go('missions');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d2a00,#f59e0b)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </span><span style="color:#fbbf24">Nhiệm vụ ngày</span>
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- PHIM 18+ -->
+    <div class="sb-section-title" style="color:#ff4d6d">🔞 PHIM 18+</div>
+    <ul class="sb-icon-links">
+      <li>
+        <!-- Main 18+ link + accordion toggle -->
+        <a onclick="go('phim18');closeSidebar()" style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span style="display:flex;align-items:center;gap:10px">
+            <span class="sbi" style="background:linear-gradient(135deg,#3d0018,#ff4d6d)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <span style="color:#ff4d6d">Phim 18+</span>
+          </span>
+          <span id="sb18-arrow" onclick="event.stopPropagation();toggle18Cats()" style="padding:4px 6px;color:rgba(255,77,109,.7);font-size:12px;cursor:pointer">▼</span>
+        </a>
+      </li>
+    </ul>
+    <!-- Accordion danh mục 18+ — rendered by JS -->
+    <div id="sb18-cats" style="display:none;padding:0 8px 4px 16px"></div>
+
+    <div class="sb-divider"></div>
+
+    <!-- LỊCH SỬ & YÊU THÍCH -->
+    <div class="sb-section-title">LỊCH SỬ</div>
+    <ul class="sb-icon-links">
+      <li><a onclick="go('watchlist');closeSidebar()">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d0a0a,#dc2626)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </span>Yêu thích
+      </a></li>
+      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('hi'),100)">
+        <span class="sbi" style="background:linear-gradient(135deg,#1a2744,#4f46e5)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>Lịch sử xem phim
+      </a></li>
+      <li><a onclick="go('watchlist');closeSidebar();setTimeout(()=>window.swWL&&swWL('nh'),100)">
+        <span class="sbi" style="background:linear-gradient(135deg,#0f2a1a,#16a34a)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>Lịch sử nghe nhạc
+      </a></li>
+    </ul>
+
+    <div class="sb-divider"></div>
+
+    <!-- ADMIN QUẢN LÝ -->
+    ${window.DZI_ADMIN ? `
+    <div class="sb-section-title" style="color:#f97316">👑 QUẢN LÝ</div>
+    <ul class="sb-icon-links">
+      <li><a onclick="openAdminStatsModal();closeSidebar()" style="cursor:pointer">
+        <span class="sbi" style="background:linear-gradient(135deg,#3d1a00,#f97316)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span><span style="color:#f97316">Chỉnh sửa số liệu</span>
+      </a></li>
+    </ul>
+    <div class="sb-divider"></div>
+    ` : ''}
+
+    ${window.DZI_USER ? `
+    <div style="padding:12px 16px 20px">
+      <button onclick="doLogout();closeSidebar()" style="width:100%;padding:12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:12px;color:#ef4444;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Đăng xuất
+      </button>
+    </div>
+    ` : ''}
+
   </div>`;
 }
 
@@ -148,42 +342,29 @@ function renderFooter(){
     <div class="ft-row">
       <div>
         <div class="ft-logo">DZI<b> MUSIC & MOVIE</b></div>
-        <div class="ft-tag">Phim Việt · Anime · YouTube — Hoàn toàn miễn phí</div>
-        <div class="ft-src">
-          <span class="ft-chip" style="background:rgba(16,185,129,.15);color:var(--green)">🇻🇳 KKPhim</span>
-          <span class="ft-chip" style="background:rgba(168,85,247,.15);color:var(--purple)">🎌 Jikan/MAL</span>
-          <span class="ft-chip" style="background:rgba(255,0,0,.15);color:var(--yt)">🔴 YouTube</span>
-          <span class="ft-chip" style="background:rgba(59,130,246,.15);color:var(--blue)">📺 VidSrc</span>
-        </div>
+        <div class="ft-tag">Phim Việt · Anime · DZITube — Hoàn toàn miễn phí</div>
       </div>
       <div class="ft-cols">
         <div class="ft-col"><h4>Phim Việt</h4><ul>
           <li><a onclick="go('cat',{cat:'phim-moi'})">Phim mới</a></li>
           <li><a onclick="go('cat',{cat:'phim-le'})">Phim lẻ</a></li>
           <li><a onclick="go('cat',{cat:'phim-bo'})">Phim bộ</a></li>
-          <li><a onclick="go('lt')" style="color:var(--gold)">🔊 Lồng tiếng</a></li>
-          <li><a onclick="go('cat',{cat:'hoat-hinh'})">Hoạt hình</a></li>
         </ul></div>
         <div class="ft-col"><h4>Anime</h4><ul>
           <li><a onclick="go('cat',{cat:'anime'})">Top Anime</a></li>
           <li><a onclick="go('cat',{cat:'anime-now'})">Đang chiếu</a></li>
         </ul></div>
-        <div class="ft-col"><h4>YouTube</h4><ul>
-          <li><a onclick="go('cat',{cat:'yt'})">Tìm kiếm YT</a></li>
+        <div class="ft-col"><h4>DZITube</h4><ul>
+          <li><a onclick="go('dzitube')">Xem DZITube</a></li>
+          <li><a onclick="go('dzitube-short')">DZITube Short</a></li>
         </ul></div>
         <div class="ft-col"><h4>🎵 Nhạc</h4><ul>
           <li><a onclick="go('nhac')">Nghe Nhạc</a></li>
-          <li><a onclick="go('nhac')">SoundCloud</a></li>
-        </ul></div>
-        <div class="ft-col"><h4>Tài khoản</h4><ul>
-          <li><a onclick="go('watchlist')">Yêu thích</a></li>
-          <li><a onclick="go('watchlist')">Lịch sử xem</a></li>
         </ul></div>
       </div>
     </div>
     <div class="ft-bot">
       <div>© 2026 DZI MUSIC & MOVIE</div>
-      <div>KKPhim · Jikan · Invidious · VidSrc</div>
     </div>
   </footer>`;
 }
@@ -196,6 +377,19 @@ function setupNavScroll(){
   window.removeEventListener('scroll',window._ns);
   window._ns=()=>nav.style.background=window.scrollY>40?'rgba(7,9,15,.99)':'rgba(7,9,15,.96)';
   window.addEventListener('scroll',window._ns); window._ns();
+  // Fill accordion danh mục 18+ sau mỗi lần render nav
+  const sb18 = document.getElementById('sb18-cats');
+  if(sb18 && !sb18._filled){
+    sb18._filled = true;
+    const cats = (typeof XVID_ALL_CATS !== 'undefined' ? XVID_ALL_CATS : []);
+    sb18.innerHTML = cats.map(c =>
+      `<div onclick="go('phim18cat',{typeId:${c.id},typeLabel:'${c.label}'});closeSidebar()"
+        style="padding:7px 12px;border-radius:8px;font-size:13px;color:rgba(255,143,171,.8);cursor:pointer;display:flex;align-items:center;gap:8px"
+        onmouseover="this.style.background='rgba(255,77,109,.1)'" onmouseout="this.style.background=''">
+        <span style="width:5px;height:5px;border-radius:50%;background:#ff4d6d;flex-shrink:0"></span>${c.label}
+      </div>`
+    ).join('');
+  }
 }
 
 // ═══════════════════════════════════════
@@ -221,15 +415,15 @@ window.navInput = async function(q){
       if(!ki.length&&!ji.length&&!yi.length){ drop.className=''; drop.innerHTML=''; return; }
       let html='';
       if(ki.length){
-        html+='<div class="drop-sep">🇻🇳 Phim Việt (KKPhim)</div>';
+        html+='<div class="drop-sep">🇻🇳 Phim Việt</div>';
         html+=ki.map(m=>`<div class="drop-item" onclick="go('det-kk',{slug:'${m.slug}'});closeNav()">
           <img src="${fixImg(m.thumb_url||m.poster_url)||PH(32,48)}" onerror="this.src='${PH(32,48)}'">
           <div><div class="di-title">${esc(m.name||m.title||'')}</div>
-          <div class="di-sub"><span class="tag vn">KKPhim</span>${esc(m.year||'')}</div></div>
+          <div class="di-sub"><span class="tag vn">🇻🇳</span>${esc(m.year||'')}</div></div>
         </div>`).join('');
       }
       if(ji.length){
-        html+='<div class="drop-sep">🎌 Anime (Jikan/MAL)</div>';
+        html+='<div class="drop-sep">🎌 Anime</div>';
         html+=ji.map(m=>{ const imgs=m.images||{}; const po2=(imgs.jpg&&imgs.jpg.image_url)||(imgs.webp&&imgs.webp.image_url)||PH(32,48);
           return `<div class="drop-item" onclick="go('det-ani',{malId:${m.mal_id}});closeNav()">
             <img src="${po2}" onerror="this.src='${PH(32,48)}'">
@@ -238,11 +432,11 @@ window.navInput = async function(q){
           </div>`;}).join('');
       }
       if(yi.length){
-        html+='<div class="drop-sep">🔴 YouTube</div>';
+        html+='<div class="drop-sep">🔴 DZITube</div>';
         html+=yi.map(v=>`<div class="drop-item yt-row" onclick="go('play-yt',{ytId:'${esc(v.videoId||'')}'}); closeNav()">
           <img src="${esc(ytThumb(v))}" onerror="this.src='${PH(54,34)}'">
           <div><div class="di-title">${esc(v.title||'')}</div>
-          <div class="di-sub"><span class="tag yt">YouTube</span>${esc(v.author||'')}</div></div>
+          <div class="di-sub"><span class="tag yt">DZITube</span>${esc(v.author||'')}</div></div>
         </div>`).join('');
       }
       html+=`<div class="drop-more" onclick="go('search',{q:'${esc(q)}'});closeNav()">Xem tất cả kết quả cho "${esc(q)}" →</div>`;
@@ -252,4 +446,49 @@ window.navInput = async function(q){
 };
 
 window.closeNav=()=>{ const d=document.getElementById('drop'); if(d){d.className='';d.innerHTML='';} };
-document.addEventListener('click',e=>{ const sw=document.getElementById('sw'); if(sw&&!sw.contains(e.target)) closeNav(); });
+window.toggleNavSearch=function(){
+  const box=document.getElementById('nav-search-box');
+  if(!box) return;
+  const isOpen = box.style.display!=='none';
+  if(isOpen){ closeNavSearch(); }
+  else{ box.style.display='block'; setTimeout(()=>{ const inp=document.getElementById('nav-search-input'); if(inp) inp.focus(); },50); }
+};
+window.closeNavSearch=function(){
+  const box=document.getElementById('nav-search-box');
+  if(box) box.style.display='none';
+  const inp=document.getElementById('nav-search-input');
+  if(inp) inp.value='';
+  closeNav();
+};
+document.addEventListener('click',e=>{ const sw=document.getElementById('sw'); if(sw&&!sw.contains(e.target)) closeNavSearch(); });
+
+// ═══════════════════════════════════════
+//  SIDEBAR TOGGLE
+// ═══════════════════════════════════════
+window.toggleSidebar = function(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const btn = document.getElementById('ham-btn');
+  if(!sb) return;
+  const open = sb.classList.toggle('open');
+  if(ov) ov.classList.toggle('show', open);
+  if(btn) btn.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+};
+window.closeSidebar = function(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  const btn = document.getElementById('ham-btn');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('show');
+  if(btn) btn.classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+// FIX: initPipDrag stub — tránh crash khi state.js gọi trước khi được define
+// Nếu cần drag PiP player thật sự, implement ở đây
+if(!window.initPipDrag){
+  window.initPipDrag = function(){
+    // No PiP drag implemented — placeholder
+  };
+}

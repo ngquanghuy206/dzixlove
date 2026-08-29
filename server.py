@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DZI MUSIC SERVER — SoundCloud Search Tool
-Public: http://prem-eu2.bot-hosting.net:21828
+Public: http://prem-eu5.bot-hosting.cloud:20427
 pip install fastapi uvicorn requests beautifulsoup4
 """
 
@@ -12,9 +12,18 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response, FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, Response
 import uvicorn
+
+HCAPTCHA_SECRET = os.environ.get("HCAPTCHA_SECRET", "ES_5ae92e39bc0a4d4cba6cbd7eca0e4d88")
+
+def _verify_hcaptcha(token: str) -> bool:
+    if not token: return False
+    try:
+        r = requests.post("https://api.hcaptcha.com/siteverify", data={"secret": HCAPTCHA_SECRET, "response": token}, timeout=5)
+        return r.json().get("success", False)
+    except:
+        return False
 
 # ── YouTube Data API v3 ────────────────────────────────────
 YT_KEY    = os.environ.get("YOUTUBE_API_KEY", "AIzaSyBLnMuEHZA4vwPzEn_WjP1Cu31qRQWAbbU")
@@ -154,15 +163,6 @@ def yt_detail(video_id: str):
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-# Serve frontend static files
-import pathlib
-BASE_DIR = pathlib.Path(__file__).parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR)), name="static")
-
-@app.get("/")
-async def serve_index():
-    return FileResponse(str(BASE_DIR / "index.html"))
-
 # ── Auth System ─────────────────────────────────────────────
 
 def _hash(pw): return hashlib.sha256(pw.encode()).hexdigest()
@@ -217,7 +217,9 @@ def _create_session(username):
 async def api_login(req: Request):
     d = await req.json()
     u, p = d.get("username","").strip(), d.get("password","")
+    cap = d.get("hcaptcha_token","")
     if not u or not p: raise HTTPException(400, "Thiếu thông tin")
+    if not _verify_hcaptcha(cap): raise HTTPException(400, "Xác minh captcha thất bại")
     if u in ADMIN_ACCOUNTS:
         if ADMIN_ACCOUNTS[u] != _hash(p): raise HTTPException(401, "Sai mật khẩu")
         tok = _create_session(u)
@@ -232,7 +234,9 @@ async def api_login(req: Request):
 async def api_register(req: Request):
     d = await req.json()
     u, p, em = d.get("username","").strip(), d.get("password",""), d.get("email","").strip()
+    cap = d.get("hcaptcha_token","")
     if not u or not p or not em: raise HTTPException(400, "Thiếu thông tin")
+    if not _verify_hcaptcha(cap): raise HTTPException(400, "Xác minh captcha thất bại")
     if u in ADMIN_ACCOUNTS or _col_users.find_one({"username": u}): raise HTTPException(400, "Username đã tồn tại")
     if _col_users.find_one({"email": em.lower()}): raise HTTPException(400, "Email đã được sử dụng")
     if len(p) < 6: raise HTTPException(400, "Mật khẩu tối thiểu 6 ký tự")
@@ -665,7 +669,7 @@ def catch_all(full_path: str, request: Request):
 # ── Main ───────────────────────────────────────────────────
 if __name__ == "__main__":
     PORT = int(os.environ.get("SERVER_PORT", os.environ.get("PORT", 20427)))
-    print(f"🎵 DZI Music Server — http://prem-eu2.bot-hosting.net:{PORT}")
+    print(f"🎵 DZI Music Server — http://prem-eu5.bot-hosting.cloud:{PORT}")
     print("⏳ Warm up client_id...")
     lay_client_id()
     uvicorn.run(
