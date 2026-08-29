@@ -631,15 +631,17 @@ def api_xvid(
             if isinstance(lst, list) and lst:
                 first = lst[0]
                 item_keys = list(first.keys()) if isinstance(first, dict) else str(type(first))
-                eps = first.get('episodes') or []
-                ep0_raw = ''
-                if isinstance(eps, list) and eps:
-                    ep0_raw = str(eps[0])[:200]
-                print(f"[XVID] t={t} pg={pg} keys={top_keys} list_len={list_len} item_keys={item_keys}")
-                print(f"[XVID] name={first.get('name','?')} poster={first.get('poster_url','?')[:60]} thumb={first.get('thumb_url','?')[:60]}")
-                print(f"[XVID] episodes[0] raw = {ep0_raw}")
+                vod_name     = first.get('vod_name') or first.get('name','?')
+                vod_pic      = str(first.get('vod_pic') or first.get('poster_url',''))[:80]
+                vod_play_url = str(first.get('vod_play_url',''))[:120]
+                vod_play_from= str(first.get('vod_play_from',''))[:80]
+                print(f"[XVID] t={t} ids={ids} ac={ac} list_len={list_len}")
+                print(f"[XVID] item_keys={item_keys}")
+                print(f"[XVID] name={vod_name} | pic={vod_pic}")
+                print(f"[XVID] vod_play_from={vod_play_from}")
+                print(f"[XVID] vod_play_url={vod_play_url}")
             else:
-                print(f"[XVID] t={t} pg={pg} keys={top_keys} list_len={list_len}")
+                print(f"[XVID] t={t} ids={ids} ac={ac} list_len={list_len} (empty list)")
         return JSONResponse(data)
     except Exception as e:
         print(f"[XVID] ERROR: {e}")
