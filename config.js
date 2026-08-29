@@ -14,8 +14,7 @@ const VS   = 'https://vidsrc.icu/embed';
 const KIMG = 'https://phimimg.com';
 
 // ── Backend server (bot-hosting) ──
-API_BASE = 'https://dzimovielove.onrender.com';
-
+const API_BASE = '';
 
 // ── XvidAPI (proxy qua backend để tránh CORS) ──
 const XVID = API_BASE + '/api/xvid';

@@ -12,7 +12,8 @@ import requests
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, Query, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, FileResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 
 # ── YouTube Data API v3 ────────────────────────────────────
@@ -152,6 +153,15 @@ def yt_detail(video_id: str):
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# Serve frontend static files
+import pathlib
+BASE_DIR = pathlib.Path(__file__).parent
+app.mount("/static", StaticFiles(directory=str(BASE_DIR)), name="static")
+
+@app.get("/")
+async def serve_index():
+    return FileResponse(str(BASE_DIR / "index.html"))
 
 # ── Auth System ─────────────────────────────────────────────
 
